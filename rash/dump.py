@@ -15,6 +15,7 @@ import os
 import time
 import json
 
+from .utils.pathutils import mkdirp
 from .config import ConfigStore
 
 
@@ -29,7 +30,9 @@ def dump_run(**kwds):
     """
     conf = ConfigStore()
     json_path = os.path.join(conf.dump_path,
-                             time.strftime('%Y-%m-%d-%H%M%S.json'))
+                             time.strftime('%Y-%m-%d'),
+                             time.strftime('%H%M%S.json'))
+    mkdirp(os.path.dirname(json_path))
     data = dict((k, v) for (k, v) in kwds.items() if v is not None)
     data.update(
         environ=get_environ('SHELL', 'TERM', 'PATH'),
