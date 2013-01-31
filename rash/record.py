@@ -6,7 +6,7 @@ This Python implementation is a reference implementation.
 Probably it makes sense to write this command naively in
 shells to make it faster.
 
-The dumbed data goes under the ``~/.config/rash/data/dumb``
+The dumped data goes under the ``~/.config/rash/data/record``
 directory.
 
 """
