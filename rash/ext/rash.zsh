@@ -1,5 +1,5 @@
 rash-postexec(){
-    rash dump \
+    rash record \
         "$(builtin history -n -1)" \
         --start "$_RASH_START" \
         --exit-code "$?" \
