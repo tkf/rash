@@ -1,6 +1,7 @@
 import os
 
 from .utils.confutils import get_config_directory
+from .utils.pathutils import mkdirp
 
 
 class ConfigStore(object):
@@ -32,5 +33,4 @@ class ConfigStore(object):
     """
 
     def __init__(self):
-        if not os.path.exists(self.dump_path):
-            os.makedirs(self.dump_path)
+        mkdirp(self.dump_path)
