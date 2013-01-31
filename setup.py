@@ -1,3 +1,5 @@
+import os
+
 from distutils.core import setup
 
 import rash
@@ -5,7 +7,10 @@ import rash
 setup(
     name='rash',
     version=rash.__version__,
-    packages=['rash'],
+    packages=['rash', 'rash.utils'],
+    package_data={
+        'rash': [os.path.join('ext', '*sh')],
+    },
     author=rash.__author__,
     author_email='aka.tkf@gmail.com',
     url='https://github.com/tkf/rash',
