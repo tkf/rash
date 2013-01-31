@@ -18,6 +18,11 @@ import json
 from .config import ConfigStore
 
 
+def get_environ(*keys):
+    items = ((k, os.environ.get(k)) for k in keys)
+    return dict((k, v) for (k, v) in items if v is not None)
+
+
 def dump_run(**kwds):
     """
     Record shell history.
@@ -27,9 +32,7 @@ def dump_run(**kwds):
                              time.strftime('%Y-%m-%d-%H%M%S.json'))
     data = dict((k, v) for (k, v) in kwds.items() if v is not None)
     data.update(
-        shell=os.environ.get('SHELL'),
-        term=os.environ.get('TERM'),
-        path=os.environ.get('PATH'),
+        environ=get_environ('SHELL', 'TERM', 'PATH'),
         cwd=os.getcwdu(),
     )
     data.setdefault('stop', int(time.time()))
