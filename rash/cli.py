@@ -45,9 +45,11 @@ def get_parser(commands):
 
 def main(args=None):
     from . import dump
+    from . import init
     # from . import MODULE
     parser = get_parser(
-        dump.commands
+        init.commands
+        + dump.commands
         # + MODULE.commands
     )
     ns = parser.parse_args(args=args)
