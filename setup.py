@@ -7,7 +7,7 @@ import rash
 setup(
     name='rash',
     version=rash.__version__,
-    packages=['rash', 'rash.utils'],
+    packages=['rash', 'rash.utils', 'rash.tests'],
     package_data={
         'rash': [os.path.join('ext', '*sh')],
     },
