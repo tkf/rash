@@ -44,12 +44,12 @@ def get_parser(commands):
 
 
 def main(args=None):
-    from . import dump
+    from . import record
     from . import init
     # from . import MODULE
     parser = get_parser(
         init.commands
-        + dump.commands
+        + record.commands
         # + MODULE.commands
     )
     ns = parser.parse_args(args=args)
