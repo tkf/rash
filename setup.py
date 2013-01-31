@@ -9,6 +9,7 @@ setup(
     version=rash.__version__,
     packages=['rash', 'rash.utils', 'rash.tests'],
     package_data={
+        # See also ./MANIFEST.in
         'rash': [os.path.join('ext', '*sh')],
     },
     author=rash.__author__,
