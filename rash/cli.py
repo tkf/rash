@@ -46,14 +46,14 @@ def get_parser(commands):
 def main(args=None):
     from . import init
     from . import record
-    from . import server
+    from . import daemon
     from . import search
     from . import index
     # from . import MODULE
     parser = get_parser(
         init.commands
         + record.commands
-        + server.commands
+        + daemon.commands
         + search.commands
         + index.commands
         # + MODULE.commands
