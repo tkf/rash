@@ -18,26 +18,31 @@ create table environment_variable (
 drop table if exists directory;
 create table directory (
   id integer primary key autoincrement,
-  directory_path string not null
+  directory_path string not null unique
 );
 
 drop table if exists command_environment_map;
 create table command_environment_map (
   ch_id integer not null,
-  ev_id integer not null
+  ev_id integer not null,
+  foreign key(ch_id) references command_history(id),
+  foreign key(ev_id) references environment_variable(id)
 );
 
 drop table if exists command_cwd_map;
 create table command_cwd_map (
   ch_id integer not null,
-  dir_id integer not null
+  dir_id integer not null,
+  foreign key(ch_id) references command_history(id),
+  foreign key(dir_id) references directory(id)
 );
 
 drop table if exists pipe_status_map;
 create table pipe_status_map (
   ch_id integer not null,
   position integer not null,
-  exit_code integer
+  exit_code integer,
+  foreign key(ch_id) references command_history(id),
 );
 
 drop table if exists rash_info;
