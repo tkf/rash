@@ -16,11 +16,11 @@ class ConfigStore(object):
     Directory to store data collected by RASH (``~/.config/rash/data``).
     """
 
-    dump_path = os.path.join(data_path, 'dump')
+    record_path = os.path.join(data_path, 'record')
     """
     Shell history is stored in this directory at the first stage.
 
-    In Linux: ``~/.config/rash/data/dump/``.
+    In Linux: ``~/.config/rash/data/record/``.
 
     """
 
@@ -33,4 +33,4 @@ class ConfigStore(object):
     """
 
     def __init__(self):
-        mkdirp(self.dump_path)
+        mkdirp(self.record_path)

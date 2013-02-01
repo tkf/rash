@@ -6,7 +6,7 @@ This Python implementation is a reference implementation.
 Probably it makes sense to write this command naively in
 shells to make it faster.
 
-The dumbed data goes under the ``~/.config/rash/data/dumb``
+The dumped data goes under the ``~/.config/rash/data/record``
 directory.
 
 """
@@ -24,12 +24,12 @@ def get_environ(*keys):
     return dict((k, v) for (k, v) in items if v is not None)
 
 
-def dump_run(**kwds):
+def record_run(**kwds):
     """
     Record shell history.
     """
     conf = ConfigStore()
-    json_path = os.path.join(conf.dump_path,
+    json_path = os.path.join(conf.record_path,
                              time.strftime('%Y-%m-%d'),
                              time.strftime('%H%M%S.json'))
     mkdirp(os.path.dirname(json_path))
@@ -43,7 +43,7 @@ def dump_run(**kwds):
         json.dump(data, fp)
 
 
-def dump_add_arguments(parser):
+def record_add_arguments(parser):
     parser.add_argument(
         'command',
         help="command that was ran.")
@@ -65,5 +65,5 @@ def dump_add_arguments(parser):
 
 
 commands = [
-    ('dump', dump_add_arguments, dump_run),
+    ('record', record_add_arguments, record_run),
 ]
