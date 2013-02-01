@@ -1,4 +1,4 @@
-def index_run():
+def index_run(record_path, keep_json, check_duplicate):
     """
     [UNDER CONSTRUCTION]
     Convert raw JSON records into sqlite3 DB.
@@ -8,12 +8,29 @@ def index_run():
        DB migration when schema is updated.
 
     """
-    raise NotImplementedError
+    import os
+    from .config import ConfigStore
+    from .database import DataBase
+
+    conf = ConfigStore()
+    if keep_json:
+        check_duplicate = True
+    if not record_path:
+        record_path = conf.record_path
+    db = DataBase(conf.db_path)
+
+    for (root, _, files) in os.walk(record_path):
+        for f in files:
+            json_path = os.path.join(root, f)
+            if json_path.endswith('.json'):
+                db.import_json(json_path, check_duplicate)
+                if not keep_json:
+                    os.remove(json_path)
 
 
 def index_add_arguments(parser):
     parser.add_argument(
-        'record_directory', nargs='?',
+        'record_path', nargs='?',
         help="""
         specify the directory that has JSON records.
         """)
