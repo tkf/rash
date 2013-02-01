@@ -5,7 +5,7 @@ create table command_history (
   start_time integer,
   stop_time integer,
   exit_code integer,
-  program string
+  terminal string
 );
 
 drop table if exists environment_variable;

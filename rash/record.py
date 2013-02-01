@@ -60,7 +60,7 @@ def record_add_arguments(parser):
         '--stop', type=int,
         help='the time COMMAND is finished.')
     parser.add_argument(
-        '--program',
+        '--terminal',
         help='like $TERM, but can be anything (e.g., emacs / tmux).')
 
 
