@@ -44,8 +44,8 @@ def get_parser(commands):
 
 
 def main(args=None):
-    from . import record
     from . import init
+    from . import record
     from . import server
     from . import search
     # from . import MODULE
