@@ -39,3 +39,10 @@ create table pipe_status_map (
   position integer not null,
   exit_code integer
 );
+
+drop table if exists rash_info;
+create table rash_info (
+  rash_version string not null,
+  schema_version string not null,
+  updated timestamp default current_timestamp
+);
