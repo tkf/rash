@@ -12,6 +12,9 @@ def index_run(record_path, keep_json, check_duplicate):
     from .config import ConfigStore
     from .database import DataBase
 
+    if not keep_json:
+        raise RuntimeError('At this point, --keep-json should be specified.')
+
     conf = ConfigStore()
     if keep_json:
         check_duplicate = True
@@ -23,7 +26,7 @@ def index_run(record_path, keep_json, check_duplicate):
         for f in files:
             json_path = os.path.join(root, f)
             if json_path.endswith('.json'):
-                db.import_json(json_path, check_duplicate)
+                db.import_json(json_path, check_duplicate=check_duplicate)
                 if not keep_json:
                     os.remove(json_path)
 
@@ -35,7 +38,7 @@ def index_add_arguments(parser):
         specify the directory that has JSON records.
         """)
     parser.add_argument(
-        '--keep-json',
+        '--keep-json', default=False, action='store_true',
         help="""
         Do not remove old JSON files.  It turns on --check-duplicate.
         """)
