@@ -82,7 +82,7 @@ class DataBase(object):
         command_id = self._get_maybe_new_command_id(db, crec.command)
         terminal_id = self._get_maybe_new_terminal_id(db, crec.terminal)
         convert_ts = (lambda ts: None if ts is None
-                      else datetime.datetime.fromtimestamp(ts))
+                      else datetime.datetime.utcfromtimestamp(ts))
         db.execute(
             '''
             INSERT INTO command_history
