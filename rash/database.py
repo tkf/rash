@@ -16,6 +16,7 @@ class DataBase(object):
 
     def __init__(self, dbpath):
         self.dbpath = dbpath
+        self._db = None
         if not os.path.exists(dbpath):
             self._init_db()
 
@@ -35,6 +36,24 @@ class DataBase(object):
                 [version, schema_version])
             db.commit()
 
+    @contextmanager
+    def connection(self):
+        """
+        Context manager to keep around DB connection.
+
+        :rtype: sqlite3.Connection
+
+        """
+        if self._db:
+            yield self._db
+        else:
+            try:
+                with self._get_db() as db:
+                    self._db = db
+                    yield self._db
+            finally:
+                self.db = None
+
     def import_json(self, json_path, **kwds):
         import json
         with open(json_path) as fp:
@@ -50,7 +69,7 @@ class DataBase(object):
         crec = CommandRecord(**dct)
         if check_duplicate and nonempty(self.select_by_command_record(crec)):
             return
-        with self._get_db() as connection:
+        with self.connection() as connection:
             db = connection.cursor()
             ch_id = self._insert_command_history(db, crec)
             self._insert_environ(db, ch_id, crec.environ)
