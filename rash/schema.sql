@@ -1,11 +1,25 @@
 DROP TABLE IF EXISTS command_history;
 CREATE TABLE command_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  command TEXT,
+  command_id INTEGER,
   start_time TIMESTAMP,
   stop_time TIMESTAMP,
   exit_code INTEGER,
-  terminal TEXT
+  terminal_id INTEGER,
+  FOREIGN KEY(command_id) REFERENCES command_list(id),
+  FOREIGN KEY(terminal_id) REFERENCES terminal_list(id)
+);
+
+DROP TABLE IF EXISTS command_list;
+CREATE TABLE command_list (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  command TEXT NOT NULL UNIQUE
+);
+
+DROP TABLE IF EXISTS terminal_list;
+CREATE TABLE terminal_list (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  terminal TEXT NOT NULL UNIQUE
 );
 
 DROP TABLE IF EXISTS environment_variable;
