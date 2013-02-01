@@ -1,7 +1,7 @@
 drop table if exists command_history;
 create table command_history (
   id integer primary key autoincrement,
-  command string not null,
+  command string,
   start_time integer,
   stop_time integer,
   exit_code integer,

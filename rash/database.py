@@ -2,6 +2,9 @@ import os
 import sqlite3
 from contextlib import closing
 
+from .utils.iterutils import nonempty
+from .model import CommandRecord
+
 schema_version = '0.1.dev1'
 
 
@@ -37,4 +40,10 @@ class DataBase(object):
             self.import_dict(json.load(fp), **kwds)
 
     def import_dict(self, dct, check_duplicate=True):
+        crec = CommandRecord(**dct)
+        if check_duplicate and nonempty(self.select_by_command_record(crec)):
+            return
+        raise NotImplementedError
+
+    def select_by_command_record(self, crec):
         raise NotImplementedError
