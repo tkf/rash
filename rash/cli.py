@@ -48,12 +48,14 @@ def main(args=None):
     from . import record
     from . import server
     from . import search
+    from . import index
     # from . import MODULE
     parser = get_parser(
         init.commands
         + record.commands
         + server.commands
         + search.commands
+        + index.commands
         # + MODULE.commands
     )
     ns = parser.parse_args(args=args)
