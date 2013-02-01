@@ -21,6 +21,14 @@ def concat_expr(operator, conditions):
     return ["({0})".format(expr)] if expr else []
 
 
+def normalize_directory(path):
+    path = os.path.abspath(path)
+    if path.endswith(os.path.sep):
+        return path[:-len(os.path.sep)]
+    else:
+        return path
+
+
 class DataBase(object):
 
     schemapath = os.path.join(
@@ -143,6 +151,7 @@ class DataBase(object):
     def _get_maybe_new_directory_id(self, db, directory):
         if directory is None:
             return None
+        directory = normalize_directory(directory)
         return self._get_maybe_new_id(
             db, 'directory_list', {'directory': directory})
 
@@ -173,24 +182,21 @@ class DataBase(object):
         return []
         raise NotImplementedError
 
-    def search_command_record(
-            self, limit, pattern=[], cwd=[], unique=True,
-            **_):
+    def search_command_record(self, **kwds):
         """
         Search command history.
 
         :rtype: [CommandRecord]
 
         """
-        (sql, params, keys) = self._compile_sql_search_command_record(
-            limit=limit, pattern=pattern, cwd=cwd, unique=unique)
+        (sql, params, keys) = self._compile_sql_search_command_record(**kwds)
         with self.connection() as connection:
             cur = connection.cursor()
             for row in cur.execute(sql, params):
                 yield CommandRecord(**dict(zip(keys, row)))
 
     def _compile_sql_search_command_record(
-            cls, limit, unique, pattern, cwd):
+            cls, limit, pattern, cwd, cwd_glob, unique=True, **_):
         keys = ['command', 'cwd', 'terminal', 'start', 'stop', 'exit_code']
         columns = ['CL.command', 'DL.directory', 'TL.terminal',
                    'start_time', 'stop_time', 'exit_code']
@@ -199,13 +205,15 @@ class DataBase(object):
         params = []
         conditions = []
 
-        def add_glob_match(name, args):
+        def add_or_match(template, name, args):
             conditions.extend(concat_expr(
-                'OR', repeat('glob(?, {0})'.format(name), len(args))))
+                'OR', repeat(template.format(name), len(args))))
             params.extend(args)
 
-        add_glob_match('CL.command', pattern)
-        add_glob_match('DL.directory', cwd)
+        add_or_match('glob(?, {0})', 'CL.command', pattern)
+        add_or_match('glob(?, {0})', 'DL.directory', cwd_glob)
+        add_or_match('{0} = ?', 'DL.directory',
+                     list(map(normalize_directory, cwd)))
 
         where = ''
         if conditions:

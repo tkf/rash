@@ -23,8 +23,13 @@ def search_add_arguments(parser):
         '--cwd', action='append', default=[],
         help="""
         The working directory at the time when the command was run.
-        It accepts glob expression.  When given several times, items
-        that match to one of the directory are included in the result.
+        When given several times, items that match to one of the
+        directory are included in the result.
+        """)
+    parser.add_argument(
+        '--cwd-glob', action='append', default=[],
+        help="""
+        Same as --cwd but it accepts glob expression.
         """)
     parser.add_argument(
         '--time-after',
