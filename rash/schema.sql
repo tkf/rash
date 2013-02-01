@@ -29,10 +29,10 @@ CREATE TABLE environment_variable (
   variable_value TEXT NOT NULL
 );
 
-DROP TABLE IF EXISTS directory;
-CREATE TABLE directory (
+DROP TABLE IF EXISTS directory_list;
+CREATE TABLE directory_list (
   id INTEGER PRIMARY KEY autoincrement,
-  directory_path TEXT NOT NULL UNIQUE
+  directory TEXT NOT NULL UNIQUE
 );
 
 DROP TABLE IF EXISTS command_environment_map;
@@ -48,7 +48,7 @@ CREATE TABLE command_cwd_map (
   ch_id INTEGER NOT NULL,
   dir_id INTEGER NOT NULL,
   FOREIGN KEY(ch_id) REFERENCES command_history(id),
-  FOREIGN KEY(dir_id) REFERENCES directory(id)
+  FOREIGN KEY(dir_id) REFERENCES directory_list(id)
 );
 
 DROP TABLE IF EXISTS pipe_status_map;
