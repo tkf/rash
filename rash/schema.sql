@@ -1,53 +1,53 @@
-drop table if exists command_history;
-create table command_history (
-  id integer primary key autoincrement,
-  command string,
-  start_time integer,
-  stop_time integer,
-  exit_code integer,
-  terminal string
+DROP TABLE IF EXISTS command_history;
+CREATE TABLE command_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  command STRING,
+  start_time INTEGER,
+  stop_time INTEGER,
+  exit_code INTEGER,
+  terminal STRING
 );
 
-drop table if exists environment_variable;
-create table environment_variable (
-  id integer primary key autoincrement,
-  variable_name string not null,
-  variable_value string not null
+DROP TABLE IF EXISTS environment_variable;
+CREATE TABLE environment_variable (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  variable_name STRING NOT NULL,
+  variable_value STRING NOT NULL
 );
 
-drop table if exists directory;
-create table directory (
-  id integer primary key autoincrement,
-  directory_path string not null unique
+DROP TABLE IF EXISTS directory;
+CREATE TABLE directory (
+  id INTEGER PRIMARY KEY autoincrement,
+  directory_path STRING NOT NULL UNIQUE
 );
 
-drop table if exists command_environment_map;
-create table command_environment_map (
-  ch_id integer not null,
-  ev_id integer not null,
-  foreign key(ch_id) references command_history(id),
-  foreign key(ev_id) references environment_variable(id)
+DROP TABLE IF EXISTS command_environment_map;
+CREATE TABLE command_environment_map (
+  ch_id INTEGER NOT NULL,
+  ev_id INTEGER NOT NULL,
+  FOREIGN KEY(ch_id) REFERENCES command_history(id),
+  FOREIGN KEY(ev_id) REFERENCES environment_variable(id)
 );
 
-drop table if exists command_cwd_map;
-create table command_cwd_map (
-  ch_id integer not null,
-  dir_id integer not null,
-  foreign key(ch_id) references command_history(id),
-  foreign key(dir_id) references directory(id)
+DROP TABLE IF EXISTS command_cwd_map;
+CREATE TABLE command_cwd_map (
+  ch_id INTEGER NOT NULL,
+  dir_id INTEGER NOT NULL,
+  FOREIGN KEY(ch_id) REFERENCES command_history(id),
+  FOREIGN KEY(dir_id) REFERENCES directory(id)
 );
 
-drop table if exists pipe_status_map;
-create table pipe_status_map (
-  ch_id integer not null,
-  position integer not null,
-  exit_code integer,
-  foreign key(ch_id) references command_history(id),
+DROP TABLE IF EXISTS pipe_status_map;
+CREATE TABLE pipe_status_map (
+  ch_id INTEGER NOT NULL,
+  position INTEGER NOT NULL,
+  exit_code INTEGER,
+  FOREIGN KEY(ch_id) REFERENCES command_history(id),
 );
 
-drop table if exists rash_info;
-create table rash_info (
-  rash_version string not null,
-  schema_version string not null,
-  updated timestamp default current_timestamp
+DROP TABLE IF EXISTS rash_info;
+CREATE TABLE rash_info (
+  rash_version STRING NOT NULL,
+  schema_version STRING NOT NULL,
+  updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
