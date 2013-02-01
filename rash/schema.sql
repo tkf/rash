@@ -40,7 +40,7 @@ CREATE TABLE command_cwd_map (
 DROP TABLE IF EXISTS pipe_status_map;
 CREATE TABLE pipe_status_map (
   ch_id INTEGER NOT NULL,
-  position INTEGER NOT NULL,
+  program_position INTEGER NOT NULL,
   exit_code INTEGER,
   FOREIGN KEY(ch_id) REFERENCES command_history(id)
 );
