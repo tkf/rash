@@ -196,7 +196,7 @@ class DataBase(object):
                 yield CommandRecord(**dict(zip(keys, row)))
 
     def _compile_sql_search_command_record(
-            cls, limit, pattern, cwd, cwd_glob, unique=True, **_):
+            cls, limit, pattern, cwd, cwd_glob, unique, **_):
         keys = ['command', 'cwd', 'terminal', 'start', 'stop', 'exit_code']
         columns = ['CL.command', 'DL.directory', 'TL.terminal',
                    'start_time', 'stop_time', 'exit_code']

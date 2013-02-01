@@ -20,6 +20,11 @@ def search_add_arguments(parser):
         '--limit', type=int, default=10,
         help='maximum number of history to show.')
     parser.add_argument(
+        '--no-unique', dest='unique', action='store_false', default=True,
+        help="""
+        Include all duplicates.
+        """)
+    parser.add_argument(
         '--cwd', action='append', default=[],
         help="""
         The working directory at the time when the command was run.
