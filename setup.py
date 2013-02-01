@@ -10,7 +10,10 @@ setup(
     packages=['rash', 'rash.utils', 'rash.tests'],
     package_data={
         # See also ./MANIFEST.in
-        'rash': [os.path.join('ext', '*sh')],
+        'rash': [
+            'schema.sql',
+            os.path.join('ext', '*sh'),
+        ],
     },
     author=rash.__author__,
     author_email='aka.tkf@gmail.com',

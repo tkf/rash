@@ -1,1 +1,2 @@
 include rash/ext/*sh
+include rash/schema.sql
