@@ -2,11 +2,13 @@ DROP TABLE IF EXISTS command_history;
 CREATE TABLE command_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   command_id INTEGER,
+  directory_id INTEGER,
+  terminal_id INTEGER,
   start_time TIMESTAMP,
   stop_time TIMESTAMP,
   exit_code INTEGER,
-  terminal_id INTEGER,
   FOREIGN KEY(command_id) REFERENCES command_list(id),
+  FOREIGN KEY(directory_id) REFERENCES directory_list(id),
   FOREIGN KEY(terminal_id) REFERENCES terminal_list(id)
 );
 
@@ -41,14 +43,6 @@ CREATE TABLE command_environment_map (
   ev_id INTEGER NOT NULL,
   FOREIGN KEY(ch_id) REFERENCES command_history(id),
   FOREIGN KEY(ev_id) REFERENCES environment_variable(id)
-);
-
-DROP TABLE IF EXISTS command_cwd_map;
-CREATE TABLE command_cwd_map (
-  ch_id INTEGER NOT NULL,
-  dir_id INTEGER NOT NULL,
-  FOREIGN KEY(ch_id) REFERENCES command_history(id),
-  FOREIGN KEY(dir_id) REFERENCES directory_list(id)
 );
 
 DROP TABLE IF EXISTS pipe_status_map;

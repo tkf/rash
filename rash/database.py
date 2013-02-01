@@ -74,24 +74,24 @@ class DataBase(object):
             db = connection.cursor()
             ch_id = self._insert_command_history(db, crec)
             self._insert_environ(db, ch_id, crec.environ)
-            self._insert_cwd(db, ch_id, crec.cwd)
             self._insert_pipe_status(db, ch_id, crec.pipestatus)
             connection.commit()
 
     def _insert_command_history(self, db, crec):
         command_id = self._get_maybe_new_command_id(db, crec.command)
+        directory_id = self._get_maybe_new_directory_id(db, crec.cwd)
         terminal_id = self._get_maybe_new_terminal_id(db, crec.terminal)
         convert_ts = (lambda ts: None if ts is None
                       else datetime.datetime.utcfromtimestamp(ts))
         db.execute(
             '''
             INSERT INTO command_history
-                (command_id, start_time, stop_time, exit_code,
-                 terminal_id)
-            VALUES (?, ?, ?, ?, ?)
+                (command_id, directory_id, terminal_id,
+                 start_time, stop_time, exit_code)
+            VALUES (?, ?, ?, ?, ?, ?)
             ''',
-            [command_id, convert_ts(crec.start), convert_ts(crec.stop),
-             crec.exit_code, terminal_id])
+            [command_id, directory_id, terminal_id,
+             convert_ts(crec.start), convert_ts(crec.stop), crec.exit_code])
         return db.lastrowid
 
     def _insert_environ(self, db, ch_id, environ):
@@ -111,15 +111,6 @@ class DataBase(object):
                 ''',
                 [ch_id, ev_id])
 
-    def _insert_cwd(self, db, ch_id, cwd):
-        if not cwd:
-            return
-        dir_id = self._get_maybe_new_id(
-            db, 'directory_list', {'directory': cwd})
-        db.execute(
-            'INSERT INTO command_cwd_map (ch_id, dir_id) VALUES (?, ?)',
-            [ch_id, dir_id])
-
     def _insert_pipe_status(self, db, ch_id, pipe_status):
         if not pipe_status:
             return
@@ -137,6 +128,12 @@ class DataBase(object):
             return None
         return self._get_maybe_new_id(
             db, 'command_list', {'command': command})
+
+    def _get_maybe_new_directory_id(self, db, directory):
+        if directory is None:
+            return None
+        return self._get_maybe_new_id(
+            db, 'directory_list', {'directory': directory})
 
     def _get_maybe_new_terminal_id(self, db, terminal):
         if terminal is None:
