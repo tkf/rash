@@ -42,7 +42,7 @@ CREATE TABLE pipe_status_map (
   ch_id INTEGER NOT NULL,
   position INTEGER NOT NULL,
   exit_code INTEGER,
-  FOREIGN KEY(ch_id) REFERENCES command_history(id),
+  FOREIGN KEY(ch_id) REFERENCES command_history(id)
 );
 
 DROP TABLE IF EXISTS rash_info;
