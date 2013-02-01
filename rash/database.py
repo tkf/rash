@@ -161,3 +161,51 @@ class DataBase(object):
     def select_by_command_record(self, crec):
         return []
         raise NotImplementedError
+
+    def search_command_record(
+            self, limit, pattern=[], cwd=[], unique=True,
+            **_):
+        """
+        Search command history.
+
+        :rtype: [CommandRecord]
+
+        """
+        (sql, params, keys) = self._compile_sql_search_command_record(
+            limit=limit, pattern=pattern, cwd=cwd, unique=unique)
+        with self.connection() as connection:
+            cur = connection.cursor()
+            for row in cur.execute(sql, params):
+                yield CommandRecord(**dict(zip(keys, row)))
+
+    def _compile_sql_search_command_record(
+            cls, limit, unique, pattern, cwd):
+        keys = ['command', 'cwd', 'terminal', 'start', 'stop', 'exit_code']
+        columns = ['CL.command', 'DL.directory', 'TL.terminal',
+                   'start_time', 'stop_time', 'exit_code']
+        max_index = 3
+        assert columns[max_index] == 'start_time'
+        params = []
+        conditions = []
+
+        where = ''
+        if conditions:
+            where = 'WHERE {0} '.format(" AND ".join(conditions))
+
+        group_by = ''
+        if unique:
+            columns[max_index] = 'MAX({0})'.format(columns[max_index])
+            group_by = 'GROUP BY CL.command '
+
+        sql = (
+            'SELECT {0} '
+            'FROM command_history '
+            'LEFT JOIN command_list AS CL ON command_id = CL.id '
+            'LEFT JOIN directory_list AS DL ON directory_id = DL.id '
+            'LEFT JOIN terminal_list AS TL ON terminal_id = TL.id '
+            '{1}{2} '
+            'ORDER BY start_time '
+            'LIMIT ?'
+        ).format(', '.join(columns), where, group_by)
+        params.append(limit)
+        return (sql, params, keys)

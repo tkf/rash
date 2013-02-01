@@ -1,10 +1,14 @@
-def search_run(pattern):
+def search_run(**kwds):
     """
     [UNDER CONSTRUCTION]
     Search command history.
 
     """
-    raise NotImplementedError
+    from .config import ConfigStore
+    from .database import DataBase
+    db = DataBase(ConfigStore().db_path)
+    for crec in db.search_command_record(**kwds):
+        print(crec.command)
 
 
 def search_add_arguments(parser):
@@ -12,6 +16,9 @@ def search_add_arguments(parser):
     parser.add_argument(
         'pattern', nargs='*',
         help='glob patterns that matches to command.')
+    parser.add_argument(
+        '--limit', type=int, default=10,
+        help='maximum number of history to show.')
     parser.add_argument(
         '--cwd', action='append', default=[],
         help="""
