@@ -1,24 +1,24 @@
 DROP TABLE IF EXISTS command_history;
 CREATE TABLE command_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  command STRING,
-  start_time INTEGER,
-  stop_time INTEGER,
+  command TEXT,
+  start_time TIMESTAMP,
+  stop_time TIMESTAMP,
   exit_code INTEGER,
-  terminal STRING
+  terminal TEXT
 );
 
 DROP TABLE IF EXISTS environment_variable;
 CREATE TABLE environment_variable (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  variable_name STRING NOT NULL,
-  variable_value STRING NOT NULL
+  variable_name TEXT NOT NULL,
+  variable_value TEXT NOT NULL
 );
 
 DROP TABLE IF EXISTS directory;
 CREATE TABLE directory (
   id INTEGER PRIMARY KEY autoincrement,
-  directory_path STRING NOT NULL UNIQUE
+  directory_path TEXT NOT NULL UNIQUE
 );
 
 DROP TABLE IF EXISTS command_environment_map;
@@ -47,7 +47,7 @@ CREATE TABLE pipe_status_map (
 
 DROP TABLE IF EXISTS rash_info;
 CREATE TABLE rash_info (
-  rash_version STRING NOT NULL,
-  schema_version STRING NOT NULL,
+  rash_version TEXT NOT NULL,
+  schema_version TEXT NOT NULL,
   updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
