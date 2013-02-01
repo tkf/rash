@@ -1,6 +1,7 @@
 import os
 import sqlite3
 from contextlib import closing, contextmanager
+import datetime
 import warnings
 
 from .utils.iterutils import nonempty
@@ -80,6 +81,8 @@ class DataBase(object):
     def _insert_command_history(self, db, crec):
         command_id = self._get_maybe_new_command_id(db, crec.command)
         terminal_id = self._get_maybe_new_terminal_id(db, crec.terminal)
+        convert_ts = (lambda ts: None if ts is None
+                      else datetime.datetime.fromtimestamp(ts))
         db.execute(
             '''
             INSERT INTO command_history
@@ -87,8 +90,8 @@ class DataBase(object):
                  terminal_id)
             VALUES (?, ?, ?, ?, ?)
             ''',
-            [command_id, crec.start, crec.stop, crec.exit_code,
-             terminal_id])
+            [command_id, convert_ts(crec.start), convert_ts(crec.stop),
+             crec.exit_code, terminal_id])
         return db.lastrowid
 
     def _insert_environ(self, db, ch_id, environ):
