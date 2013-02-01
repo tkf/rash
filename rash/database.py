@@ -4,10 +4,21 @@ from contextlib import closing, contextmanager
 import datetime
 import warnings
 
-from .utils.iterutils import nonempty
+from .utils.iterutils import nonempty, repeat
 from .model import CommandRecord
 
 schema_version = '0.1.dev1'
+
+
+def concat_expr(operator, conditions):
+    """
+    Concatenate `conditions` with `operator` and wrap it by ().
+
+    It returns a string in a list or empty list, if `conditions` is empty.
+
+    """
+    expr = " {0} ".format(operator).join(conditions)
+    return ["({0})".format(expr)] if expr else []
 
 
 class DataBase(object):
@@ -187,6 +198,14 @@ class DataBase(object):
         assert columns[max_index] == 'start_time'
         params = []
         conditions = []
+
+        def add_glob_match(name, args):
+            conditions.extend(concat_expr(
+                'OR', repeat('glob(?, {0})'.format(name), len(args))))
+            params.extend(args)
+
+        add_glob_match('CL.command', pattern)
+        add_glob_match('DL.directory', cwd)
 
         where = ''
         if conditions:
