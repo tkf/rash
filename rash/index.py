@@ -8,27 +8,15 @@ def index_run(record_path, keep_json, check_duplicate):
        DB migration when schema is updated.
 
     """
-    import os
     from .config import ConfigStore
-    from .database import DataBase
+    from .indexer import Indexer
 
     if not keep_json:
         raise RuntimeError('At this point, --keep-json should be specified.')
 
     conf = ConfigStore()
-    if keep_json:
-        check_duplicate = True
-    if not record_path:
-        record_path = conf.record_path
-    db = DataBase(conf.db_path)
-
-    with db.connection():
-        for (root, _, files) in os.walk(os.path.join(record_path, 'command')):
-            for f in (f for f in files if f.endswith('.json')):
-                json_path = os.path.join(root, f)
-                db.import_json(json_path, check_duplicate=check_duplicate)
-                if not keep_json:
-                    os.remove(json_path)
+    indexer = Indexer(conf, check_duplicate, keep_json, record_path)
+    indexer.index_all()
 
 
 def index_add_arguments(parser):
