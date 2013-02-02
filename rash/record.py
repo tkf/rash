@@ -96,8 +96,8 @@ def record_run(record_type, print_session_id, **kwds):
     data = dict((k, v) for (k, v) in kwds.items() if v is not None)
     data.update(
         environ=get_environ(envkeys),
-        cwd=os.getcwdu(),
     )
+    data.setdefault('cwd', os.getcwdu())
     if record_type in ['command', 'exit']:
         data.setdefault('stop', int(time.time()))
     elif record_type in ['init']:
@@ -117,6 +117,12 @@ def record_add_arguments(parser):
     parser.add_argument(
         '--command',
         help="command that was ran.")
+    parser.add_argument(
+        '--cwd',
+        help='''
+        Like $PWD, but callee can set it to consider command that
+        changes directory (e.g., cd).
+        ''')
     parser.add_argument(
         '--exit-code', type=int,
         help="exit code $? of the command.")
