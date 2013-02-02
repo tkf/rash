@@ -13,9 +13,11 @@ class ConfigStore(object):
 
       * ~/.config/               # $XDG_CONFIG_HOME
       `--* rash/                 # base_path
+         |--* daemon.pid         # PID of daemon process
+         |--* daemon.log         # Log file for daemon
          `--* data/              # data_path
-            |--* db.sqlite       # db_path
-            `--* record/         # record_path
+            |--* db.sqlite       # db_path ("indexed" record)
+            `--* record/         # record_path ("raw" record)
                |--* command/     # command log
                `--* init/        # initialization log
 
