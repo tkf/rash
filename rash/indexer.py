@@ -24,6 +24,9 @@ class Indexer(object):
         :arg      record_path: Default to `conf.record_path`.
 
         """
+        if not keep_json:
+            raise RuntimeError(
+                'At this point, --keep-json should be specified.')
         if keep_json:
             check_duplicate = True
         self.conf = conf
