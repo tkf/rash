@@ -222,7 +222,7 @@ class DataBase(object):
             (exit_code    = ? OR (exit_code    IS NULL AND ? IS NULL))
         """
         desired_row = [
-            crec.command, crec.cwd, crec.terminal,
+            crec.command, normalize_directory(crec.cwd), crec.terminal,
             convert_ts(crec.start), convert_ts(crec.stop), crec.exit_code]
         params = list(itertools.chain(*zip(desired_row, desired_row)))
         with self.connection() as connection:
