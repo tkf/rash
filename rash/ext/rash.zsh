@@ -1,6 +1,9 @@
+### Record commands
 rash-postexec(){
     rash record \
-        "$(builtin history -n -1)" \
+        --record-type command \
+        --session-id "$_RASH_SESSION_ID" \
+        --command "$(builtin history -n -1)" \
         --start "$_RASH_START" \
         --exit-code "$_RASH_EXIT_CODE" \
         --pipestatus "${_RASH_PIPESTATUS[@]}"
@@ -29,3 +32,19 @@ rash-precmd(){
 autoload -Uz add-zsh-hook
 add-zsh-hook preexec rash-preexc
 add-zsh-hook precmd rash-precmd
+
+
+### Record session initialization
+if [ -z "$_RASH_SESSION_ID" ]
+then
+    _RASH_SESSION_ID=$(rash record --record-type init \
+        --print-session-id --tty "$TTY")
+fi
+
+
+### Record session exit
+rash-before-exit(){
+    rash record --record-type exit --session-id "$_RASH_SESSION_ID"
+}
+
+trap "rash-before-exit" EXIT TERM
