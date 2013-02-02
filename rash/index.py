@@ -23,7 +23,7 @@ def index_run(record_path, keep_json, check_duplicate):
     db = DataBase(conf.db_path)
 
     with db.connection():
-        for (root, _, files) in os.walk(record_path):
+        for (root, _, files) in os.walk(os.path.join(record_path, 'command')):
             for f in (f for f in files if f.endswith('.json')):
                 json_path = os.path.join(root, f)
                 db.import_json(json_path, check_duplicate=check_duplicate)

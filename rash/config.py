@@ -16,6 +16,8 @@ class ConfigStore(object):
          `--* data/              # data_path
             |--* db.sqlite       # db_path
             `--* record/         # record_path
+               |--* command/     # command log
+               `--* init/        # initialization log
 
     In Mac OS and Windows, :attr:`base_path` may be different but
     structure in the directory is the same.

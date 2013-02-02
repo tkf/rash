@@ -30,6 +30,7 @@ def record_run(**kwds):
     """
     conf = ConfigStore()
     json_path = os.path.join(conf.record_path,
+                             'command',
                              time.strftime('%Y-%m-%d'),
                              time.strftime('%H%M%S.json'))
     mkdirp(os.path.dirname(json_path))
