@@ -6,6 +6,22 @@ from .utils.pathutils import mkdirp
 
 class ConfigStore(object):
 
+    """
+    Configuration and data file store.
+
+    RASH stores data in the following directory in Linux::
+
+      * ~/.config/               # $XDG_CONFIG_HOME
+      `--* rash/                 # base_path
+         `--* data/              # data_path
+            |--* db.sqlite       # db_path
+            `--* record/         # record_path
+
+    In Mac OS and Windows, :attr:`base_path` may be different but
+    structure in the directory is the same.
+
+    """
+
     base_path = get_config_directory('RASH')
     """
     Root directory for any RASH related data files (``~/.config/rash``).
