@@ -15,6 +15,7 @@ _RASH_EXECUTING=""
 rash-preexc(){
     _RASH_START=$(date "+%s")
     _RASH_EXECUTING=t
+    _RASH_PWD="$PWD"
 }
 
 rash-precmd(){
@@ -22,7 +23,6 @@ rash-precmd(){
     # Otherwise, I will loose these information.
     _RASH_EXIT_CODE="$?"
     _RASH_PIPESTATUS=("${pipestatus[@]}")
-    _RASH_PWD="$PWD"
 
     if [ -n "$_RASH_EXECUTING" ]
     then
