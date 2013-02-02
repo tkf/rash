@@ -91,7 +91,7 @@ class DataBase(object):
                     if self._need_commit:
                         db.commit()
             finally:
-                self.db = None
+                self._db = None
                 self._need_commit = False
     _db = None
     _need_commit = False
