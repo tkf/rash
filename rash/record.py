@@ -42,13 +42,16 @@ def get_environ(*keys):
 
 def generate_session_id(data):
     """
-    Generate session ID based on TTY, PID (of the shell) and start time.
+    Generate session ID based on HOST, TTY, PID [#]_ and start time.
 
     :type data: dict
     :rtype: str
 
+    .. [#] PID of the shell
+
     """
-    return ':'.join(map(str, [data['tty'], os.getppid(), data['start']]))
+    return ':'.join(map(str, [
+        data['environ']['HOST'], data['tty'], os.getppid(), data['start']]))
 
 
 def record_run(record_type, print_session_id, **kwds):
