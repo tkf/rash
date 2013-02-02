@@ -1,8 +1,11 @@
 import time
 
-from watchdog.observers import Observer
-from watchdog.events import (
-    FileSystemEventHandler, FileCreatedEvent)
+try:
+    from watchdog.observers import Observer
+    from watchdog.events import (
+        FileSystemEventHandler, FileCreatedEvent)
+except ImportError:
+    FileSystemEventHandler = object
 
 
 class RecordHandler(FileSystemEventHandler):
