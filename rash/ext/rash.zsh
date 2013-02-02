@@ -37,8 +37,7 @@ add-zsh-hook precmd rash-precmd
 ### Record session initialization
 if [ -z "$_RASH_SESSION_ID" ]
 then
-    _RASH_SESSION_ID=$(rash record --record-type init \
-        --print-session-id --tty "$TTY")
+    _RASH_SESSION_ID=$(rash record --record-type init --print-session-id)
 fi
 
 

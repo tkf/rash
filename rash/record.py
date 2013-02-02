@@ -19,6 +19,15 @@ from .utils.pathutils import mkdirp
 from .config import ConfigStore
 
 
+def get_tty():
+    for i in range(3):
+        try:
+            return os.ttyname(i)
+            break
+        except OSError:
+            pass
+
+
 def get_environ(keys):
     """
     Get environment variables from :data:`os.environ`.
@@ -30,6 +39,8 @@ def get_environ(keys):
 
     * If 'HOST' is not in :data:`os.environ`, this function
       automatically fetch it using :meth:`platform.node`.
+    * If 'TTY' is not in :data:`os.environ`, this function
+      automatically fetch it using :meth:`os.ttyname`.
 
     """
     items = ((k, os.environ.get(k)) for k in keys)
@@ -37,6 +48,10 @@ def get_environ(keys):
     if 'HOST' in keys and not subenv.get('HOST'):
         import platform
         subenv['HOST'] = platform.node()
+    if 'TTY' in keys and not subenv.get('TTY'):
+        tty = get_tty()
+        if tty:
+            subenv['TTY'] = tty
     return subenv
 
 
@@ -50,8 +65,10 @@ def generate_session_id(data):
     .. [#] PID of the shell
 
     """
+    host = data['environ']['HOST']
+    tty = data['environ'].get('TTY') or 'NO_TTY'
     return ':'.join(map(str, [
-        data['environ']['HOST'], data['tty'], os.getppid(), data['start']]))
+        host, tty, os.getppid(), data['start']]))
 
 
 def record_run(record_type, print_session_id, **kwds):
@@ -64,7 +81,7 @@ def record_run(record_type, print_session_id, **kwds):
 
     # FIXME: make these configurable
     if record_type == 'init':
-        envkeys = ['SHELL', 'TERM', 'HOST', 'USER', 'DISPLAY']
+        envkeys = ['SHELL', 'TERM', 'HOST', 'TTY', 'USER', 'DISPLAY']
     elif record_type == 'exit':
         envkeys = []
     elif record_type == 'command':
@@ -115,9 +132,6 @@ def record_add_arguments(parser):
     parser.add_argument(
         '--terminal',
         help='like $TERM, but can be anything (e.g., emacs / tmux).')
-    parser.add_argument(
-        '--tty',
-        help='value of $TTY.')
     parser.add_argument(
         '--session-id',
         help='''
