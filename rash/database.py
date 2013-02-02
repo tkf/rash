@@ -179,8 +179,33 @@ class DataBase(object):
         return db.lastrowid
 
     def select_by_command_record(self, crec):
-        return []
-        raise NotImplementedError
+        """
+        Yield records that matches to `crec`.
+
+        All attributes of `crec` except for `environ` are concerned.
+
+        """
+        keys = ['command', 'cwd', 'terminal', 'start', 'stop', 'exit_code']
+        sql = """
+        SELECT CL.command, DL.directory, TL.terminal,
+            start_time, stop_time, exit_code
+        FROM command_history
+        LEFT JOIN command_list AS CL ON command_id = CL.id
+        LEFT JOIN directory_list AS DL ON directory_id = DL.id
+        LEFT JOIN terminal_list AS TL ON terminal_id = TL.id
+        WHERE
+            CL.command = ? AND
+            DL.directory = ? AND
+            TL.terminal = ? AND
+            start_time = ? AND
+            stop_time = ? AND
+            exit_code = ?
+        """
+        params = [crec.command, crec.cwd, crec.terminal,
+                  crec.start, crec.stop, crec.exit_code]
+        with self.connection() as connection:
+            for row in connection.execute(sql, params):
+                yield CommandRecord(**dict(zip(keys, row)))
 
     def search_command_record(self, **kwds):
         """
