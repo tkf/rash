@@ -2,8 +2,8 @@ rash-postexec(){
     rash record \
         "$(builtin history -n -1)" \
         --start "$_RASH_START" \
-        --exit-code "$?" \
-        --pipestatus "${pipestatus[@]}"
+        --exit-code "$_RASH_EXIT_CODE" \
+        --pipestatus "${_RASH_PIPESTATUS[@]}"
 }
 
 _RASH_EXECUTING=""
@@ -14,6 +14,11 @@ rash-preexc(){
 }
 
 rash-precmd(){
+    # Make sure to copy these variable at very first stage.
+    # Otherwise, I will loose these information.
+    _RASH_EXIT_CODE="$?"
+    _RASH_PIPESTATUS=("${pipestatus[@]}")
+
     if [ -n "$_RASH_EXECUTING" ]
     then
         rash-postexec
