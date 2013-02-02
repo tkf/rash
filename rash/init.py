@@ -1,7 +1,7 @@
 import os
 
 
-def init_run(shell):
+def init_run(shell, no_daemon):
     """
     Show path to a file to configure shell.
 
@@ -18,6 +18,11 @@ def init_run(shell):
     else:
         raise RuntimeError("Shell '{0}' is not supported.".format(shellname))
 
+    # FIXME: Use the following once daemon is implemented.
+    if False:  # not no_daemon:
+        from .daemon import start_daemon_in_subprocess
+        start_daemon_in_subprocess()
+
 
 def init_add_arguments(parser):
     parser.add_argument(
@@ -25,6 +30,12 @@ def init_add_arguments(parser):
         help="""
         name of shell you are using.  directory before the last /
         is discarded.
+        """)
+    parser.add_argument(
+        '--no-daemon', action='store_true', default=False,
+        help="""
+        Do not start daemon.  By default, daemon is started if
+        there is no already running daemon.
         """)
 
 

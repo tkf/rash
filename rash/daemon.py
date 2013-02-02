@@ -1,3 +1,8 @@
+import os
+import sys
+import subprocess
+
+
 def daemon_run():
     """
     [UNDER CONSTRUCTION]
@@ -14,8 +19,23 @@ def daemon_run():
     raise NotImplementedError
 
 
+def start_daemon_in_subprocess():
+    """
+    Run `rash daemon --no-error` in background.
+    """
+    with open(os.devnull, 'w') as devnull:
+        subprocess.Popen(
+            [os.path.abspath(sys.executable), '-m', 'rash.cli',
+             'daemon', '--no-error'],
+            stdin=devnull, stdout=devnull, stderr=devnull)
+
+
 def daemon_add_arguments(parser):
-    pass
+    parser.add_argument(
+        '--no-error', action='store_true', default=False,
+        help="""
+        Do nothing if a daemon is already running.
+        """)
 
 
 commands = [
