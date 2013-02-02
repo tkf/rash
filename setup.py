@@ -1,8 +1,18 @@
 import os
+import sys
 
 from distutils.core import setup
 
 import rash
+
+PY3 = (sys.version_info[0] >= 3)
+
+install_requires = [
+    'argparse',
+]
+if not PY3:
+    install_requires.append('watchdog')
+
 
 setup(
     name='rash',
@@ -26,9 +36,7 @@ setup(
         "Development Status :: 3 - Alpha",
         # see: http://pypi.python.org/pypi?%3Aaction=list_classifiers
     ],
-    install_requires=[
-        'argparse',
-    ],
+    install_requires=install_requires,
     entry_points={
         'console_scripts': ['rash = rash.cli:main'],
     },
