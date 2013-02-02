@@ -249,6 +249,11 @@ class DataBase(object):
             columns[max_index] = 'MAX({0})'.format(columns[max_index])
             group_by = 'GROUP BY CL.command '
 
+        sql_limit = ''
+        if limit and limit >= 0:
+            sql_limit = 'LIMIT ?'
+            params.append(limit)
+
         sql = (
             'SELECT {0} '
             'FROM command_history '
@@ -257,7 +262,6 @@ class DataBase(object):
             'LEFT JOIN terminal_list AS TL ON terminal_id = TL.id '
             '{1}{2} '
             'ORDER BY start_time '
-            'LIMIT ?'
-        ).format(', '.join(columns), where, group_by)
-        params.append(limit)
+            '{3}'
+        ).format(', '.join(columns), where, group_by, sql_limit)
         return (sql, params, keys)
