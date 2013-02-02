@@ -36,7 +36,6 @@ class DataBase(object):
 
     def __init__(self, dbpath):
         self.dbpath = dbpath
-        self._db = None
         if not os.path.exists(dbpath):
             self._init_db()
 
@@ -57,13 +56,19 @@ class DataBase(object):
             db.commit()
 
     @contextmanager
-    def connection(self):
+    def connection(self, commit=False):
         """
         Context manager to keep around DB connection.
 
         :rtype: sqlite3.Connection
 
+        FIXME: Get rid of this function.  Keeping connection around as
+        an argument to the method using this context manager is
+        probably better as it is more explicit.
+
         """
+        if commit:
+            self._need_commit = True
         if self._db:
             yield self._db
         else:
@@ -71,8 +76,13 @@ class DataBase(object):
                 with self._get_db() as db:
                     self._db = db
                     yield self._db
+                    if self._need_commit:
+                        db.commit()
             finally:
                 self.db = None
+                self._need_commit = False
+    _db = None
+    _need_commit = False
 
     def import_json(self, json_path, **kwds):
         import json
@@ -89,12 +99,11 @@ class DataBase(object):
         crec = CommandRecord(**dct)
         if check_duplicate and nonempty(self.select_by_command_record(crec)):
             return
-        with self.connection() as connection:
+        with self.connection(commit=True) as connection:
             db = connection.cursor()
             ch_id = self._insert_command_history(db, crec)
             self._insert_environ(db, ch_id, crec.environ)
             self._insert_pipe_status(db, ch_id, crec.pipestatus)
-            connection.commit()
 
     def _insert_command_history(self, db, crec):
         command_id = self._get_maybe_new_command_id(db, crec.command)
