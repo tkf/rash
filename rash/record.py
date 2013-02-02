@@ -20,6 +20,9 @@ from .config import ConfigStore
 
 
 def get_tty():
+    """
+    Return \"os.ttyname(0 or 1 or 2)\".
+    """
     for i in range(3):
         try:
             return os.ttyname(i)
@@ -32,7 +35,7 @@ def get_environ(keys):
     """
     Get environment variables from :data:`os.environ`.
 
-    :type keys: str
+    :type keys: [str]
     :rtype: dict
 
     Some additional features.
@@ -62,7 +65,7 @@ def generate_session_id(data):
     :type data: dict
     :rtype: str
 
-    .. [#] PID of the shell
+    .. [#] PID of the shell, i.e., PPID of this Python process.
 
     """
     host = data['environ']['HOST']
@@ -93,18 +96,24 @@ def record_run(record_type, print_session_id, **kwds):
                              time.strftime('%Y-%m-%d'),
                              time.strftime('%H%M%S.json'))
     mkdirp(os.path.dirname(json_path))
+
+    # Command line options directly map to record keys
     data = dict((k, v) for (k, v) in kwds.items() if v is not None)
     data.update(
         environ=get_environ(envkeys),
     )
+
+    # Automatically set some missing variables:
     data.setdefault('cwd', os.getcwdu())
     if record_type in ['command', 'exit']:
         data.setdefault('stop', int(time.time()))
     elif record_type in ['init']:
         data.setdefault('start', int(time.time()))
+
     if print_session_id:
         data['session_id'] = generate_session_id(data)
         print(data['session_id'])
+
     with open(json_path, 'w') as fp:
         json.dump(data, fp)
 
