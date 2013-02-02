@@ -31,11 +31,32 @@ class Indexer(object):
         self.keep_json = keep_json
         self.record_path = record_path or conf.record_path
         self.db = DataBase(conf.db_path)
+        if record_path:
+            self.check_path(record_path, '`record_path`')
+
+    def get_record_type(self, path):
+        relpath = os.path.relpath(path, self.conf.record_path)
+        dirs = relpath.split(os.path.sep, 1)
+        return dirs[0] if dirs else None
+
+    def check_path(self, path, name='path'):
+        if self.get_record_type(path) not in ['command', 'init', 'exit']:
+            raise RuntimeError(
+                '{0} must be under {1}'.format(
+                    name,
+                    os.path.join(self.conf.record_path,
+                                 '{command,init,exit}',
+                                 '')))
 
     def index_record(self, json_path):
         """
         Import `json_path` and remove it if :attr:`keep_json` is false.
         """
+        json_path = os.path.abspath(json_path)
+        self.check_path(json_path, '`json_path`')
+        if self.get_record_type(json_path) != 'command':
+            # FIXME: Implement index_record for other record types!
+            return
         self.db.import_json(json_path, check_duplicate=self.check_duplicate)
         if not self.keep_json:
             os.remove(json_path)
@@ -44,8 +65,7 @@ class Indexer(object):
         """
         Index all records under :attr:`record_path`.
         """
-        top_path = os.path.join(self.record_path, 'command')
         with self.db.connection():
-            for (root, _, files) in os.walk(top_path):
+            for (root, _, files) in os.walk(self.record_path):
                 for f in (f for f in files if f.endswith('.json')):
                     self.index_record(os.path.join(root, f))
