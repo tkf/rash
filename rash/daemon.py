@@ -3,7 +3,8 @@ import sys
 import subprocess
 
 
-def daemon_run():
+def daemon_run(no_error, record_path, keep_json, check_duplicate,
+               log_level):
     """
     [UNDER CONSTRUCTION]
     Run RASH index daemon.
@@ -16,7 +17,16 @@ def daemon_run():
     # Probably it makes sense to use this daemon to provide search
     # API, so that this daemon is going to be the only process that
     # is connected to the DB?
-    raise NotImplementedError
+    from .config import ConfigStore
+    from .indexer import Indexer
+    from .log import setup_daemon_log_file
+    from .watchrecord import watch_record
+    conf = ConfigStore()
+    if log_level:
+        conf.daemon_log_level = log_level
+    setup_daemon_log_file(conf)
+    indexer = Indexer(conf, check_duplicate, keep_json, record_path)
+    watch_record(indexer)
 
 
 def start_daemon_in_subprocess():
@@ -36,6 +46,23 @@ def daemon_add_arguments(parser):
         help="""
         Do nothing if a daemon is already running.
         """)
+    parser.add_argument(
+        '--record-path',
+        help="""
+        specify the directory that has JSON records.
+        """)
+    parser.add_argument(
+        '--keep-json', default=False, action='store_true',
+        help="""
+        Do not remove old JSON files.  It turns on --check-duplicate.
+        """)
+    parser.add_argument(
+        '--check-duplicate', default=False, action='store_true',
+        help='do not store already existing history in DB.')
+    parser.add_argument(
+        '--log-level',
+        choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG'],
+        help='logging level.')
 
 
 commands = [

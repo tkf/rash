@@ -39,6 +39,11 @@ class Indexer(object):
         if record_path:
             self.check_path(record_path, '`record_path`')
 
+        self.logger.debug('Indexer initialized')
+        self.logger.debug('check_duplicate = %r', self.check_duplicate)
+        self.logger.debug('keep_json = %r', self.keep_json)
+        self.logger.debug('record_path = %r', self.record_path)
+
     def get_record_type(self, path):
         relpath = os.path.relpath(path, self.conf.record_path)
         dirs = relpath.split(os.path.sep, 1)

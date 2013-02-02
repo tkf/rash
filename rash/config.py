@@ -52,5 +52,20 @@ class ConfigStore(object):
 
     """
 
+    daemon_pid_path = os.path.join(base_path, 'daemon.pid')
+    """
+    A file to store daemon PID (``~/.config/rash/daemon.pid``).
+    """
+
+    daemon_log_path = os.path.join(base_path, 'daemon.log')
+    """
+    Daemon log file (``~/.config/rash/daemon.log``).
+    """
+
+    daemon_log_level = 'INFO'
+    """
+    Daemon log level.
+    """
+
     def __init__(self):
         mkdirp(self.record_path)
