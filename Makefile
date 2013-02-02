@@ -1,13 +1,13 @@
 # E.g., RASH_TOX_OPTS=-e py27
 RASH_TOX_OPTS ?=
 
-.PHONY: test clean
+.PHONY: test tox-sdist clean
 
 test:
 	tox $(RASH_TOX_OPTS)
 
-sdist:
-	rm MANIFEST
+tox-sdist:
+	rm -f MANIFEST
 	tox $(RASH_TOX_OPTS) --sdistonly
 
 clean:
