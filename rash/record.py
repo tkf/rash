@@ -19,7 +19,7 @@ from .utils.pathutils import mkdirp
 from .config import ConfigStore
 
 
-def get_environ(*keys):
+def get_environ(keys):
     """
     Get environment variables from :data:`os.environ`.
 
@@ -34,7 +34,7 @@ def get_environ(*keys):
     """
     items = ((k, os.environ.get(k)) for k in keys)
     subenv = dict((k, v) for (k, v) in items if v is not None)
-    if 'HOST' in keys and not subenv['HOST']:
+    if 'HOST' in keys and not subenv.get('HOST'):
         import platform
         subenv['HOST'] = platform.node()
     return subenv
