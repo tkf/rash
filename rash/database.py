@@ -3,6 +3,7 @@ import sqlite3
 from contextlib import closing, contextmanager
 import datetime
 import warnings
+import itertools
 
 from .utils.iterutils import nonempty, repeat
 from .model import CommandRecord
@@ -19,6 +20,18 @@ def concat_expr(operator, conditions):
     """
     expr = " {0} ".format(operator).join(conditions)
     return ["({0})".format(expr)] if expr else []
+
+
+def convert_ts(ts):
+    """
+    Convert timestamp (ts)
+
+    :type ts: int or None
+    :arg  ts: Unix timestamp
+    :rtype: datetime.datetime or None
+
+    """
+    return None if ts is None else datetime.datetime.utcfromtimestamp(ts)
 
 
 def normalize_directory(path):
@@ -109,8 +122,6 @@ class DataBase(object):
         command_id = self._get_maybe_new_command_id(db, crec.command)
         directory_id = self._get_maybe_new_directory_id(db, crec.cwd)
         terminal_id = self._get_maybe_new_terminal_id(db, crec.terminal)
-        convert_ts = (lambda ts: None if ts is None
-                      else datetime.datetime.utcfromtimestamp(ts))
         db.execute(
             '''
             INSERT INTO command_history
@@ -203,15 +214,17 @@ class DataBase(object):
         LEFT JOIN directory_list AS DL ON directory_id = DL.id
         LEFT JOIN terminal_list AS TL ON terminal_id = TL.id
         WHERE
-            CL.command = ? AND
-            DL.directory = ? AND
-            TL.terminal = ? AND
-            start_time = ? AND
-            stop_time = ? AND
-            exit_code = ?
+            (CL.command   = ? OR (CL.command   IS NULL AND ? IS NULL)) AND
+            (DL.directory = ? OR (DL.directory IS NULL AND ? IS NULL)) AND
+            (TL.terminal  = ? OR (TL.terminal  IS NULL AND ? IS NULL)) AND
+            (start_time   = ? OR (start_time   IS NULL AND ? IS NULL)) AND
+            (stop_time    = ? OR (stop_time    IS NULL AND ? IS NULL)) AND
+            (exit_code    = ? OR (exit_code    IS NULL AND ? IS NULL))
         """
-        params = [crec.command, crec.cwd, crec.terminal,
-                  crec.start, crec.stop, crec.exit_code]
+        desired_row = [
+            crec.command, crec.cwd, crec.terminal,
+            convert_ts(crec.start), convert_ts(crec.stop), crec.exit_code]
+        params = list(itertools.chain(*zip(desired_row, desired_row)))
         with self.connection() as connection:
             for row in connection.execute(sql, params):
                 yield CommandRecord(**dict(zip(keys, row)))
