@@ -24,6 +24,8 @@ class Indexer(object):
         :arg      record_path: Default to `conf.record_path`.
 
         """
+        from .log import logger
+        self.logger = logger
         if not keep_json:
             raise RuntimeError(
                 'At this point, --keep-json should be specified.')
@@ -55,6 +57,7 @@ class Indexer(object):
         """
         Import `json_path` and remove it if :attr:`keep_json` is false.
         """
+        self.logger.debug('Indexing record: %s', json_path)
         json_path = os.path.abspath(json_path)
         self.check_path(json_path, '`json_path`')
         if self.get_record_type(json_path) != 'command':
@@ -62,12 +65,15 @@ class Indexer(object):
             return
         self.db.import_json(json_path, check_duplicate=self.check_duplicate)
         if not self.keep_json:
+            self.logger.info('Removing JSON record: %s', json_path)
             os.remove(json_path)
 
     def index_all(self):
         """
         Index all records under :attr:`record_path`.
         """
+        self.logger.debug('Start indexing all records under: %s',
+                          self.record_path)
         with self.db.connection():
             for (root, _, files) in os.walk(self.record_path):
                 for f in (f for f in files if f.endswith('.json')):
