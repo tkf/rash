@@ -35,7 +35,6 @@ def convert_ts(ts):
 
 
 def normalize_directory(path):
-    path = os.path.abspath(path)
     if path.endswith(os.path.sep):
         return path[:-len(os.path.sep)]
     else:
@@ -260,7 +259,7 @@ class DataBase(object):
         add_or_match('glob(?, {0})', 'CL.command', pattern)
         add_or_match('glob(?, {0})', 'DL.directory', cwd_glob)
         add_or_match('{0} = ?', 'DL.directory',
-                     list(map(normalize_directory, cwd)))
+                     [normalize_directory(os.path.abspath(p)) for p in cwd])
 
         where = ''
         if conditions:
