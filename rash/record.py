@@ -20,8 +20,24 @@ from .config import ConfigStore
 
 
 def get_environ(*keys):
+    """
+    Get environment variables from :data:`os.environ`.
+
+    :type keys: str
+    :rtype: dict
+
+    Some additional features.
+
+    * If 'HOST' is not in :data:`os.environ`, this function
+      automatically fetch it using :meth:`platform.node`.
+
+    """
     items = ((k, os.environ.get(k)) for k in keys)
-    return dict((k, v) for (k, v) in items if v is not None)
+    subenv = dict((k, v) for (k, v) in items if v is not None)
+    if 'HOST' in keys and not subenv['HOST']:
+        import platform
+        subenv['HOST'] = platform.node()
+    return subenv
 
 
 def generate_session_id(data):
@@ -42,6 +58,15 @@ def record_run(record_type, print_session_id, **kwds):
     if print_session_id and record_type != 'init':
         raise RuntimeError(
             '--print-session-id should be used with --record-type=init')
+
+    # FIXME: make these configurable
+    if record_type == 'init':
+        envkeys = ['SHELL', 'TERM', 'HOST', 'USER', 'DISPLAY']
+    elif record_type == 'exit':
+        envkeys = []
+    elif record_type == 'command':
+        envkeys = ['PATH']
+
     conf = ConfigStore()
     json_path = os.path.join(conf.record_path,
                              record_type,
@@ -50,7 +75,7 @@ def record_run(record_type, print_session_id, **kwds):
     mkdirp(os.path.dirname(json_path))
     data = dict((k, v) for (k, v) in kwds.items() if v is not None)
     data.update(
-        environ=get_environ('SHELL', 'TERM', 'PATH'),
+        environ=get_environ(envkeys),
         cwd=os.getcwdu(),
     )
     if record_type in ['command', 'exit']:
