@@ -1,4 +1,5 @@
 import time
+import signal
 
 try:
     from watchdog.observers import Observer
@@ -26,6 +27,12 @@ def watch_record(indexer):
     :type indexer: rash.indexer.Indexer
 
     """
+
+    def handle_sigterm(_signum, _frame):
+        raise KeyboardInterrupt()
+
+    signal.signal(signal.SIGTERM, handle_sigterm)
+
     event_handler = RecordHandler(indexer)
     observer = Observer()
     observer.schedule(event_handler, path=indexer.record_path, recursive=True)

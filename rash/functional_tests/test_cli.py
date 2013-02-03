@@ -6,6 +6,7 @@ import tempfile
 import shutil
 import textwrap
 import json
+import time
 
 from ..utils.py3compat import getcwd
 from ..config import ConfigStore
@@ -259,19 +260,80 @@ class ShellTestMixIn(FunctionalTestMixIn):
 
     def test_daemon(self):
         script = textwrap.dedent("""
+        RASH_INIT_DAEMON_OPTIONS="--keep-json --log-level=DEBUG"
         {0} $({1} init --shell {2})
-        RD_PID="$(cat $HOME/.config/rash/daemon.pid)"
-        echo "Daemon's PID is $RD_PID"
-        ps -f --pid $RD_PID > /dev/null && echo "Daemon is running"
-        kill $RD_PID && "Kill command succeeds"
-        ps -f --pid $RD_PID > /dev/null || echo "Daemon is killed"
+        echo RASH_DAEMON_PID="$RASH_DAEMON_PID"
         """).format(
             self.source_command, BASE_COMMAND, self.shell).encode()
         (stdout, stderr) = self.run_shell(script)
-        self.assertIn("Daemon's PID is", stdout.decode())
-        self.assertIn('Daemon is running', stdout.decode())
-        self.assertIn('Kill command succeeds', stdout.decode())
-        self.assertIn('Daemon is killed', stdout.decode())
+        stderr = stderr.decode()
+        stdout = stdout.decode()
+
+        # These are useful when debugging, so let's leave them:
+        print(stderr)
+        print(stdout)
+        print(self.conf.daemon_pid_path)
+
+        for line in stdout.splitlines():
+            if line.startswith('RASH_DAEMON_PID'):
+                pid = line.split('=', 1)[1].strip()
+                pid = int(pid)
+                break
+        else:
+            raise AssertionError(
+                "RASH_DAEMON_PID cannot be parsed from STDOUT")
+
+        ps_pid_cmd = ['ps', '--pid', str(pid)]
+        try:
+            run_command(ps_pid_cmd)
+        except subprocess.CalledProcessError:
+            raise AssertionError(
+                'At this point, daemon process should be live '
+                '("ps --pid {0}" failed).'.format(pid))
+        self.assert_poll(lambda: os.path.exists(self.conf.daemon_pid_path),
+                         "daemon_pid_path={0!r} is not created on time"
+                         .format(self.conf.daemon_pid_path))
+
+        with open(self.conf.daemon_pid_path) as f:
+            assert int(f.read().strip()) == pid
+
+        self.assert_poll(lambda: os.path.exists(self.conf.daemon_log_path),
+                         "daemon_log_path={0!r} is not created on time"
+                         .format(self.conf.daemon_log_path))
+
+        with open(self.conf.daemon_log_path) as f:
+            @self.assert_poll_do("Nothing written in log file.")
+            def log_file_written():
+                return f.read().strip()
+
+        run_command(['kill', '-TERM', str(pid)])
+
+        @self.assert_poll_do(
+            "Daemon process {0} failed to exit.".format(pid), 3000)
+        def terminated():
+            try:
+                run_command(ps_pid_cmd)
+                return False
+            except subprocess.CalledProcessError:
+                return True
+
+        assert not os.path.exists(self.conf.daemon_pid_path)
+
+    @staticmethod
+    def assert_poll(assertion, message, num=30, tick=0.1):
+        for i in range(num):
+            if assertion():
+                break
+            time.sleep(tick)
+        else:
+            raise AssertionError(message)
+
+    @classmethod
+    def assert_poll_do(cls, message, *args, **kwds):
+        def decorator(assertion):
+            cls.assert_poll(assertion, message, *args, **kwds)
+            return assertion
+        return decorator
 
 
 class TestZsh(ShellTestMixIn, BaseTestCase):
