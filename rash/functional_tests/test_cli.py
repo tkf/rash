@@ -128,9 +128,9 @@ class ShellTestMixIn(FunctionalTestMixIn):
 
         assert os.path.isdir(self.conf.record_path)
         records = self.get_all_record_data()
-        assert len(records['init']) == 1
-        assert len(records['exit']) == 1
-        assert len(records['command']) == 0
+        self.assertEqual(len(records['init']), 1)
+        self.assertEqual(len(records['exit']), 1)
+        self.assertEqual(len(records['command']), 0)
 
         from ..record import get_environ
         subenv = get_environ(['HOST'])
@@ -165,9 +165,9 @@ class ShellTestMixIn(FunctionalTestMixIn):
             print(stderr)
 
         records = self.get_all_record_data()
-        assert len(records['init']) == 1
-        assert len(records['exit']) == 1
-        assert len(records['command']) == 1
+        self.assertEqual(len(records['init']), 1)
+        self.assertEqual(len(records['exit']), 1)
+        self.assertEqual(len(records['command']), 1)
 
         init_data = records['init'][0]['data']
         command_data = records['command'][0]['data']
