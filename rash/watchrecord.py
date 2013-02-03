@@ -36,14 +36,14 @@ def watch_record(indexer):
     event_handler = RecordHandler(indexer)
     observer = Observer()
     observer.schedule(event_handler, path=indexer.record_path, recursive=True)
-    indexer.logging.debug('Start observer.')
+    indexer.logger.debug('Start observer.')
     observer.start()
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        indexer.logging.debug('Got KeyboardInterrupt. Stopping observer.')
+        indexer.logger.debug('Got KeyboardInterrupt. Stopping observer.')
         observer.stop()
-    indexer.logging.debug('Joining observer.')
+    indexer.logger.debug('Joining observer.')
     observer.join()
-    indexer.logging.debug('Finish watching record.')
+    indexer.logger.debug('Finish watching record.')
