@@ -132,3 +132,43 @@ class TestInMemoryDataBase(BaseTestCase):
 
         records = self.search_command_record(pattern=['bzr*'], unique=False)
         self.assertEqual(len(records), 0)
+
+    def test_serach_command_by_cwd(self):
+        data1 = self.get_dummy_command_record_data()
+        data2 = self.get_dummy_command_record_data()
+        data1['cwd'] = self.abspath('DUMMY', 'A')
+        data2['cwd'] = self.abspath('DUMMY', 'B')
+        self.db.import_dict(data1)
+        self.db.import_dict(data2)
+        dcrec1 = to_command_record(data1)
+        dcrec2 = to_command_record(data2)
+
+        records = self.search_command_record(cwd=[data1['cwd']], unique=False)
+        crec = records[0]
+        self.assert_same_command_record(crec, dcrec1)
+        self.assert_not_same_command_record(crec, dcrec2)
+        self.assertEqual(len(records), 1)
+
+        records = self.search_command_record(cwd=[self.abspath('DUMMY')],
+                                             unique=False)
+        self.assertEqual(len(records), 0)
+
+    def test_serach_command_by_cwd_glob(self):
+        data1 = self.get_dummy_command_record_data()
+        data2 = self.get_dummy_command_record_data()
+        data1['cwd'] = self.abspath('DUMMY', 'A')
+        data2['cwd'] = self.abspath('DUMMY', 'B')
+        self.db.import_dict(data1)
+        self.db.import_dict(data2)
+        dcrec1 = to_command_record(data1)
+        dcrec2 = to_command_record(data2)
+
+        records = self.search_command_record(
+            cwd_glob=[self.abspath('DUMMY', '*')], unique=False)
+        self.assert_same_command_record(records[0], dcrec1)
+        self.assert_same_command_record(records[1], dcrec2)
+        self.assertEqual(len(records), 2)
+
+        records = self.search_command_record(
+            cwd_glob=[self.abspath('REAL', '*')], unique=False)
+        self.assertEqual(len(records), 0)
