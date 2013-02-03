@@ -274,6 +274,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
         print(stdout)
         print(self.conf.daemon_pid_path)
 
+        # Parse `stdout` to get $RASH_DAEMON_PID
         for line in stdout.splitlines():
             if line.startswith('RASH_DAEMON_PID'):
                 pid = line.split('=', 1)[1].strip()
@@ -283,6 +284,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
             raise AssertionError(
                 "RASH_DAEMON_PID cannot be parsed from STDOUT")
 
+        # The daemon process should be alive
         ps_pid_cmd = ['ps', '--pid', str(pid)]
         try:
             run_command(ps_pid_cmd)
@@ -290,24 +292,32 @@ class ShellTestMixIn(FunctionalTestMixIn):
             raise AssertionError(
                 'At this point, daemon process should be live '
                 '("ps --pid {0}" failed).'.format(pid))
+
+        # The daemon process should create the PID file
         self.assert_poll(lambda: os.path.exists(self.conf.daemon_pid_path),
                          "daemon_pid_path={0!r} is not created on time"
                          .format(self.conf.daemon_pid_path))
 
+        # The PID file should contain a number
         with open(self.conf.daemon_pid_path) as f:
             assert int(f.read().strip()) == pid
 
+        # The daemon should create a log file
         self.assert_poll(lambda: os.path.exists(self.conf.daemon_log_path),
                          "daemon_log_path={0!r} is not created on time"
                          .format(self.conf.daemon_log_path))
 
+        # The daemon should write some debug message to the log file
+        # (Note: --log-level=DEBUG is given by $RASH_INIT_DAEMON_OPTIONS)
         with open(self.conf.daemon_log_path) as f:
             @self.assert_poll_do("Nothing written in log file.")
             def log_file_written():
                 return f.read().strip()
 
+        # Kill command should succeeds
         run_command(['kill', '-TERM', str(pid)])
 
+        # The daemon should be killed by the TERM signal
         @self.assert_poll_do(
             "Daemon process {0} failed to exit.".format(pid), 3000)
         def terminated():
@@ -317,6 +327,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
             except subprocess.CalledProcessError:
                 return True
 
+        # The daemon should remove the PID file on exit
         assert not os.path.exists(self.conf.daemon_pid_path)
 
     @staticmethod
