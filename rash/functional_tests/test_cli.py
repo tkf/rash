@@ -182,6 +182,29 @@ class ShellTestMixIn(FunctionalTestMixIn):
     test_postexec_script = None
     """Set this to a shell script for :meth:`test_postexc`."""
 
+    def test_non_existing_directory(self):
+        script = textwrap.dedent("""
+        {0} $({1} init --shell {2})
+
+        rash-precmd
+        mkdir non_existing_directory
+
+        rash-precmd
+        cd non_existing_directory
+
+        rash-precmd
+        rmdir ../non_existing_directory
+
+        rash-precmd
+        :
+
+        rash-precmd
+        cd ..
+        """).format(
+            self.source_command, BASE_COMMAND, self.shell).encode()
+        (stdout, stderr) = self.run_shell(script)
+        self.assertNotIn('Traceback', stderr.decode())
+
 
 class TestZsh(ShellTestMixIn, BaseTestCase):
     shell = 'zsh'

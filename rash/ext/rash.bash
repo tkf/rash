@@ -1,6 +1,7 @@
 ### Record commands
 rash-postexec(){
-    rash record \
+    test -d "$PWD" && \
+        rash record \
         --record-type command \
         --session-id "$_RASH_SESSION_ID" \
         --command "$(builtin history 1)" \
