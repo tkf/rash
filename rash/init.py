@@ -10,7 +10,7 @@ def find_init(shell):
     return os.path.join(rash_dir, 'ext', 'rash.{0}'.format(shell_name(shell)))
 
 
-def init_run(shell, no_daemon):
+def init_run(shell):
     """
     Configure your shell.
 
@@ -54,11 +54,6 @@ def init_run(shell, no_daemon):
         raise RuntimeError(
             "Shell '{0}' is not supported.".format(shell_name(shell)))
 
-    # FIXME: Use the following once daemon is implemented.
-    if False:  # not no_daemon:
-        from .daemon import start_daemon_in_subprocess
-        start_daemon_in_subprocess()
-
 
 def init_add_arguments(parser):
     parser.add_argument(
@@ -66,12 +61,6 @@ def init_add_arguments(parser):
         help="""
         name of shell you are using.  directory before the last /
         is discarded.  It defaults to $SHELL.
-        """)
-    parser.add_argument(
-        '--no-daemon', action='store_true', default=False,
-        help="""
-        Do not start daemon.  By default, daemon is started if
-        there is no already running daemon.
         """)
 
 
