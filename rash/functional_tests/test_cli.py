@@ -5,6 +5,7 @@ import unittest
 import tempfile
 import shutil
 import textwrap
+import json
 
 from ..utils.py3compat import getcwd
 from ..config import ConfigStore
@@ -108,6 +109,31 @@ class ShellTestMixIn(FunctionalTestMixIn):
         (stdout, stderr) = self.run_shell(script)
         self.assertFalse(stderr)
         self.assertIn('_RASH_SESSION_ID is defined', stdout.decode())
+
+        assert os.path.isdir(self.conf.record_path)
+
+        records = []
+        for (root, _, files) in os.walk(self.conf.record_path):
+            records.extend(os.path.join(root, f) for f in files)
+        assert len(records) == 2
+
+        from ..record import get_environ
+        subenv = get_environ(['HOST'])
+        for path in records:
+            with open(path) as f:
+                data = json.load(f)
+
+            if 'init' in path:
+                assert 'start' in data
+                assert 'stop' not in data
+                self.assertEqual(data['environ']['HOST'], subenv['HOST'])
+            elif 'exit' in path:
+                assert 'start' not in data
+                assert 'stop' in data
+                assert not data['environ']
+            else:
+                raise AssertionError(
+                    "Not init or exit type record: {0}".format(path))
 
 
 class TestZsh(ShellTestMixIn, BaseTestCase):
