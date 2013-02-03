@@ -54,13 +54,17 @@ class TestInMemoryDataBase(BaseTestCase):
 
     def search_command_record(self, **kwds):
         setdefaults(kwds, **self.get_default_search_kwds())
-        return self.db.search_command_record(**kwds)
+        return list(self.db.search_command_record(**kwds))
 
     def assert_same_command_record(
             self, crec1, crec2,
             keys=['command', 'cwd', 'terminal', 'start', 'stop', 'exit_code']):
         asdict = lambda rec: dict((k, getattr(rec, k)) for k in keys)
         self.assertEqual(asdict(crec1), asdict(crec2))
+
+    def assert_not_same_command_record(self, *args, **kwds):
+        self.assertRaises(AssertionError, self.assert_same_command_record,
+                          *args, **kwds)
 
     def get_dummy_command_record_data(self):
         return {
@@ -77,10 +81,14 @@ class TestInMemoryDataBase(BaseTestCase):
             },
         }
 
+    def test_empty_database(self):
+        records = self.search_command_record()
+        self.assertEqual(len(records), 0)
+
     def test_import_command_record(self):
         data = self.get_dummy_command_record_data()
         self.db.import_dict(data)
-        records = list(self.search_command_record())
+        records = self.search_command_record()
         crec = records[0]
         self.assert_same_command_record(crec, to_command_record(data))
         self.assertEqual(len(records), 1)
@@ -90,7 +98,7 @@ class TestInMemoryDataBase(BaseTestCase):
         num = 3
         for _ in range(num):
             self.db.import_dict(data, check_duplicate=False)
-        records = list(self.search_command_record(unique=False))
+        records = self.search_command_record(unique=False)
         for crec in records:
             self.assert_same_command_record(crec, to_command_record(data))
         self.assertEqual(len(records), num)
@@ -102,6 +110,25 @@ class TestInMemoryDataBase(BaseTestCase):
                     {'SHELL': 'tcsh'}, {'SHELL': 'sh'}]:
             data['environ'].update(env)
             self.db.import_dict(data, check_duplicate=True)
-        records = list(self.search_command_record(unique=False))
+        records = self.search_command_record(unique=False)
         self.assert_same_command_record(records[0], to_command_record(data))
         self.assertEqual(len(records), 1)
+
+    def test_serach_command_by_pattern(self):
+        data1 = self.get_dummy_command_record_data()
+        data2 = self.get_dummy_command_record_data()
+        data1['command'] = 'git status'
+        data2['command'] = 'hg status'
+        self.db.import_dict(data1)
+        self.db.import_dict(data2)
+        dcrec1 = to_command_record(data1)
+        dcrec2 = to_command_record(data2)
+
+        records = self.search_command_record(pattern=['git*'], unique=False)
+        crec = records[0]
+        self.assert_same_command_record(crec, dcrec1)
+        self.assert_not_same_command_record(crec, dcrec2)
+        self.assertEqual(len(records), 1)
+
+        records = self.search_command_record(pattern=['bzr*'], unique=False)
+        self.assertEqual(len(records), 0)
