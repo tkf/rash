@@ -127,13 +127,16 @@ class ShellTestMixIn(FunctionalTestMixIn):
                 assert 'start' in data
                 assert 'stop' not in data
                 self.assertEqual(data['environ']['HOST'], subenv['HOST'])
+                init_id = data['session_id']
             elif 'exit' in path:
                 assert 'start' not in data
                 assert 'stop' in data
                 assert not data['environ']
+                exit_id = data['session_id']
             else:
                 raise AssertionError(
                     "Not init or exit type record: {0}".format(path))
+        self.assertEqual(init_id, exit_id)
 
 
 class TestZsh(ShellTestMixIn, BaseTestCase):
