@@ -176,6 +176,8 @@ class ShellTestMixIn(FunctionalTestMixIn):
         assert isinstance(command_data['stop'], int)
         if self.shell.endswith('zsh'):
             assert isinstance(command_data['start'], int)
+        else:
+            assert 'start' not in command_data
 
     test_postexec_script = None
     """Set this to a shell script for :meth:`test_postexc`."""
