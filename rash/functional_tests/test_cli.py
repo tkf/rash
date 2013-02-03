@@ -152,11 +152,10 @@ class ShellTestMixIn(FunctionalTestMixIn):
     def test_postexec(self):
         script = textwrap.dedent("""
         {0} $({1} init --shell {2})
-        rash-precmd
-        rash-preexc
-        rash-precmd
+        {3}
         """).format(
-            self.source_command, BASE_COMMAND, self.shell).encode()
+            self.source_command, BASE_COMMAND, self.shell,
+            self.test_postexec_script).encode()
         (stdout, stderr) = self.run_shell(script)
 
         # stderr may have some errors in it
@@ -174,9 +173,26 @@ class ShellTestMixIn(FunctionalTestMixIn):
         command_data = records['command'][0]['data']
         assert command_data['session_id'] == init_data['session_id']
         assert command_data['environ']['PATH']
-        assert isinstance(command_data['start'], int)
         assert isinstance(command_data['stop'], int)
+        if self.shell.endswith('zsh'):
+            assert isinstance(command_data['start'], int)
+
+    test_postexec_script = None
+    """Set this to a shell script for :meth:`test_postexc`."""
 
 
 class TestZsh(ShellTestMixIn, BaseTestCase):
     shell = 'zsh'
+    test_postexec_script = textwrap.dedent("""\
+    rash-precmd
+    rash-preexc
+    rash-precmd
+    """)
+
+
+class TestBash(ShellTestMixIn, BaseTestCase):
+    shell = 'bash'
+    test_postexec_script = textwrap.dedent("""\
+    rash-precmd
+    rash-precmd
+    """)
