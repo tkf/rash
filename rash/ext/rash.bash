@@ -4,9 +4,10 @@ rash-postexec(){
         rash record \
         --record-type command \
         --session-id "$_RASH_SESSION_ID" \
-        --command "$(builtin history 1)" \
+        --command "$_RASH_COMMAND" \
         --cwd "$_RASH_PWD" \
         --exit-code "$_RASH_EXIT_CODE" \
+        "${_RASH_OPTS[@]}" \
         --pipestatus "${_RASH_PIPESTATUS[@]}"
 }
 
@@ -22,9 +23,18 @@ rash-precmd(){
     # Otherwise, I will loose these information.
     _RASH_EXIT_CODE="$?"
     _RASH_PIPESTATUS=("${PIPESTATUS[@]}")
+    _RASH_OPTS=()
 
     if [ -n "$_RASH_EXECUTING" ]
     then
+        local num start command
+        local hist="$(HISTTIMEFORMAT="%s " builtin history 1)"
+        read -r num start command <<< "$hist"
+        if [ -n "$start" ]
+        then
+            _RASH_OPTS=(--start "$start" "${_RASH_OPTS[@]}")
+        fi
+        _RASH_COMMAND="$command"
         rash-postexec
         _RASH_EXECUTING=""
     fi
