@@ -1,6 +1,15 @@
 import os
 
 
+def shell_name(shell):
+    return shell.rsplit(os.path.sep, 1)[-1]
+
+
+def find_init(shell):
+    rash_dir = os.path.dirname(__file__)
+    return os.path.join(rash_dir, 'ext', 'rash.{0}'.format(shell_name(shell)))
+
+
 def init_run(shell, no_daemon):
     """
     Show path to a file to configure shell.
@@ -10,13 +19,12 @@ def init_run(shell, no_daemon):
       source $(%(prog)s)
 
     """
-    shellname = shell.rsplit(os.path.sep, 1)[-1]
-    rash_dir = os.path.dirname(__file__)
-    init_file = os.path.join(rash_dir, 'ext', 'rash.{0}'.format(shellname))
+    init_file = find_init(shell)
     if os.path.exists(init_file):
         print(init_file)
     else:
-        raise RuntimeError("Shell '{0}' is not supported.".format(shellname))
+        raise RuntimeError(
+            "Shell '{0}' is not supported.".format(shell_name(shell)))
 
     # FIXME: Use the following once daemon is implemented.
     if False:  # not no_daemon:
