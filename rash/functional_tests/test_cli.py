@@ -8,9 +8,9 @@ import textwrap
 import json
 import time
 
-from ..utils.py3compat import getcwd
+from ..utils.py3compat import PY3, getcwd
 from ..config import ConfigStore
-from ..tests.utils import BaseTestCase
+from ..tests.utils import BaseTestCase, skipIf
 
 BASE_COMMAND = 'rash'
 
@@ -275,6 +275,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
         (stdout, stderr) = self.run_shell(script)
         self.assertNotIn('Traceback', stderr.decode())
 
+    @skipIf(PY3, "watchdog does not support Python 3")
     def test_daemon(self):
         script = textwrap.dedent("""
         RASH_INIT_DAEMON_OPTIONS="--keep-json --log-level=DEBUG"
