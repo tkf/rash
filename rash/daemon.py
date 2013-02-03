@@ -21,12 +21,29 @@ def daemon_run(no_error, record_path, keep_json, check_duplicate,
     from .indexer import Indexer
     from .log import setup_daemon_log_file
     from .watchrecord import watch_record
+
     conf = ConfigStore()
     if log_level:
         conf.daemon_log_level = log_level
-    setup_daemon_log_file(conf)
-    indexer = Indexer(conf, check_duplicate, keep_json, record_path)
-    watch_record(indexer)
+
+    # FIXME: make PID checking/writing atomic if possible
+    if os.path.exists(conf.daemon_pid_path):
+        if no_error:
+            return
+        else:
+            pid = open(conf.daemon_pid_path, 'rt').read().strip()
+            raise RuntimeError(
+                'There is already a running daemon (PID={0})!'.format(pid))
+    else:
+        with open(conf.daemon_pid_path, 'w') as f:
+            f.write(str(os.getpid()))
+
+    try:
+        setup_daemon_log_file(conf)
+        indexer = Indexer(conf, check_duplicate, keep_json, record_path)
+        watch_record(indexer)
+    finally:
+        os.remove(conf.daemon_pid_path)
 
 
 def start_daemon_in_subprocess():
