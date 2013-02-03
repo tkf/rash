@@ -11,7 +11,7 @@ rash-postexec(){
 
 _RASH_EXECUTING=""
 
-rash-preexc(){
+rash-preexec(){
     _RASH_EXECUTING=t
     _RASH_PWD="$PWD"
 }
@@ -27,7 +27,7 @@ rash-precmd(){
         rash-postexec
         _RASH_EXECUTING=""
     fi
-    rash-preexc
+    rash-preexec
 }
 
 export PROMPT_COMMAND="rash-precmd"

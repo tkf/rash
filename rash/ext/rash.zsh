@@ -12,7 +12,7 @@ rash-postexec(){
 
 _RASH_EXECUTING=""
 
-rash-preexc(){
+rash-preexec(){
     _RASH_START=$(date "+%s")
     _RASH_EXECUTING=t
     _RASH_PWD="$PWD"
@@ -32,7 +32,7 @@ rash-precmd(){
 }
 
 autoload -Uz add-zsh-hook
-add-zsh-hook preexec rash-preexc
+add-zsh-hook preexec rash-preexec
 add-zsh-hook precmd rash-precmd
 
 

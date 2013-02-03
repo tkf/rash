@@ -198,7 +198,7 @@ class TestZsh(ShellTestMixIn, BaseTestCase):
             self.source_command, BASE_COMMAND, self.shell).encode()
         (stdout, stderr) = self.run_shell(script)
         self.assertIn('rash-precmd', stdout.decode())
-        self.assertIn('rash-preexc', stdout.decode())
+        self.assertIn('rash-preexec', stdout.decode())
 
 
 class TestBash(ShellTestMixIn, BaseTestCase):
