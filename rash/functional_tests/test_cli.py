@@ -69,11 +69,8 @@ class FunctionalTestMixIn(object):
 
         try:
             os.chdir(self.__orig_cwd)
-        except Exception as e:
-            print("Got error while resetting cwd to {0}: {1}"
-                  .format(self.__orig_cwd, e))
-
-        shutil.rmtree(self.home_dir)
+        finally:
+            shutil.rmtree(self.home_dir)
 
     def popen(self, *args, **kwds):
         if 'env' in kwds:
