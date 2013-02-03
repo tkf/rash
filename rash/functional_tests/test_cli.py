@@ -189,6 +189,16 @@ class TestZsh(ShellTestMixIn, BaseTestCase):
     rash-precmd
     """)
 
+    def test_zsh_executes_preexec(self):
+        script = textwrap.dedent("""
+        {0} $({1} init --shell {2})
+        echo _RASH_EXECUTING=$_RASH_EXECUTING
+        """).format(
+            self.source_command, BASE_COMMAND, self.shell).encode()
+        (stdout, stderr) = self.run_shell(script)
+        self.assertFalse(stderr)
+        self.assertIn('_RASH_EXECUTING=t', stdout.decode())
+
     def test_hook_installation(self):
         script = textwrap.dedent("""
         {0} $({1} init --shell {2})
