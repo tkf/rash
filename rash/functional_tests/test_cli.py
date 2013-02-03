@@ -149,6 +149,34 @@ class ShellTestMixIn(FunctionalTestMixIn):
 
         self.assertEqual(init_id, exit_id)
 
+    def test_postexec(self):
+        script = textwrap.dedent("""
+        {0} $({1} init --shell {2})
+        rash-precmd
+        rash-preexc
+        rash-precmd
+        """).format(
+            self.source_command, BASE_COMMAND, self.shell).encode()
+        (stdout, stderr) = self.run_shell(script)
+
+        # stderr may have some errors in it
+        if stderr:
+            print("Got STDERR from {0} (but it's OK to ignore it)"
+                  .format(self.shell))
+            print(stderr)
+
+        records = self.get_all_record_data()
+        assert len(records['init']) == 1
+        assert len(records['exit']) == 1
+        assert len(records['command']) == 1
+
+        init_data = records['init'][0]['data']
+        command_data = records['command'][0]['data']
+        assert command_data['session_id'] == init_data['session_id']
+        assert command_data['environ']['PATH']
+        assert isinstance(command_data['start'], int)
+        assert isinstance(command_data['stop'], int)
+
 
 class TestZsh(ShellTestMixIn, BaseTestCase):
     shell = 'zsh'
