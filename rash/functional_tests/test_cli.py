@@ -257,6 +257,22 @@ class ShellTestMixIn(FunctionalTestMixIn):
         (stdout, stderr) = self.run_shell(script)
         self.assertNotIn('Traceback', stderr.decode())
 
+    def test_daemon(self):
+        script = textwrap.dedent("""
+        {0} $({1} init --shell {2})
+        RD_PID="$(cat $HOME/.config/rash/daemon.pid)"
+        echo "Daemon's PID is $RD_PID"
+        ps -f --pid $RD_PID > /dev/null && echo "Daemon is running"
+        kill $RD_PID && "Kill command succeeds"
+        ps -f --pid $RD_PID > /dev/null || echo "Daemon is killed"
+        """).format(
+            self.source_command, BASE_COMMAND, self.shell).encode()
+        (stdout, stderr) = self.run_shell(script)
+        self.assertIn("Daemon's PID is", stdout.decode())
+        self.assertIn('Daemon is running', stdout.decode())
+        self.assertIn('Kill command succeeds', stdout.decode())
+        self.assertIn('Daemon is killed', stdout.decode())
+
 
 class TestZsh(ShellTestMixIn, BaseTestCase):
     shell = 'zsh'
