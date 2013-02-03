@@ -8,7 +8,7 @@ import textwrap
 
 from ..utils.py3compat import getcwd
 from ..config import ConfigStore
-from .utils import BaseTestCase
+from ..tests.utils import BaseTestCase
 
 BASE_COMMAND = 'rash'
 
