@@ -347,7 +347,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
         assert not os.path.exists(self.conf.daemon_pid_path)
 
     @staticmethod
-    def assert_poll(assertion, message, num=30, tick=0.1):
+    def assert_poll(assertion, message, num=100, tick=0.1):
         for i in range(num):
             if assertion():
                 break
