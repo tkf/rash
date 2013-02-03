@@ -335,7 +335,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
 
         # The daemon should be killed by the TERM signal
         @self.assert_poll_do(
-            "Daemon process {0} failed to exit.".format(pid), 3000)
+            "Daemon process {0} failed to exit.".format(pid))
         def terminated():
             try:
                 run_command(ps_pid_cmd)
