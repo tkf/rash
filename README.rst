@@ -46,9 +46,18 @@ Here is a list of recorded information [#]_.
 
 Install
 =======
-::
+
+RASH is written in Python.  The easiest way to install is to use `pip`
+(or `easy_install`, if you wish).  You may need `sudo` for installing
+it in a system directory.::
 
    pip install rash
+
+RASH tested against Python 2.6, 2.7 and 3.2.  However, as watchdog_
+does not work with Python 3, you can't get full power of RASH with
+Python 3.
+
+.. _watchdog: http://pypi.python.org/pypi/watchdog/
 
 
 Setup
@@ -120,3 +129,53 @@ You can see all information associated with a command with
 ``rash show`` command::
 
    rash show --full 1677
+
+
+Design principle
+================
+
+RASH's design is focused on sparseness.  There are several stages
+of data transformation until you see the search result, and they
+are done by separated processes.
+
+First, `rash record` command dumps shell history in raw JSON record.
+This part of program does not touches to DB to make process very fast.
+As there is no complex transformation in this command, probably in the
+future version is is better to rewrite it entirely in shell function.
+
+Second, `rash daemon` runs in background and watches the directory to
+store JSON record.  When JSON record arrives, it insert the data into
+database.
+
+`rash record` and `rash daemon` are setup by simple shell snippet
+``source $(rash init)``.
+
+Finally, you can search through command history using search interface
+such as `rash search`.  This search is very fast as you don't read
+all JSON records in separated files.
+
+::
+
+   +-------+         +--------+         +--------+         +--------+
+   | Shell |         | Raw    |         | SQLite |         | Search |
+   | hooks |-------->| JSON   |-------->|   DB   |-------->| result |
+   +-------+         | record |         +--------+         +--------+
+                     +--------+
+
+           `rash record`      `rash daemon`      `rash search`
+                                                  `rash show`
+
+           \------------------------------/      \------------/
+              `rash init` setups them           search interface
+
+License
+=======
+
+RASH is licensed under MIT License.
+
+
+.. Travis CI build status badge
+.. |build-status|
+   image:: https://secure.travis-ci.org/tkf/rash.png?branch=master
+   :target: http://travis-ci.org/tkf/rash
+   :alt: Build Status
