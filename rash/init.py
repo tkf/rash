@@ -27,6 +27,25 @@ def init_run(shell, no_daemon):
     automatically inndex shell history records.  To not start daemon,
     use --no-daemon option.
 
+    Following shell variables can be set to control initialize
+    sequence for your shell.
+
+    RASH_INIT_NO_DAEMON : "t" | ""
+      Set ths to "t" to not start "rash daemon" on init.
+
+    RASH_INIT_DAEMON_OPTIONS : space separated options
+      Options passed to "rash daemon" command.
+      Note that --no-error is always passed to the command.
+
+    RASH_INIT_DAEMON_OUT : file path
+      Dump STDOUT/STDERR of "rash daemon" process to here.
+      Default is /dev/null.
+
+    **Example**::
+
+      RASH_INIT_NO_DAEMON=t  # Do not start "rash daemon" on init.
+      source $(%(prog)s)
+
     """
     init_file = find_init(shell)
     if os.path.exists(init_file):
