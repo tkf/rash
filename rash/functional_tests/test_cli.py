@@ -348,6 +348,13 @@ class ShellTestMixIn(FunctionalTestMixIn):
 
     @staticmethod
     def assert_poll(assertion, message, num=100, tick=0.1):
+        """
+        Run `assersion` every `tick` second `num` times.
+
+        If none of `assersion` call returns true, it raise
+        an assertion error with `message`.
+
+        """
         for i in range(num):
             if assertion():
                 break
@@ -357,6 +364,9 @@ class ShellTestMixIn(FunctionalTestMixIn):
 
     @classmethod
     def assert_poll_do(cls, message, *args, **kwds):
+        """
+        Decorator to run :meth:`assert_poll` right after the definition.
+        """
         def decorator(assertion):
             cls.assert_poll(assertion, message, *args, **kwds)
             return assertion
