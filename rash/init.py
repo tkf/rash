@@ -12,11 +12,20 @@ def find_init(shell):
 
 def init_run(shell, no_daemon):
     """
-    Show path to a file to configure shell.
+    Configure your shell.
 
-    Usage::
+    Add the following line in your shell RC file and then you are
+    ready to go::
 
       source $(%(prog)s)
+
+    To check if your shell is supported, simply run::
+
+      %(prog)s
+
+    By default, this command also starts daemon in background to
+    automatically inndex shell history records.  To not start daemon,
+    use --no-daemon option.
 
     """
     init_file = find_init(shell)
@@ -37,7 +46,7 @@ def init_add_arguments(parser):
         '--shell', default=os.environ.get('SHELL'),
         help="""
         name of shell you are using.  directory before the last /
-        is discarded.
+        is discarded.  It defaults to $SHELL.
         """)
     parser.add_argument(
         '--no-daemon', action='store_true', default=False,
