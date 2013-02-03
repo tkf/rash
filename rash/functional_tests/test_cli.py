@@ -100,6 +100,22 @@ class ShellTestMixIn(FunctionalTestMixIn):
             stderr=subprocess.PIPE)
         return proc.communicate(script)
 
+    def get_record_data(self, record_type):
+        top = os.path.join(self.conf.record_path, record_type)
+        for (root, _, files) in os.walk(top):
+            for f in files:
+                path = os.path.join(root, f)
+                with open(path) as f:
+                    data = json.load(f)
+                yield dict(path=path, data=data)
+
+    def get_all_record_data(self):
+        return dict(
+            init=list(self.get_record_data('init')),
+            exit=list(self.get_record_data('exit')),
+            command=list(self.get_record_data('command')),
+        )
+
     def test_init(self):
         script = textwrap.dedent("""
         {0} $({1} init --shell {2})
@@ -111,31 +127,26 @@ class ShellTestMixIn(FunctionalTestMixIn):
         self.assertIn('_RASH_SESSION_ID is defined', stdout.decode())
 
         assert os.path.isdir(self.conf.record_path)
-
-        records = []
-        for (root, _, files) in os.walk(self.conf.record_path):
-            records.extend(os.path.join(root, f) for f in files)
-        assert len(records) == 2
+        records = self.get_all_record_data()
+        assert len(records['init']) == 1
+        assert len(records['exit']) == 1
+        assert len(records['command']) == 0
 
         from ..record import get_environ
         subenv = get_environ(['HOST'])
-        for path in records:
-            with open(path) as f:
-                data = json.load(f)
 
-            if 'init' in path:
-                assert 'start' in data
-                assert 'stop' not in data
-                self.assertEqual(data['environ']['HOST'], subenv['HOST'])
-                init_id = data['session_id']
-            elif 'exit' in path:
-                assert 'start' not in data
-                assert 'stop' in data
-                assert not data['environ']
-                exit_id = data['session_id']
-            else:
-                raise AssertionError(
-                    "Not init or exit type record: {0}".format(path))
+        data = records['init'][0]['data']
+        assert 'start' in data
+        assert 'stop' not in data
+        self.assertEqual(data['environ']['HOST'], subenv['HOST'])
+        init_id = data['session_id']
+
+        data = records['exit'][0]['data']
+        assert 'start' not in data
+        assert 'stop' in data
+        assert not data['environ']
+        exit_id = data['session_id']
+
         self.assertEqual(init_id, exit_id)
 
 
