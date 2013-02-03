@@ -70,7 +70,14 @@ class FunctionalTestMixIn(object):
         try:
             os.chdir(self.__orig_cwd)
         finally:
-            shutil.rmtree(self.home_dir)
+            try:
+                shutil.rmtree(self.home_dir)
+            except OSError:
+                print("Failed to remove self.home_dir={0}. "
+                      "Can be timing issue.  Trying again..."
+                      .format(self.home_dir))
+                time.sleep(0.1)
+                shutil.rmtree(self.home_dir)
 
     def popen(self, *args, **kwds):
         if 'env' in kwds:
