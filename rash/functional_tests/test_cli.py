@@ -55,6 +55,14 @@ class FunctionalTestMixIn(object):
         self.conf = ConfigStore(self.conf_base_path)
 
     def tearDown(self):
+        # Kill daemon if exists
+        if os.path.exists(self.conf.daemon_pid_path):
+            with open(self.conf.daemon_pid_path) as f:
+                pid = f.read().strip()
+            print("Daemon (PID={0}) may be left alive.  Killing it..."
+                  .format(pid))
+            subprocess.call(['kill', pid])
+
         os.chdir(self.__orig_cwd)
         shutil.rmtree(self.home_dir)
 
