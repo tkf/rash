@@ -56,14 +56,23 @@ class FunctionalTestMixIn(object):
 
     def tearDown(self):
         # Kill daemon if exists
-        if os.path.exists(self.conf.daemon_pid_path):
-            with open(self.conf.daemon_pid_path) as f:
-                pid = f.read().strip()
-            print("Daemon (PID={0}) may be left alive.  Killing it..."
-                  .format(pid))
-            subprocess.call(['kill', pid])
+        try:
+            if os.path.exists(self.conf.daemon_pid_path):
+                with open(self.conf.daemon_pid_path) as f:
+                    pid = f.read().strip()
+                print("Daemon (PID={0}) may be left alive.  Killing it..."
+                      .format(pid))
+                subprocess.call(['kill', pid])
+        except Exception as e:
+            print("Got error while trying to kill daemon: {0}"
+                  .format(e))
 
-        os.chdir(self.__orig_cwd)
+        try:
+            os.chdir(self.__orig_cwd)
+        except Exception as e:
+            print("Got error while resetting cwd to {0}: {1}"
+                  .format(self.__orig_cwd, e))
+
         shutil.rmtree(self.home_dir)
 
     def popen(self, *args, **kwds):
