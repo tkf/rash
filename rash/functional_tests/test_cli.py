@@ -182,6 +182,32 @@ class ShellTestMixIn(FunctionalTestMixIn):
     test_postexec_script = None
     """Set this to a shell script for :meth:`test_postexc`."""
 
+    def test_exit_code(self):
+        script = textwrap.dedent("""
+        {0} $({1} init --shell {2})
+        {3}
+        """).format(
+            self.source_command, BASE_COMMAND, self.shell,
+            self.test_exit_code_script).encode()
+        (stdout, stderr) = self.run_shell(script)
+
+        # stderr may have some errors in it
+        if stderr:
+            print("Got STDERR from {0} (but it's OK to ignore it)"
+                  .format(self.shell))
+            print(stderr)
+
+        records = self.get_all_record_data()
+        self.assertEqual(len(records['init']), 1)
+        self.assertEqual(len(records['exit']), 1)
+        self.assertEqual(len(records['command']), 1)
+
+        command_data = [d['data'] for d in records['command']]
+        self.assertEqual(command_data[0]['exit_code'], 1)
+
+    test_exit_code_script = None
+    """Set this to a shell script for :meth:`test_exit_code`."""
+
     def test_non_existing_directory(self):
         script = textwrap.dedent("""
         {0} $({1} init --shell {2})
@@ -211,6 +237,10 @@ class TestZsh(ShellTestMixIn, BaseTestCase):
     test_postexec_script = textwrap.dedent("""\
     rash-precmd
     """)
+    test_exit_code_script = textwrap.dedent("""\
+    false
+    rash-precmd
+    """)
 
     def test_zsh_executes_preexec(self):
         script = textwrap.dedent("""
@@ -237,8 +267,13 @@ class TestZsh(ShellTestMixIn, BaseTestCase):
 class TestBash(ShellTestMixIn, BaseTestCase):
     shell = 'bash'
     test_postexec_script = textwrap.dedent("""\
-    rash-precmd
-    rash-precmd
+    eval "$PROMPT_COMMAND"
+    eval "$PROMPT_COMMAND"
+    """)
+    test_exit_code_script = textwrap.dedent("""\
+    eval "$PROMPT_COMMAND"
+    false
+    eval "$PROMPT_COMMAND"
     """)
 
     def test_hook_installation(self):

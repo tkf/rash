@@ -19,10 +19,9 @@ rash-preexec(){
 }
 
 rash-precmd(){
-    # Make sure to copy these variable at very first stage.
-    # Otherwise, I will loose these information.
-    _RASH_EXIT_CODE="$?"
-    _RASH_PIPESTATUS=("${PIPESTATUS[@]}")
+    _RASH_EXIT_CODE="$1"
+    shift
+    _RASH_PIPESTATUS=("$@")
     _RASH_OPTS=()
 
     if [ -n "$_RASH_EXECUTING" ]
@@ -41,7 +40,7 @@ rash-precmd(){
     rash-preexec
 }
 
-export PROMPT_COMMAND="rash-precmd"
+export PROMPT_COMMAND="rash-precmd \${?} \${PIPESTATUS[@]}"
 
 
 ### Record session initialization
