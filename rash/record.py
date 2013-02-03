@@ -16,6 +16,7 @@ import time
 import json
 
 from .utils.pathutils import mkdirp
+from .utils.py3compat import getcwd
 from .config import ConfigStore
 
 
@@ -104,7 +105,7 @@ def record_run(record_type, print_session_id, **kwds):
     )
 
     # Automatically set some missing variables:
-    data.setdefault('cwd', os.getcwdu())
+    data.setdefault('cwd', getcwd())
     if record_type in ['command', 'exit']:
         data.setdefault('stop', int(time.time()))
     elif record_type in ['init']:

@@ -26,46 +26,40 @@ class ConfigStore(object):
 
     """
 
-    base_path = get_config_directory('RASH')
-    """
-    Root directory for any RASH related data files (``~/.config/rash``).
-    """
+    def __init__(self, base_path=None):
+        self.base_path = base_path or get_config_directory('RASH')
+        """
+        Root directory for any RASH related data files (``~/.config/rash``).
+        """
 
-    data_path = os.path.join(base_path, 'data')
-    """
-    Directory to store data collected by RASH (``~/.config/rash/data``).
-    """
+        self.data_path = os.path.join(self.base_path, 'data')
+        """
+        Directory to store data collected by RASH (``~/.config/rash/data``).
+        """
 
-    record_path = os.path.join(data_path, 'record')
-    """
-    Shell history is stored in this directory at the first stage.
+        self.record_path = os.path.join(self.data_path, 'record')
+        """
+        Shell history is stored in this directory at the first stage.
+        """
 
-    In Linux: ``~/.config/rash/data/record/``.
+        self.db_path = os.path.join(self.data_path, 'db.sqlite')
+        """
+        Shell history is stored in the DB at this path.
+        """
 
-    """
+        self.daemon_pid_path = os.path.join(self.base_path, 'daemon.pid')
+        """
+        A file to store daemon PID (``~/.config/rash/daemon.pid``).
+        """
 
-    db_path = os.path.join(data_path, 'db.sqlite')
-    """
-    Shell history is stored in the DB at this path before it is search-able.
+        self.daemon_log_path = os.path.join(self.base_path, 'daemon.log')
+        """
+        Daemon log file (``~/.config/rash/daemon.log``).
+        """
 
-    In Linux: ``~/.config/rash/data/db.sqlite``.
+        self.daemon_log_level = 'INFO'
+        """
+        Daemon log level.
+        """
 
-    """
-
-    daemon_pid_path = os.path.join(base_path, 'daemon.pid')
-    """
-    A file to store daemon PID (``~/.config/rash/daemon.pid``).
-    """
-
-    daemon_log_path = os.path.join(base_path, 'daemon.log')
-    """
-    Daemon log file (``~/.config/rash/daemon.log``).
-    """
-
-    daemon_log_level = 'INFO'
-    """
-    Daemon log level.
-    """
-
-    def __init__(self):
         mkdirp(self.record_path)
