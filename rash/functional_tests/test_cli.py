@@ -279,6 +279,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
     def test_daemon(self):
         script = textwrap.dedent("""
         RASH_INIT_DAEMON_OPTIONS="--keep-json --log-level=DEBUG"
+        RASH_INIT_DAEMON_OUT=$HOME/.config/rash/daemon.out
         {0} $({1} init --shell {2})
         echo RASH_DAEMON_PID="$RASH_DAEMON_PID"
         """).format(

@@ -59,9 +59,10 @@ trap "rash-before-exit" EXIT TERM
 
 
 ### Start daemon
+RASH_INIT_DAEMON_OUT="${RASH_INIT_DAEMON_OUT:-/dev/null}"
 if [ -z "$RASH_INIT_NO_DAEMON" ]
 then
     rash daemon --no-error $RASH_INIT_DAEMON_OPTIONS \
-        < /dev/null > /dev/null 2> /dev/null &
+        < /dev/null > $RASH_INIT_DAEMON_OUT 2>&1 &
     RASH_DAEMON_PID="$!"
 fi
