@@ -187,8 +187,6 @@ class TestZsh(ShellTestMixIn, BaseTestCase):
     shell = 'zsh'
     test_postexec_script = textwrap.dedent("""\
     rash-precmd
-    rash-preexc
-    rash-precmd
     """)
 
     def test_hook_installation(self):
