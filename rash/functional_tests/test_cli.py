@@ -208,6 +208,32 @@ class ShellTestMixIn(FunctionalTestMixIn):
     test_exit_code_script = None
     """Set this to a shell script for :meth:`test_exit_code`."""
 
+    def test_pipe_status(self):
+        script = textwrap.dedent("""
+        {0} $({1} init --shell {2})
+        {3}
+        """).format(
+            self.source_command, BASE_COMMAND, self.shell,
+            self.test_pipe_status_script).encode()
+        (stdout, stderr) = self.run_shell(script)
+
+        # stderr may have some errors in it
+        if stderr:
+            print("Got STDERR from {0} (but it's OK to ignore it)"
+                  .format(self.shell))
+            print(stderr)
+
+        records = self.get_all_record_data()
+        self.assertEqual(len(records['init']), 1)
+        self.assertEqual(len(records['exit']), 1)
+        self.assertEqual(len(records['command']), 1)
+
+        command_data = [d['data'] for d in records['command']]
+        self.assertEqual(command_data[0]['pipestatus'], [1, 0])
+
+    test_pipe_status_script = None
+    """Set this to a shell script for :meth:`test_pipe_status`."""
+
     def test_non_existing_directory(self):
         script = textwrap.dedent("""
         {0} $({1} init --shell {2})
@@ -239,6 +265,10 @@ class TestZsh(ShellTestMixIn, BaseTestCase):
     """)
     test_exit_code_script = textwrap.dedent("""\
     false
+    rash-precmd
+    """)
+    test_pipe_status_script = textwrap.dedent("""\
+    false | true
     rash-precmd
     """)
 
@@ -273,6 +303,11 @@ class TestBash(ShellTestMixIn, BaseTestCase):
     test_exit_code_script = textwrap.dedent("""\
     eval "$PROMPT_COMMAND"
     false
+    eval "$PROMPT_COMMAND"
+    """)
+    test_pipe_status_script = textwrap.dedent("""\
+    eval "$PROMPT_COMMAND"
+    false | true
     eval "$PROMPT_COMMAND"
     """)
 
