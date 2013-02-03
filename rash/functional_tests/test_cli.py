@@ -191,6 +191,17 @@ class TestZsh(ShellTestMixIn, BaseTestCase):
     rash-precmd
     """)
 
+    def test_hook_installation(self):
+        script = textwrap.dedent("""
+        {0} $({1} init --shell {2})
+        echo $precmd_functions
+        echo $preexec_functions
+        """).format(
+            self.source_command, BASE_COMMAND, self.shell).encode()
+        (stdout, stderr) = self.run_shell(script)
+        self.assertIn('rash-precmd', stdout.decode())
+        self.assertIn('rash-preexc', stdout.decode())
+
 
 class TestBash(ShellTestMixIn, BaseTestCase):
     shell = 'bash'
@@ -198,3 +209,12 @@ class TestBash(ShellTestMixIn, BaseTestCase):
     rash-precmd
     rash-precmd
     """)
+
+    def test_hook_installation(self):
+        script = textwrap.dedent("""
+        {0} $({1} init --shell {2})
+        echo $PROMPT_COMMAND
+        """).format(
+            self.source_command, BASE_COMMAND, self.shell).encode()
+        (stdout, stderr) = self.run_shell(script)
+        self.assertIn('rash-precmd', stdout.decode())
