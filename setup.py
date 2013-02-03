@@ -17,7 +17,7 @@ if not PY3:
 setup(
     name='rash',
     version=rash.__version__,
-    packages=['rash', 'rash.utils', 'rash.tests'],
+    packages=['rash', 'rash.utils', 'rash.tests', 'rash.functional_tests'],
     package_data={
         # See also ./MANIFEST.in
         'rash': [
