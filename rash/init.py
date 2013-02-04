@@ -21,30 +21,13 @@ def init_run(shell, no_daemon, daemon_options, daemon_outfile):
 
     To check if your shell is supported, simply run::
 
-      %(prog)s
+      %(prog)s --no-daemon
 
     By default, this command also starts daemon in background to
     automatically inndex shell history records.  To not start daemon,
-    use --no-daemon option.
+    use --no-daemon option like this::
 
-    Following shell variables can be set to control initialize
-    sequence for your shell.
-
-    RASH_INIT_NO_DAEMON : "t" | ""
-      Set ths to "t" to not start "rash daemon" on init.
-
-    RASH_INIT_DAEMON_OPTIONS : space separated options
-      Options passed to "rash daemon" command.
-      Note that --no-error is always passed to the command.
-
-    RASH_INIT_DAEMON_OUT : file path
-      Dump STDOUT/STDERR of "rash daemon" process to here.
-      Default is /dev/null.
-
-    **Example**::
-
-      RASH_INIT_NO_DAEMON=t  # Do not start "rash daemon" on init.
-      source $(%(prog)s)
+      source $(%(prog)s --no-daemon)
 
     """
     init_file = find_init(shell)
@@ -77,6 +60,7 @@ def init_add_arguments(parser):
         help="""
         Add options given to daemon.  See "rash daemon --help" for
         available options.  It can be specified many times.
+        Note that --no-error is always passed to the daemon command.
         """)
     parser.add_argument(
         '--daemon-outfile', default=os.devnull,
