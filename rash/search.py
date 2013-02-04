@@ -58,6 +58,22 @@ def search_add_arguments(parser):
     parser.add_argument(
         '--sort-program-frequency',
         help='most used program comes first')
+    # Modifier
+    parser.add_argument(
+        '--after-context', type=int, metavar='NUM',
+        help="""
+        Print NUM commands executed after matching commands.
+        """)
+    parser.add_argument(
+        '--before-context', type=int, metavar='NUM',
+        help="""
+        Print NUM commands executed before matching commands.
+        """)
+    parser.add_argument(
+        '--context', type=int, metavar='NUM',
+        help="""
+        Print NUM commands executed before and after matching commands.
+        """)
 
 
 commands = [

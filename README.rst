@@ -95,6 +95,11 @@ took longer than 30 minutes.::
    rash search --under . --include-exit-code 0 --duration-longer-than 30m
 
 **NOT IMPLEMENTED**
+What did I do after `cd`-ing to some directory?::
+
+   rash search --after-context 5 "cd SOME-DIRECTORY"
+
+**NOT IMPLEMENTED**
 All failed command you ran at this directory.::
 
    rash search --cwd . --exclude-exit-code 0
