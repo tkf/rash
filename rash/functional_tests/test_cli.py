@@ -143,12 +143,26 @@ class ShellTestMixIn(FunctionalTestMixIn):
             command=list(self.get_record_data('command')),
         )
 
+    def _get_init_script(self, no_daemon=True, daemon_options=[],
+                        daemon_outfile=None):
+        options = []
+        if no_daemon:
+            options.append('--no-daemon')
+        options.extend(map('--daemon-opt={0}'.format, daemon_options))
+        if daemon_outfile:
+            options.extend(['--daemon-outfile', daemon_outfile])
+        optstr = ' '.join(options)
+        return "{0} $({1} init --shell {2} {3})".format(
+            self.source_command, BASE_COMMAND, self.shell, optstr)
+
+    def get_script(self, script='', **kwds):
+        init_script = self._get_init_script(**kwds)
+        return '\n'.join([init_script, textwrap.dedent(script)])
+
     def test_init(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
+        script = self.get_script("""
         test -n "$_RASH_SESSION_ID" && echo "_RASH_SESSION_ID is defined"
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell)
+        """)
         (stdout, stderr) = self.run_shell(script)
         self.assertFalse(stderr)
         self.assertIn('_RASH_SESSION_ID is defined', stdout)
@@ -177,12 +191,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
         self.assertEqual(init_id, exit_id)
 
     def test_postexec(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
-        {3}
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell,
-            self.test_postexec_script)
+        script = self.get_script(self.test_postexec_script)
         (stdout, stderr) = self.run_shell(script)
 
         # stderr may have some errors in it
@@ -210,12 +219,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
     """Set this to a shell script for :meth:`test_postexc`."""
 
     def test_exit_code(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
-        {3}
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell,
-            self.test_exit_code_script)
+        script = self.get_script(self.test_exit_code_script)
         (stdout, stderr) = self.run_shell(script)
 
         # stderr may have some errors in it
@@ -236,12 +240,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
     """Set this to a shell script for :meth:`test_exit_code`."""
 
     def test_pipe_status(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
-        {3}
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell,
-            self.test_pipe_status_script)
+        script = self.get_script(self.test_pipe_status_script)
         (stdout, stderr) = self.run_shell(script)
 
         # stderr may have some errors in it
@@ -262,9 +261,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
     """Set this to a shell script for :meth:`test_pipe_status`."""
 
     def test_non_existing_directory(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
-
+        main_script = """
         rash-precmd
         mkdir non_existing_directory
 
@@ -279,23 +276,17 @@ class ShellTestMixIn(FunctionalTestMixIn):
 
         rash-precmd
         cd ..
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell)
+        """
+        script = self.get_script(main_script)
         (stdout, stderr) = self.run_shell(script)
         self.assertNotIn('Traceback', stderr)
 
     @skipIf(PY3, "watchdog does not support Python 3")
     def test_daemon(self):
         daemon_outfile = os.path.join(self.conf.base_path, 'daemon.out')
-        script = textwrap.dedent(r"""
-        rash_initrc="$({1} init --shell {2} \
-            --daemon-opt=--keep-json \
-            --daemon-opt=--log-level=DEBUG \
-            --daemon-outfile {3})"
-        {0} $rash_initrc
-        echo rash_initrc=$rash_initrc
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell, daemon_outfile)
+        script = self.get_script(
+            no_daemon=False, daemon_outfile=daemon_outfile,
+            daemon_options=['--keep-json', '--log-level=DEBUG'])
         (stdout, stderr) = self.run_shell(script)
 
         # These are useful when debugging, so let's leave them:
@@ -404,22 +395,16 @@ class TestZsh(ShellTestMixIn, BaseTestCase):
     """)
 
     def test_zsh_executes_preexec(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
-        echo _RASH_EXECUTING=$_RASH_EXECUTING
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell)
+        script = self.get_script('echo _RASH_EXECUTING=$_RASH_EXECUTING')
         (stdout, stderr) = self.run_shell(script)
         self.assertFalse(stderr)
         self.assertIn('_RASH_EXECUTING=t', stdout)
 
     def test_hook_installation(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
+        script = self.get_script("""
         echo $precmd_functions
         echo $preexec_functions
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell)
+        """)
         (stdout, stderr) = self.run_shell(script)
         self.assertIn('rash-precmd', stdout)
         self.assertIn('rash-preexec', stdout)
@@ -443,10 +428,6 @@ class TestBash(ShellTestMixIn, BaseTestCase):
     """)
 
     def test_hook_installation(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
-        echo $PROMPT_COMMAND
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell)
+        script = self.get_script('echo $PROMPT_COMMAND')
         (stdout, stderr) = self.run_shell(script)
         self.assertIn('rash-precmd', stdout)
