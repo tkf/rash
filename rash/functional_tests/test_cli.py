@@ -105,6 +105,8 @@ class TestIsolation(FunctionalTestMixIn, BaseTestCase):
         conf = ConfigStore()
         print(repr(conf.base_path))
         """).encode())
+        stderr = stderr.decode()
+        stdout = stdout.decode()
         base_path = eval(stdout)
         self.assertEqual(base_path, self.conf_base_path)
         self.assertFalse(stderr)
