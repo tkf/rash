@@ -306,7 +306,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
         def pid_file_contains_a_number():
             try:
                 with open(self.conf.daemon_pid_path) as f:
-                    f.read().strip().isdigit()
+                    return f.read().strip().isdigit()
             except IOError:
                 return False
 
