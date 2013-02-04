@@ -46,15 +46,17 @@ def daemon_run(no_error, record_path, keep_json, check_duplicate,
         os.remove(conf.daemon_pid_path)
 
 
-def start_daemon_in_subprocess(options):
+def start_daemon_in_subprocess(options, outpath=os.devnull):
     """
     Run `rash daemon --no-error` in background.
     """
-    with open(os.devnull, 'w') as devnull:
+    from .utils.py3compat import nested
+    with nested(open(os.devnull, 'w'),
+                open(outpath, 'w')) as (stdin, stdout):
         subprocess.Popen(
             [os.path.abspath(sys.executable), '-m', 'rash.cli',
              'daemon', '--no-error'] + options,
-            stdin=devnull, stdout=devnull, stderr=devnull)
+            stdin=stdin, stdout=stdout, stderr=subprocess.STDOUT)
 
 
 def daemon_add_arguments(parser):

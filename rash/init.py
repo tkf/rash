@@ -10,7 +10,7 @@ def find_init(shell):
     return os.path.join(rash_dir, 'ext', 'rash.{0}'.format(shell_name(shell)))
 
 
-def init_run(shell, no_daemon, daemon_options):
+def init_run(shell, no_daemon, daemon_options, daemon_outfile):
     """
     Configure your shell.
 
@@ -56,7 +56,7 @@ def init_run(shell, no_daemon, daemon_options):
 
     if not no_daemon:
         from .daemon import start_daemon_in_subprocess
-        start_daemon_in_subprocess(daemon_options)
+        start_daemon_in_subprocess(daemon_options, daemon_outfile)
 
 
 def init_add_arguments(parser):
@@ -77,6 +77,12 @@ def init_add_arguments(parser):
         help="""
         Add options given to daemon.  See "rash daemon --help" for
         available options.  It can be specified many times.
+        """)
+    parser.add_argument(
+        '--daemon-outfile', default=os.devnull,
+        help="""
+        Path to redirect STDOUT and STDERR of daemon process.
+        This is mostly for debugging.
         """)
 
 
