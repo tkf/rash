@@ -122,7 +122,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
-        return proc.communicate(script)
+        return proc.communicate(script.encode())
 
     def get_record_data(self, record_type):
         top = os.path.join(self.conf.record_path, record_type)
@@ -145,7 +145,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
         {0} $({1} init --shell {2})
         test -n "$_RASH_SESSION_ID" && echo "_RASH_SESSION_ID is defined"
         """).format(
-            self.source_command, BASE_COMMAND, self.shell).encode()
+            self.source_command, BASE_COMMAND, self.shell)
         (stdout, stderr) = self.run_shell(script)
         self.assertFalse(stderr)
         self.assertIn('_RASH_SESSION_ID is defined', stdout.decode())
@@ -179,7 +179,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
         {3}
         """).format(
             self.source_command, BASE_COMMAND, self.shell,
-            self.test_postexec_script).encode()
+            self.test_postexec_script)
         (stdout, stderr) = self.run_shell(script)
 
         # stderr may have some errors in it
@@ -212,7 +212,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
         {3}
         """).format(
             self.source_command, BASE_COMMAND, self.shell,
-            self.test_exit_code_script).encode()
+            self.test_exit_code_script)
         (stdout, stderr) = self.run_shell(script)
 
         # stderr may have some errors in it
@@ -238,7 +238,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
         {3}
         """).format(
             self.source_command, BASE_COMMAND, self.shell,
-            self.test_pipe_status_script).encode()
+            self.test_pipe_status_script)
         (stdout, stderr) = self.run_shell(script)
 
         # stderr may have some errors in it
@@ -277,7 +277,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
         rash-precmd
         cd ..
         """).format(
-            self.source_command, BASE_COMMAND, self.shell).encode()
+            self.source_command, BASE_COMMAND, self.shell)
         (stdout, stderr) = self.run_shell(script)
         self.assertNotIn('Traceback', stderr.decode())
 
@@ -293,7 +293,6 @@ class ShellTestMixIn(FunctionalTestMixIn):
         echo rash_initrc=$rash_initrc
         """).format(
             self.source_command, BASE_COMMAND, self.shell, daemon_outfile)
-        script = script.encode()
         (stdout, stderr) = self.run_shell(script)
         stderr = stderr.decode()
         stdout = stdout.decode()
@@ -408,7 +407,7 @@ class TestZsh(ShellTestMixIn, BaseTestCase):
         {0} $({1} init --shell {2})
         echo _RASH_EXECUTING=$_RASH_EXECUTING
         """).format(
-            self.source_command, BASE_COMMAND, self.shell).encode()
+            self.source_command, BASE_COMMAND, self.shell)
         (stdout, stderr) = self.run_shell(script)
         self.assertFalse(stderr)
         self.assertIn('_RASH_EXECUTING=t', stdout.decode())
@@ -419,7 +418,7 @@ class TestZsh(ShellTestMixIn, BaseTestCase):
         echo $precmd_functions
         echo $preexec_functions
         """).format(
-            self.source_command, BASE_COMMAND, self.shell).encode()
+            self.source_command, BASE_COMMAND, self.shell)
         (stdout, stderr) = self.run_shell(script)
         self.assertIn('rash-precmd', stdout.decode())
         self.assertIn('rash-preexec', stdout.decode())
@@ -447,6 +446,6 @@ class TestBash(ShellTestMixIn, BaseTestCase):
         {0} $({1} init --shell {2})
         echo $PROMPT_COMMAND
         """).format(
-            self.source_command, BASE_COMMAND, self.shell).encode()
+            self.source_command, BASE_COMMAND, self.shell)
         (stdout, stderr) = self.run_shell(script)
         self.assertIn('rash-precmd', stdout.decode())
