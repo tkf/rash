@@ -54,8 +54,7 @@ def init_run(shell, no_daemon):
         raise RuntimeError(
             "Shell '{0}' is not supported.".format(shell_name(shell)))
 
-    # FIXME: Use the following once daemon is implemented.
-    if False:  # not no_daemon:
+    if not no_daemon:
         from .daemon import start_daemon_in_subprocess
         start_daemon_in_subprocess()
 
