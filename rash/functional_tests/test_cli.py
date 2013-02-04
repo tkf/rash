@@ -299,15 +299,20 @@ class ShellTestMixIn(FunctionalTestMixIn):
         print(stdout)
         print(self.conf.daemon_pid_path)
 
-        # Parse `stdout` to get $RASH_DAEMON_PID
-        for line in stdout.splitlines():
-            if line.startswith('RASH_DAEMON_PID'):
-                pid = line.split('=', 1)[1].strip()
-                pid = int(pid)
-                break
-        else:
-            raise AssertionError(
-                "RASH_DAEMON_PID cannot be parsed from STDOUT")
+        # The daemon process should create a PID file containing a number
+        @self.assert_poll_do(
+            "Daemon did not produce PID file at: {0}"
+            .format(self.conf.daemon_pid_path))
+        def pid_file_contains_a_number():
+            try:
+                with open(self.conf.daemon_pid_path) as f:
+                    f.read().strip().isdigit()
+            except IOError:
+                return False
+
+        # Read the PID file
+        with open(self.conf.daemon_pid_path) as f:
+            pid = int(f.read().strip())
 
         # The daemon process should be alive
         ps_pid_cmd = ['ps', '--pid', str(pid)]
@@ -317,15 +322,6 @@ class ShellTestMixIn(FunctionalTestMixIn):
             raise AssertionError(
                 'At this point, daemon process should be live '
                 '("ps --pid {0}" failed).'.format(pid))
-
-        # The daemon process should create the PID file
-        self.assert_poll(lambda: os.path.exists(self.conf.daemon_pid_path),
-                         "daemon_pid_path={0!r} is not created on time"
-                         .format(self.conf.daemon_pid_path))
-
-        # The PID file should contain a number
-        with open(self.conf.daemon_pid_path) as f:
-            assert int(f.read().strip()) == pid
 
         # The daemon should create a log file
         self.assert_poll(lambda: os.path.exists(self.conf.daemon_log_path),
