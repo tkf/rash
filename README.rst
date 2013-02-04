@@ -57,8 +57,6 @@ RASH tested against Python 2.6, 2.7 and 3.2.  However, as watchdog_
 does not work with Python 3, you can't get full power of RASH with
 Python 3.
 
-.. _watchdog: http://pypi.python.org/pypi/watchdog/
-
 
 Setup
 =====
@@ -134,6 +132,20 @@ You can see all information associated with a command with
 ``rash show`` command::
 
    rash show --full 1677
+
+
+Dependency
+==========
+
+Python modules:
+
+* watchdog_
+
+.. _watchdog: http://pypi.python.org/pypi/watchdog/
+
+Command line program:
+
+* nohup
 
 
 Design principle
