@@ -122,7 +122,8 @@ class ShellTestMixIn(FunctionalTestMixIn):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
-        return proc.communicate(script.encode())
+        (stdout, stderr) = proc.communicate(script.encode())
+        return (stdout.decode(), stderr.decode())
 
     def get_record_data(self, record_type):
         top = os.path.join(self.conf.record_path, record_type)
@@ -148,7 +149,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
             self.source_command, BASE_COMMAND, self.shell)
         (stdout, stderr) = self.run_shell(script)
         self.assertFalse(stderr)
-        self.assertIn('_RASH_SESSION_ID is defined', stdout.decode())
+        self.assertIn('_RASH_SESSION_ID is defined', stdout)
 
         assert os.path.isdir(self.conf.record_path)
         records = self.get_all_record_data()
@@ -279,7 +280,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
         """).format(
             self.source_command, BASE_COMMAND, self.shell)
         (stdout, stderr) = self.run_shell(script)
-        self.assertNotIn('Traceback', stderr.decode())
+        self.assertNotIn('Traceback', stderr)
 
     @skipIf(PY3, "watchdog does not support Python 3")
     def test_daemon(self):
@@ -294,8 +295,6 @@ class ShellTestMixIn(FunctionalTestMixIn):
         """).format(
             self.source_command, BASE_COMMAND, self.shell, daemon_outfile)
         (stdout, stderr) = self.run_shell(script)
-        stderr = stderr.decode()
-        stdout = stdout.decode()
 
         # These are useful when debugging, so let's leave them:
         print(stderr)
@@ -410,7 +409,7 @@ class TestZsh(ShellTestMixIn, BaseTestCase):
             self.source_command, BASE_COMMAND, self.shell)
         (stdout, stderr) = self.run_shell(script)
         self.assertFalse(stderr)
-        self.assertIn('_RASH_EXECUTING=t', stdout.decode())
+        self.assertIn('_RASH_EXECUTING=t', stdout)
 
     def test_hook_installation(self):
         script = textwrap.dedent("""
@@ -420,8 +419,8 @@ class TestZsh(ShellTestMixIn, BaseTestCase):
         """).format(
             self.source_command, BASE_COMMAND, self.shell)
         (stdout, stderr) = self.run_shell(script)
-        self.assertIn('rash-precmd', stdout.decode())
-        self.assertIn('rash-preexec', stdout.decode())
+        self.assertIn('rash-precmd', stdout)
+        self.assertIn('rash-preexec', stdout)
 
 
 class TestBash(ShellTestMixIn, BaseTestCase):
@@ -448,4 +447,4 @@ class TestBash(ShellTestMixIn, BaseTestCase):
         """).format(
             self.source_command, BASE_COMMAND, self.shell)
         (stdout, stderr) = self.run_shell(script)
-        self.assertIn('rash-precmd', stdout.decode())
+        self.assertIn('rash-precmd', stdout)
