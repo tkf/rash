@@ -8,7 +8,7 @@ import textwrap
 import json
 import time
 
-from ..utils.py3compat import PY3, getcwd
+from ..utils.py3compat import PY3
 from ..config import ConfigStore
 from ..tests.utils import BaseTestCase, skipIf
 
@@ -47,8 +47,6 @@ class FunctionalTestMixIn(object):
         self.home_dir = tempfile.mkdtemp(prefix='rash-test-')
         self.config_dir = os.path.join(self.home_dir, '.config')
         self.conf_base_path = os.path.join(self.config_dir, 'rash')
-        self.__orig_cwd = getcwd()
-        os.chdir(self.home_dir)
 
         self.environ = os.environ.copy()
         self.environ['HOME'] = self.home_dir
@@ -72,21 +70,21 @@ class FunctionalTestMixIn(object):
                   .format(e))
 
         try:
-            os.chdir(self.__orig_cwd)
-        finally:
-            try:
-                shutil.rmtree(self.home_dir)
-            except OSError:
-                print("Failed to remove self.home_dir={0}. "
-                      "Can be timing issue.  Trying again..."
-                      .format(self.home_dir))
-                time.sleep(0.1)
-                shutil.rmtree(self.home_dir)
+            shutil.rmtree(self.home_dir)
+        except OSError:
+            print("Failed to remove self.home_dir={0}. "
+                  "Can be timing issue.  Trying again..."
+                  .format(self.home_dir))
+            time.sleep(0.1)
+            shutil.rmtree(self.home_dir)
 
     def popen(self, *args, **kwds):
         if 'env' in kwds:
             raise RuntimeError('Do not use env!')
+        if 'cwd' in kwds:
+            raise RuntimeError('Do not use cwd!')
         kwds['env'] = self.environ
+        kwds['cwd'] = self.home_dir
         return subprocess.Popen(*args, **kwds)
 
 
