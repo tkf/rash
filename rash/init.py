@@ -57,7 +57,7 @@ def init_run(shell, no_daemon):
     if not no_daemon:
         from .daemon import start_daemon_in_subprocess
         # FIXME: Make options to be passed to daemon command optional.
-        start_daemon_in_subprocess(['--keep-json'])
+        start_daemon_in_subprocess(['--keep-json', '--log-level=DEBUG'])
 
 
 def init_add_arguments(parser):
