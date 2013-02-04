@@ -43,6 +43,16 @@ class TestCLI(unittest.TestCase):
 
 class FunctionalTestMixIn(object):
 
+    """
+    MixIn class for isolating functional test environment.
+
+    FIXME: (I think) This isolation does not work in Mac OS in Windows!
+           I can workaround this by adding --config-dir global
+           option to specify configuration directory from
+           command line, rather than using $HOME.
+
+    """
+
     def setUp(self):
         self.home_dir = tempfile.mkdtemp(prefix='rash-test-')
         self.config_dir = os.path.join(self.home_dir, '.config')
