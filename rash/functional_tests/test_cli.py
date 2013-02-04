@@ -283,14 +283,17 @@ class ShellTestMixIn(FunctionalTestMixIn):
 
     @skipIf(PY3, "watchdog does not support Python 3")
     def test_daemon(self):
+        daemon_outfile = os.path.join(self.conf.base_path, 'daemon.out')
         script = textwrap.dedent(r"""
         rash_initrc="$({1} init --shell {2} \
             --daemon-opt=--keep-json \
-            --daemon-opt=--log-level=DEBUG)"
+            --daemon-opt=--log-level=DEBUG \
+            --daemon-outfile {3})"
         {0} $rash_initrc
         echo rash_initrc=$rash_initrc
         """).format(
-            self.source_command, BASE_COMMAND, self.shell).encode()
+            self.source_command, BASE_COMMAND, self.shell, daemon_outfile)
+        script = script.encode()
         (stdout, stderr) = self.run_shell(script)
         stderr = stderr.decode()
         stdout = stdout.decode()
@@ -299,6 +302,13 @@ class ShellTestMixIn(FunctionalTestMixIn):
         print(stderr)
         print(stdout)
         print(self.conf.daemon_pid_path)
+
+        # Print daemon process output for debugging
+        with open(daemon_outfile) as f:
+            daemon_output = f.read().strip()
+            if daemon_output:
+                print("Daemon process output ({0})".format(daemon_outfile))
+                print(daemon_output.decode())
 
         # The daemon process should create a PID file containing a number
         @self.assert_poll_do(
