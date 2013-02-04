@@ -10,7 +10,7 @@ def find_init(shell):
     return os.path.join(rash_dir, 'ext', 'rash.{0}'.format(shell_name(shell)))
 
 
-def init_run(shell):
+def init_run(shell, no_daemon, daemon_options, daemon_outfile):
     """
     Configure your shell.
 
@@ -21,30 +21,13 @@ def init_run(shell):
 
     To check if your shell is supported, simply run::
 
-      %(prog)s
+      %(prog)s --no-daemon
 
     By default, this command also starts daemon in background to
     automatically inndex shell history records.  To not start daemon,
-    use --no-daemon option.
+    use --no-daemon option like this::
 
-    Following shell variables can be set to control initialize
-    sequence for your shell.
-
-    RASH_INIT_NO_DAEMON : "t" | ""
-      Set ths to "t" to not start "rash daemon" on init.
-
-    RASH_INIT_DAEMON_OPTIONS : space separated options
-      Options passed to "rash daemon" command.
-      Note that --no-error is always passed to the command.
-
-    RASH_INIT_DAEMON_OUT : file path
-      Dump STDOUT/STDERR of "rash daemon" process to here.
-      Default is /dev/null.
-
-    **Example**::
-
-      RASH_INIT_NO_DAEMON=t  # Do not start "rash daemon" on init.
-      source $(%(prog)s)
+      source $(%(prog)s --no-daemon)
 
     """
     init_file = find_init(shell)
@@ -54,6 +37,10 @@ def init_run(shell):
         raise RuntimeError(
             "Shell '{0}' is not supported.".format(shell_name(shell)))
 
+    if not no_daemon:
+        from .daemon import start_daemon_in_subprocess
+        start_daemon_in_subprocess(daemon_options, daemon_outfile)
+
 
 def init_add_arguments(parser):
     parser.add_argument(
@@ -61,6 +48,25 @@ def init_add_arguments(parser):
         help="""
         name of shell you are using.  directory before the last /
         is discarded.  It defaults to $SHELL.
+        """)
+    parser.add_argument(
+        '--no-daemon', action='store_true', default=False,
+        help="""
+        Do not start daemon.  By default, daemon is started if
+        there is no already running daemon.
+        """)
+    parser.add_argument(
+        '--daemon-opt', dest='daemon_options', action='append', default=[],
+        help="""
+        Add options given to daemon.  See "rash daemon --help" for
+        available options.  It can be specified many times.
+        Note that --no-error is always passed to the daemon command.
+        """)
+    parser.add_argument(
+        '--daemon-outfile', default=os.devnull,
+        help="""
+        Path to redirect STDOUT and STDERR of daemon process.
+        This is mostly for debugging.
         """)
 
 

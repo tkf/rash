@@ -46,21 +46,23 @@ def daemon_run(no_error, record_path, keep_json, check_duplicate,
         os.remove(conf.daemon_pid_path)
 
 
-def start_daemon_in_subprocess():
+def start_daemon_in_subprocess(options, outpath=os.devnull):
     """
     Run `rash daemon --no-error` in background.
 
-    FIXME: This function is not functional.  Its intention is to keep
-           the subprocess for daemon alive even after this Python
-           process exit.  Current workaround it to use shell to start
-           them in background.  See (./ext/rash.zsh, ./ext/rash.bash).
+    :type options: list of str
+    :arg  options: options for "rash daemon" command
+    :type outpath: str
+    :arg  outpath: path to redirect daemon output
 
     """
-    with open(os.devnull, 'w') as devnull:
+    from .utils.py3compat import nested
+    with nested(open(os.devnull),
+                open(outpath, 'w')) as (stdin, stdout):
         subprocess.Popen(
             [os.path.abspath(sys.executable), '-m', 'rash.cli',
-             'daemon', '--no-error'],
-            stdin=devnull, stdout=devnull, stderr=devnull)
+             'daemon', '--no-error'] + options,
+            stdin=stdin, stdout=stdout, stderr=subprocess.STDOUT)
 
 
 def daemon_add_arguments(parser):

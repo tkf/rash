@@ -105,6 +105,8 @@ class TestIsolation(FunctionalTestMixIn, BaseTestCase):
         conf = ConfigStore()
         print(repr(conf.base_path))
         """).encode())
+        stderr = stderr.decode()
+        stdout = stdout.decode()
         base_path = eval(stdout)
         self.assertEqual(base_path, self.conf_base_path)
         self.assertFalse(stderr)
@@ -122,7 +124,8 @@ class ShellTestMixIn(FunctionalTestMixIn):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE)
-        return proc.communicate(script)
+        (stdout, stderr) = proc.communicate(script.encode())
+        return (stdout.decode(), stderr.decode())
 
     def get_record_data(self, record_type):
         top = os.path.join(self.conf.record_path, record_type)
@@ -140,15 +143,29 @@ class ShellTestMixIn(FunctionalTestMixIn):
             command=list(self.get_record_data('command')),
         )
 
+    def _get_init_script(self, no_daemon=True, daemon_options=[],
+                        daemon_outfile=None):
+        options = []
+        if no_daemon:
+            options.append('--no-daemon')
+        options.extend(map('--daemon-opt={0}'.format, daemon_options))
+        if daemon_outfile:
+            options.extend(['--daemon-outfile', daemon_outfile])
+        optstr = ' '.join(options)
+        return "{0} $({1} init --shell {2} {3})".format(
+            self.source_command, BASE_COMMAND, self.shell, optstr)
+
+    def get_script(self, script='', **kwds):
+        init_script = self._get_init_script(**kwds)
+        return '\n'.join([init_script, textwrap.dedent(script)])
+
     def test_init(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
+        script = self.get_script("""
         test -n "$_RASH_SESSION_ID" && echo "_RASH_SESSION_ID is defined"
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell).encode()
+        """)
         (stdout, stderr) = self.run_shell(script)
         self.assertFalse(stderr)
-        self.assertIn('_RASH_SESSION_ID is defined', stdout.decode())
+        self.assertIn('_RASH_SESSION_ID is defined', stdout)
 
         assert os.path.isdir(self.conf.record_path)
         records = self.get_all_record_data()
@@ -174,12 +191,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
         self.assertEqual(init_id, exit_id)
 
     def test_postexec(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
-        {3}
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell,
-            self.test_postexec_script).encode()
+        script = self.get_script(self.test_postexec_script)
         (stdout, stderr) = self.run_shell(script)
 
         # stderr may have some errors in it
@@ -207,12 +219,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
     """Set this to a shell script for :meth:`test_postexc`."""
 
     def test_exit_code(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
-        {3}
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell,
-            self.test_exit_code_script).encode()
+        script = self.get_script(self.test_exit_code_script)
         (stdout, stderr) = self.run_shell(script)
 
         # stderr may have some errors in it
@@ -233,12 +240,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
     """Set this to a shell script for :meth:`test_exit_code`."""
 
     def test_pipe_status(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
-        {3}
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell,
-            self.test_pipe_status_script).encode()
+        script = self.get_script(self.test_pipe_status_script)
         (stdout, stderr) = self.run_shell(script)
 
         # stderr may have some errors in it
@@ -259,9 +261,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
     """Set this to a shell script for :meth:`test_pipe_status`."""
 
     def test_non_existing_directory(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
-
+        main_script = """
         rash-precmd
         mkdir non_existing_directory
 
@@ -276,38 +276,45 @@ class ShellTestMixIn(FunctionalTestMixIn):
 
         rash-precmd
         cd ..
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell).encode()
+        """
+        script = self.get_script(main_script)
         (stdout, stderr) = self.run_shell(script)
-        self.assertNotIn('Traceback', stderr.decode())
+        self.assertNotIn('Traceback', stderr)
 
     @skipIf(PY3, "watchdog does not support Python 3")
     def test_daemon(self):
-        script = textwrap.dedent("""
-        RASH_INIT_DAEMON_OPTIONS="--keep-json --log-level=DEBUG"
-        RASH_INIT_DAEMON_OUT=$HOME/.config/rash/daemon.out
-        {0} $({1} init --shell {2})
-        echo RASH_DAEMON_PID="$RASH_DAEMON_PID"
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell).encode()
+        daemon_outfile = os.path.join(self.conf.base_path, 'daemon.out')
+        script = self.get_script(
+            no_daemon=False, daemon_outfile=daemon_outfile,
+            daemon_options=['--keep-json', '--log-level=DEBUG'])
         (stdout, stderr) = self.run_shell(script)
-        stderr = stderr.decode()
-        stdout = stdout.decode()
 
         # These are useful when debugging, so let's leave them:
         print(stderr)
         print(stdout)
         print(self.conf.daemon_pid_path)
 
-        # Parse `stdout` to get $RASH_DAEMON_PID
-        for line in stdout.splitlines():
-            if line.startswith('RASH_DAEMON_PID'):
-                pid = line.split('=', 1)[1].strip()
-                pid = int(pid)
-                break
-        else:
-            raise AssertionError(
-                "RASH_DAEMON_PID cannot be parsed from STDOUT")
+        # Print daemon process output for debugging
+        with open(daemon_outfile) as f:
+            daemon_output = f.read().strip()
+            if daemon_output:
+                print("Daemon process output ({0})".format(daemon_outfile))
+                print(daemon_output.decode())
+
+        # The daemon process should create a PID file containing a number
+        @self.assert_poll_do(
+            "Daemon did not produce PID file at: {0}"
+            .format(self.conf.daemon_pid_path))
+        def pid_file_contains_a_number():
+            try:
+                with open(self.conf.daemon_pid_path) as f:
+                    return f.read().strip().isdigit()
+            except IOError:
+                return False
+
+        # Read the PID file
+        with open(self.conf.daemon_pid_path) as f:
+            pid = int(f.read().strip())
 
         # The daemon process should be alive
         ps_pid_cmd = ['ps', '--pid', str(pid)]
@@ -317,15 +324,6 @@ class ShellTestMixIn(FunctionalTestMixIn):
             raise AssertionError(
                 'At this point, daemon process should be live '
                 '("ps --pid {0}" failed).'.format(pid))
-
-        # The daemon process should create the PID file
-        self.assert_poll(lambda: os.path.exists(self.conf.daemon_pid_path),
-                         "daemon_pid_path={0!r} is not created on time"
-                         .format(self.conf.daemon_pid_path))
-
-        # The PID file should contain a number
-        with open(self.conf.daemon_pid_path) as f:
-            assert int(f.read().strip()) == pid
 
         # The daemon should create a log file
         self.assert_poll(lambda: os.path.exists(self.conf.daemon_log_path),
@@ -384,62 +382,52 @@ class ShellTestMixIn(FunctionalTestMixIn):
 
 class TestZsh(ShellTestMixIn, BaseTestCase):
     shell = 'zsh'
-    test_postexec_script = textwrap.dedent("""\
+    test_postexec_script = """
     rash-precmd
-    """)
-    test_exit_code_script = textwrap.dedent("""\
+    """
+    test_exit_code_script = """
     false
     rash-precmd
-    """)
-    test_pipe_status_script = textwrap.dedent("""\
+    """
+    test_pipe_status_script = """
     false | true
     rash-precmd
-    """)
+    """
 
     def test_zsh_executes_preexec(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
-        echo _RASH_EXECUTING=$_RASH_EXECUTING
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell).encode()
+        script = self.get_script('echo _RASH_EXECUTING=$_RASH_EXECUTING')
         (stdout, stderr) = self.run_shell(script)
         self.assertFalse(stderr)
-        self.assertIn('_RASH_EXECUTING=t', stdout.decode())
+        self.assertIn('_RASH_EXECUTING=t', stdout)
 
     def test_hook_installation(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
+        script = self.get_script("""
         echo $precmd_functions
         echo $preexec_functions
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell).encode()
+        """)
         (stdout, stderr) = self.run_shell(script)
-        self.assertIn('rash-precmd', stdout.decode())
-        self.assertIn('rash-preexec', stdout.decode())
+        self.assertIn('rash-precmd', stdout)
+        self.assertIn('rash-preexec', stdout)
 
 
 class TestBash(ShellTestMixIn, BaseTestCase):
     shell = 'bash'
-    test_postexec_script = textwrap.dedent("""\
+    test_postexec_script = """
     eval "$PROMPT_COMMAND"
     eval "$PROMPT_COMMAND"
-    """)
-    test_exit_code_script = textwrap.dedent("""\
+    """
+    test_exit_code_script = """
     eval "$PROMPT_COMMAND"
     false
     eval "$PROMPT_COMMAND"
-    """)
-    test_pipe_status_script = textwrap.dedent("""\
+    """
+    test_pipe_status_script = """
     eval "$PROMPT_COMMAND"
     false | true
     eval "$PROMPT_COMMAND"
-    """)
+    """
 
     def test_hook_installation(self):
-        script = textwrap.dedent("""
-        {0} $({1} init --shell {2})
-        echo $PROMPT_COMMAND
-        """).format(
-            self.source_command, BASE_COMMAND, self.shell).encode()
+        script = self.get_script('echo $PROMPT_COMMAND')
         (stdout, stderr) = self.run_shell(script)
-        self.assertIn('rash-precmd', stdout.decode())
+        self.assertIn('rash-precmd', stdout)
