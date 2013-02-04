@@ -382,17 +382,17 @@ class ShellTestMixIn(FunctionalTestMixIn):
 
 class TestZsh(ShellTestMixIn, BaseTestCase):
     shell = 'zsh'
-    test_postexec_script = textwrap.dedent("""\
+    test_postexec_script = """
     rash-precmd
-    """)
-    test_exit_code_script = textwrap.dedent("""\
+    """
+    test_exit_code_script = """
     false
     rash-precmd
-    """)
-    test_pipe_status_script = textwrap.dedent("""\
+    """
+    test_pipe_status_script = """
     false | true
     rash-precmd
-    """)
+    """
 
     def test_zsh_executes_preexec(self):
         script = self.get_script('echo _RASH_EXECUTING=$_RASH_EXECUTING')
@@ -412,20 +412,20 @@ class TestZsh(ShellTestMixIn, BaseTestCase):
 
 class TestBash(ShellTestMixIn, BaseTestCase):
     shell = 'bash'
-    test_postexec_script = textwrap.dedent("""\
+    test_postexec_script = """
     eval "$PROMPT_COMMAND"
     eval "$PROMPT_COMMAND"
-    """)
-    test_exit_code_script = textwrap.dedent("""\
+    """
+    test_exit_code_script = """
     eval "$PROMPT_COMMAND"
     false
     eval "$PROMPT_COMMAND"
-    """)
-    test_pipe_status_script = textwrap.dedent("""\
+    """
+    test_pipe_status_script = """
     eval "$PROMPT_COMMAND"
     false | true
     eval "$PROMPT_COMMAND"
-    """)
+    """
 
     def test_hook_installation(self):
         script = self.get_script('echo $PROMPT_COMMAND')
