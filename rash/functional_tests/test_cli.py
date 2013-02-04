@@ -283,11 +283,12 @@ class ShellTestMixIn(FunctionalTestMixIn):
 
     @skipIf(PY3, "watchdog does not support Python 3")
     def test_daemon(self):
-        script = textwrap.dedent("""
-        RASH_INIT_DAEMON_OPTIONS="--keep-json --log-level=DEBUG"
-        RASH_INIT_DAEMON_OUT=$HOME/.config/rash/daemon.out
-        {0} $({1} init --shell {2})
-        echo RASH_DAEMON_PID="$RASH_DAEMON_PID"
+        script = textwrap.dedent(r"""
+        rash_initrc="$({1} init --shell {2} \
+            --daemon-opt=--keep-json \
+            --daemon-opt=--log-level=DEBUG)"
+        {0} $rash_initrc
+        echo rash_initrc=$rash_initrc
         """).format(
             self.source_command, BASE_COMMAND, self.shell).encode()
         (stdout, stderr) = self.run_shell(script)

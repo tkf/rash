@@ -10,7 +10,7 @@ def find_init(shell):
     return os.path.join(rash_dir, 'ext', 'rash.{0}'.format(shell_name(shell)))
 
 
-def init_run(shell, no_daemon):
+def init_run(shell, no_daemon, daemon_options):
     """
     Configure your shell.
 
@@ -56,8 +56,7 @@ def init_run(shell, no_daemon):
 
     if not no_daemon:
         from .daemon import start_daemon_in_subprocess
-        # FIXME: Make options to be passed to daemon command optional.
-        start_daemon_in_subprocess(['--keep-json', '--log-level=DEBUG'])
+        start_daemon_in_subprocess(daemon_options)
 
 
 def init_add_arguments(parser):
@@ -72,6 +71,12 @@ def init_add_arguments(parser):
         help="""
         Do not start daemon.  By default, daemon is started if
         there is no already running daemon.
+        """)
+    parser.add_argument(
+        '--daemon-opt', dest='daemon_options', action='append', default=[],
+        help="""
+        Add options given to daemon.  See "rash daemon --help" for
+        available options.  It can be specified many times.
         """)
 
 
