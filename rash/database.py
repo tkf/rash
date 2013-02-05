@@ -223,9 +223,13 @@ class DataBase(object):
         All attributes of `crec` except for `environ` are concerned.
 
         """
-        keys = ['command', 'cwd', 'terminal', 'start', 'stop', 'exit_code']
+        keys = ['command_history_id', 'command', 'session_history_id',
+                'cwd', 'terminal',
+                'start', 'stop', 'exit_code']
         sql = """
-        SELECT CL.command, DL.directory, TL.terminal,
+        SELECT
+            command_history.id, CL.command, session_id,
+            DL.directory, TL.terminal,
             start_time, stop_time, exit_code
         FROM command_history
         LEFT JOIN command_list AS CL ON command_id = CL.id
