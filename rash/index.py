@@ -1,6 +1,5 @@
 def index_run(record_path, keep_json, check_duplicate):
     """
-    [UNDER CONSTRUCTION]
     Convert raw JSON records into sqlite3 DB.
 
     .. note:: The idea is to use this command at early stage of

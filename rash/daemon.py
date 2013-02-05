@@ -4,7 +4,6 @@ import os
 def daemon_run(no_error, record_path, keep_json, check_duplicate,
                log_level):
     """
-    [UNDER CONSTRUCTION]
     Run RASH index daemon.
 
     This daemon watches the directory ``~/.config/rash/data/record``
@@ -24,7 +23,7 @@ def daemon_run(no_error, record_path, keep_json, check_duplicate,
     if log_level:
         conf.daemon_log_level = log_level
 
-    # FIXME: make PID checking/writing atomic if possible
+    # SOMEDAY: make PID checking/writing atomic if possible
     if os.path.exists(conf.daemon_pid_path):
         if no_error:
             return

@@ -83,7 +83,7 @@ def record_run(record_type, print_session_id, **kwds):
         raise RuntimeError(
             '--print-session-id should be used with --record-type=init')
 
-    # FIXME: make these configurable
+    # SOMEDAY: make environment variables to log configurable
     if record_type == 'init':
         envkeys = ['SHELL', 'TERM', 'HOST', 'TTY', 'USER', 'DISPLAY']
     elif record_type == 'exit':

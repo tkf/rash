@@ -46,10 +46,11 @@ class FunctionalTestMixIn(object):
     """
     MixIn class for isolating functional test environment.
 
-    FIXME: (I think) This isolation does not work in Mac OS in Windows!
-           I can workaround this by adding --config-dir global
-           option to specify configuration directory from
-           command line, rather than using $HOME.
+    SOMEDAY: Make FunctionalTestMixIn work in non-*nix systems.
+    (I think) This isolation does not work in Mac OS in Windows!
+    I can workaround this by adding --config-dir global
+    option to specify configuration directory from
+    command line, rather than using $HOME.
 
     """
 

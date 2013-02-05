@@ -74,7 +74,7 @@ class DataBase(object):
 
         :rtype: sqlite3.Connection
 
-        FIXME: Get rid of this function.  Keeping connection around as
+        SOMEDAY: Get rid of this function.  Keeping connection around as
         an argument to the method using this context manager is
         probably better as it is more explicit.
 
