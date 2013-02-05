@@ -81,12 +81,10 @@ Forget how to run automated test for the current project?::
 
    rash search --cwd . "*test*" "tox*"
 
-**NOT IMPLEMENTED**
 All git commands you ran in one week.::
 
-   rash search --time-after "a week ago" "git*"
+   rash search --time-after "1 week ago" "git*"
 
-**NOT IMPLEMENTED**
 Some intensive task you ran in the current project that succeeded and
 took longer than 30 minutes.::
 
@@ -97,8 +95,7 @@ What did I do after `cd`-ing to some directory?::
 
    rash search --after-context 5 "cd SOME-DIRECTORY"
 
-**NOT IMPLEMENTED**
-All failed command you ran at this directory.::
+All failed commands you ran at this directory.::
 
    rash search --cwd . --exclude-exit-code 0
 
@@ -107,10 +104,9 @@ Top 5 programs you use most.::
 
    rash search --limit 5 --sort-program-frequency
 
-**NOT IMPLEMENTED**
 Count number of commands you ran in one day::
 
-   rash search --no-unique --time-after "a day ago" | wc -l
+   rash search --limit -1 --no-unique --time-after "1 day ago" | wc -l
 
 
 Showing detailed information -- ``rash show``
