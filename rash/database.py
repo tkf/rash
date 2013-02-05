@@ -69,6 +69,8 @@ class DataBase(object):
         with self._get_db() as db:
             with open(self.schemapath) as f:
                 db.cursor().executescript(f.read())
+            # FIXME: Make rash_info table to automatically update when
+            # the versions are changed.
             db.execute(
                 'INSERT INTO rash_info (rash_version, schema_version) '
                 'VALUES (?, ?)',

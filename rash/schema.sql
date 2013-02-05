@@ -4,7 +4,9 @@ CREATE TABLE command_history (
   command_id INTEGER,
   session_id INTEGER,
   directory_id INTEGER,
-  terminal_id INTEGER,  -- FIXME: move this to session_history table
+  -- SOMEDAY: Remove terminal_id or move this to session_history table.
+  -- See the comment in record_run (./record.py).
+  terminal_id INTEGER,
   start_time TIMESTAMP,
   stop_time TIMESTAMP,
   exit_code INTEGER,
