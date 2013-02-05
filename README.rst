@@ -140,8 +140,10 @@ Dependency
 Python modules:
 
 * watchdog_
+* parsedatetime_
 
 .. _watchdog: http://pypi.python.org/pypi/watchdog/
+.. _parsedatetime: http://pypi.python.org/pypi/parsedatetime/
 
 Command line program:
 

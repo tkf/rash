@@ -6,6 +6,15 @@ def search_run(**kwds):
     """
     from .config import ConfigStore
     from .database import DataBase
+    from .utils.timeutils import parse_datetime
+
+    for key in ['time_after', 'time_before']:
+        val = kwds[key]
+        if val:
+            dt = parse_datetime(val)
+            if dt:
+                kwds[key] = dt
+
     db = DataBase(ConfigStore().db_path)
     for crec in db.search_command_record(**kwds):
         print(crec.command)

@@ -242,7 +242,8 @@ class DataBase(object):
                 yield CommandRecord(**dict(zip(keys, row)))
 
     def _compile_sql_search_command_record(
-            cls, limit, pattern, cwd, cwd_glob, unique, **_):
+            cls, limit, pattern, cwd, cwd_glob, unique,
+            time_after, time_before, **_):
         keys = ['command', 'cwd', 'terminal', 'start', 'stop', 'exit_code']
         columns = ['CL.command', 'DL.directory', 'TL.terminal',
                    'start_time', 'stop_time', 'exit_code']
@@ -260,6 +261,14 @@ class DataBase(object):
         add_or_match('glob(?, {0})', 'DL.directory', cwd_glob)
         add_or_match('{0} = ?', 'DL.directory',
                      [normalize_directory(os.path.abspath(p)) for p in cwd])
+
+        if time_after:
+            conditions.append('DATETIME(start_time) >= ?')
+            params.append(time_after)
+
+        if time_before:
+            conditions.append('DATETIME(start_time) <= ?')
+            params.append(time_before)
 
         where = ''
         if conditions:

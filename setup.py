@@ -8,6 +8,7 @@ import rash
 PY3 = (sys.version_info[0] >= 3)
 
 install_requires = [
+    'parsedatetime',
     'argparse',
 ]
 if not PY3:
