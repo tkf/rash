@@ -133,6 +133,8 @@ def search_add_arguments(parser):
         Python string formatter.  Available keys:
         command, exit_code, pipestatus (a list), start, stop, cwd,
         command_history_id, session_history_id.
+        See also:
+        http://docs.python.org/library/string.html#format-string-syntax
         """)
     # Misc
     parser.add_argument(
