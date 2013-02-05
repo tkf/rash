@@ -123,11 +123,10 @@ ID number for each command history.::
    1678  git diff --word-diff
    1780  git merge
 
-**NOT IMPLEMENTED**
 You can see all information associated with a command with
 ``rash show`` command::
 
-   rash show --full 1677
+   rash show 1677
 
 
 Dependency
