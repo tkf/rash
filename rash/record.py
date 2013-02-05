@@ -45,17 +45,25 @@ def get_environ(keys):
       automatically fetch it using :meth:`platform.node`.
     * If 'TTY' is not in :data:`os.environ`, this function
       automatically fetch it using :meth:`os.ttyname`.
+    * Set 'RASH_SPENV_TERMINAL' if needed.
 
     """
     items = ((k, os.environ.get(k)) for k in keys)
     subenv = dict((k, v) for (k, v) in items if v is not None)
-    if 'HOST' in keys and not subenv.get('HOST'):
+    needset = lambda k: k in keys and not subenv.get(k)
+
+    def setifnonempty(key, value):
+        if value:
+            subenv[key] = value
+
+    if needset('HOST'):
         import platform
         subenv['HOST'] = platform.node()
-    if 'TTY' in keys and not subenv.get('TTY'):
-        tty = get_tty()
-        if tty:
-            subenv['TTY'] = tty
+    if needset('TTY'):
+        setifnonempty('TTY', get_tty())
+    if needset('RASH_SPENV_TERMINAL'):
+        from .utils.termdetection import detect_terminal
+        setifnonempty('RASH_SPENV_TERMINAL', detect_terminal())
     return subenv
 
 
@@ -85,7 +93,14 @@ def record_run(record_type, print_session_id, **kwds):
 
     # SOMEDAY: make environment variables to log configurable
     if record_type == 'init':
-        envkeys = ['SHELL', 'TERM', 'HOST', 'TTY', 'USER', 'DISPLAY']
+        envkeys = [
+            'SHELL', 'TERM', 'HOST', 'TTY', 'USER', 'DISPLAY',
+            # SOMEDAY: Reevaluate if "RASH_SPENV_TERMINAL" is the right choice.
+            # Here, I am using `environ` dict as a generic key value store.
+            # Using 'RASH_SPENV_' as a prefix key, it is very easy to add
+            # new variable to track.
+            'RASH_SPENV_TERMINAL',
+        ]
     elif record_type == 'exit':
         envkeys = []
     elif record_type == 'command':
@@ -145,9 +160,6 @@ def record_add_arguments(parser):
     parser.add_argument(
         '--stop', type=int,
         help='the time COMMAND is finished.')
-    parser.add_argument(
-        '--terminal',
-        help='like $TERM, but can be anything (e.g., emacs / tmux).')
     parser.add_argument(
         '--session-id',
         help='''
