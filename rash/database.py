@@ -284,7 +284,8 @@ class DataBase(object):
         conditions = []
 
         if cwd_under:
-            cwd_glob.extend(os.path.join(p, "*") for p in cwd_under)
+            cwd_glob.extend(os.path.join(os.path.abspath(p), "*")
+                            for p in cwd_under)
 
         def add_or_match(template, name, args):
             conditions.extend(concat_expr(
