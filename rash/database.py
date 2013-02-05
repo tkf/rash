@@ -122,7 +122,7 @@ class DataBase(object):
         with self.connection(commit=True) as connection:
             db = connection.cursor()
             ch_id = self._insert_command_history(db, crec)
-            self._insert_session_environ(db, ch_id, crec.environ)
+            self._isnert_command_environment(db, ch_id, crec.environ)
             self._insert_pipe_status(db, ch_id, crec.pipestatus)
 
     def _insert_command_history(self, db, crec):
