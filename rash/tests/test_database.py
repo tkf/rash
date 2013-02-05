@@ -449,6 +449,72 @@ class TestInMemoryDataBase(BaseTestCase):
             exclude_environ_pattern=[('SHELL', 'sh*')], unique=False)
         self.assertEqual(len(records), 2)
 
+    def test_serach_command_by_environ_in_session(self):
+        data1 = self.get_dummy_command_record_data()
+        data2 = self.get_dummy_command_record_data()
+        data1['session_id'] = 'DUMMY-SESSION-ID-1'
+        data2['session_id'] = 'DUMMY-SESSION-ID-1'
+        self.db.import_dict(data1)
+        self.db.import_dict(data2)
+        dcrec1 = to_command_record(data1)
+        dcrec2 = to_command_record(data2)
+
+        init_data_1 = {'session_id': 'DUMMY-SESSION-ID-1',
+                       'environ': {'SHELL': 'zsh'}}
+        init_data_2 = {'session_id': 'DUMMY-SESSION-ID-2',
+                       'environ': {'SHELL': 'zsh'}}
+        self.db.import_init_dict(init_data_1)
+        self.db.import_init_dict(init_data_2)
+
+        records = self.search_command_record(
+            include_environ=[('SHELL', 'zsh')], unique=False)
+        self.assert_same_command_record(records[0], dcrec1)
+        self.assertEqual(len(records), 1)
+
+        records = self.search_command_record(
+            exclude_environ=[('SHELL', 'zsh')], unique=False)
+        self.assert_same_command_record(records[0], dcrec2)
+        self.assertEqual(len(records), 1)
+
+        records = self.search_command_record(
+            include_environ=[('SHELL', 'sh')], unique=False)
+        self.assertEqual(len(records), 0)
+
+        records = self.search_command_record(
+            exclude_environ=[('SHELL', 'sh')], unique=False)
+        self.assertEqual(len(records), 2)
+
+    def test_serach_command_by_glob_environ_in_session(self):
+        data1 = self.get_dummy_command_record_data()
+        data2 = self.get_dummy_command_record_data()
+        data1['session_id'] = 'DUMMY-SESSION-ID-1'
+        data2['session_id'] = 'DUMMY-SESSION-ID-1'
+        self.db.import_dict(data1)
+        self.db.import_dict(data2)
+        dcrec1 = to_command_record(data1)
+        dcrec2 = to_command_record(data2)
+
+        init_data_1 = {'session_id': 'DUMMY-SESSION-ID-1',
+                       'environ': {'SHELL': 'zsh'}}
+        init_data_2 = {'session_id': 'DUMMY-SESSION-ID-2',
+                       'environ': {'SHELL': 'zsh'}}
+        self.db.import_init_dict(init_data_1)
+        self.db.import_init_dict(init_data_2)
+
+        records = self.search_command_record(
+            include_glob_environ=[('SHELL', '*sh')], unique=False)
+        self.assert_same_command_record(records[0], dcrec1)
+        self.assert_same_command_record(records[1], dcrec2)
+        self.assertEqual(len(records), 2)
+
+        records = self.search_command_record(
+            include_glob_environ=[('SHELL', 'sh*')], unique=False)
+        self.assertEqual(len(records), 0)
+
+        records = self.search_command_record(
+            exclude_glob_environ=[('SHELL', 'sh*')], unique=False)
+        self.assertEqual(len(records), 2)
+
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))
 
