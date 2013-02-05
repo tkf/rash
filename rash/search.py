@@ -1,4 +1,4 @@
-def search_run(output, format, **kwds):
+def search_run(output, format, with_command_id, with_session_id, **kwds):
     """
     Search command history.
 
@@ -21,7 +21,14 @@ def search_run(output, format, **kwds):
             if dt:
                 kwds[key] = dt
 
-    format = format.decode('string_escape')
+    if with_command_id and with_session_id:
+        format = "{session_history_id}  {command_history_id}  {command}\n"
+    elif with_command_id:
+        format = "{command_history_id}  {command}\n"
+    elif with_session_id:
+        format = "{session_history_id}  {command}\n"
+    else:
+        format = format.decode('string_escape')
 
     db = DataBase(ConfigStore().db_path)
     for crec in db.search_command_record(**kwds):
@@ -107,14 +114,17 @@ def search_add_arguments(parser):
     parser.add_argument(
         '--with-command-id', action='store_true', default=False,
         help="""
-        [NOT IMPLEMENTED]
         Print command ID number.
+        When this is set, --format option has no effect.
+        If --with-session-id is also specified, session ID comes
+        at the first column then command ID comes the next column.
         """)
     parser.add_argument(
         '--with-session-id', action='store_true', default=False,
         help="""
-        [NOT IMPLEMENTED]
         Print session ID number.
+        When this is set, --format option has no effect.
+        See also: --with-command-id
         """)
     parser.add_argument(
         '--format', default=r'{command}\n',
