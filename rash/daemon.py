@@ -1,6 +1,4 @@
 import os
-import sys
-import subprocess
 
 
 def daemon_run(no_error, record_path, keep_json, check_duplicate,
@@ -58,6 +56,8 @@ def start_daemon_in_subprocess(options, outpath=os.devnull):
     Currently it uses ``nohup`` command to launch a daemon process.
 
     """
+    import subprocess
+    import sys
     from .utils.py3compat import nested
     with nested(open(os.devnull),
                 open(outpath, 'w')) as (stdin, stdout):
