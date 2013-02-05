@@ -36,7 +36,7 @@ Here is a list of recorded information [#]_.
 #. The time command is started and terminated.
 #. Environment variable (``$PATH``, ``$SHELL``, ``$TERM``, ``$HOST``, etc.)
 #. Real terminal.  ``$TERM`` is used to fake programs.
-   RASH can detect if you are in tmux, screen or Emacs.
+   RASH can detect if you are in tmux, byobu, screen, gnome-terminal, etc.
 #. Session information.  If you go back and forth in some terminals,
    RASH does not loose in which sequence you ran the commands in which
    terminal.
