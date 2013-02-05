@@ -243,7 +243,8 @@ class DataBase(object):
 
     def _compile_sql_search_command_record(
             cls, limit, pattern, cwd, cwd_glob, cwd_under, unique,
-            time_after, time_before, **_):
+            time_after, time_before, duration_longer_than, duration_less_than,
+            **_):
         keys = ['command', 'cwd', 'terminal', 'start', 'stop', 'exit_code']
         columns = ['CL.command', 'DL.directory', 'TL.terminal',
                    'start_time', 'stop_time', 'exit_code']
@@ -272,6 +273,17 @@ class DataBase(object):
         if time_before:
             conditions.append('DATETIME(start_time) <= ?')
             params.append(time_before)
+
+        command_duration = (
+            '(JULIANDAY(stop_time) - JULIANDAY(start_time)) * 60 * 60 * 24')
+
+        if duration_longer_than:
+            conditions.append('({0} >= ?)'.format(command_duration))
+            params.append(duration_longer_than)
+
+        if duration_less_than:
+            conditions.append('({0} <= ?)'.format(command_duration))
+            params.append(duration_less_than)
 
         where = ''
         if conditions:

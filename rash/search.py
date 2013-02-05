@@ -6,12 +6,19 @@ def search_run(**kwds):
     """
     from .config import ConfigStore
     from .database import DataBase
-    from .utils.timeutils import parse_datetime
+    from .utils.timeutils import parse_datetime, parse_duration
 
     for key in ['time_after', 'time_before']:
         val = kwds[key]
         if val:
             dt = parse_datetime(val)
+            if dt:
+                kwds[key] = dt
+
+    for key in ['duration_longer_than', 'duration_less_than']:
+        val = kwds[key]
+        if val:
+            dt = parse_duration(val)
             if dt:
                 kwds[key] = dt
 
