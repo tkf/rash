@@ -242,3 +242,11 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assert_same_session_record(records[0],
                                         to_session_record(session_data))
         self.assertEqual(len(records), 1)
+
+    def test_import_session_record_after_command_record(self):
+        self.test_import_command_record()
+        self.test_import_exit_record_and_then_init_record()
+
+    def test_import_session_record_before_command_record(self):
+        self.test_import_exit_record_and_then_init_record()
+        self.test_import_command_record()
