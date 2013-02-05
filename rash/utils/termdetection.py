@@ -9,7 +9,7 @@ def subdict_by_key_prefix(dct, prefix):
     return dict(items)
 
 
-def detect_terminal():
+def detect_terminal(_environ=os.environ):
     """
     Detect "terminal" you are using.
 
@@ -20,16 +20,16 @@ def detect_terminal():
        instead of "xterm-color"".
 
     """
-    if os.environ.get('TMUX'):
+    if _environ.get('TMUX'):
         return 'tmux'
-    elif subdict_by_key_prefix(os.environ, 'BYOBU'):
+    elif subdict_by_key_prefix(_environ, 'BYOBU'):
         return 'byobu'
-    elif os.environ.get('TERM').startswith('screen'):
-        return os.environ['TERM']
-    elif os.environ.get('COLORTERM'):
-        return os.environ['COLORTERM']
+    elif _environ.get('TERM').startswith('screen'):
+        return _environ['TERM']
+    elif _environ.get('COLORTERM'):
+        return _environ['COLORTERM']
     else:
-        return os.environ.get('TERM')
+        return _environ.get('TERM')
 
 
 if __name__ == '__main__':
