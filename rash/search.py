@@ -1,6 +1,5 @@
 def search_run(**kwds):
     """
-    [UNDER CONSTRUCTION]
     Search command history.
 
     """
@@ -77,23 +76,47 @@ def search_add_arguments(parser):
         help='exclude command which finished with given exit code.')
     # Sorter
     parser.add_argument(
-        '--sort-program-frequency',
-        help='most used program comes first')
+        '--sort-by-program-frequency',
+        help="""
+        [NOT IMPLEMENTED]
+        most used program comes first.
+        """)
     # Modifier
     parser.add_argument(
         '--after-context', type=int, metavar='NUM',
         help="""
+        [NOT IMPLEMENTED]
         Print NUM commands executed after matching commands.
         """)
     parser.add_argument(
         '--before-context', type=int, metavar='NUM',
         help="""
+        [NOT IMPLEMENTED]
         Print NUM commands executed before matching commands.
         """)
     parser.add_argument(
         '--context', type=int, metavar='NUM',
         help="""
+        [NOT IMPLEMENTED]
         Print NUM commands executed before and after matching commands.
+        """)
+    # Formatter
+    parser.add_argument(
+        '--with-command-id', action='store_true', default=False,
+        help="""
+        [NOT IMPLEMENTED]
+        Print command ID number.
+        """)
+    parser.add_argument(
+        '--with-session-id', action='store_true', default=False,
+        help="""
+        [NOT IMPLEMENTED]
+        Print session ID number.
+        """)
+    parser.add_argument(
+        '--format',
+        help="""
+        [NOT IMPLEMENTED]
         """)
 
 

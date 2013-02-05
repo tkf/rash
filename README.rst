@@ -102,7 +102,7 @@ All failed commands you ran at this directory.::
 **NOT IMPLEMENTED**
 Top 5 programs you use most.::
 
-   rash search --limit 5 --sort-program-frequency
+   rash search --limit 5 --sort-by-program-frequency
 
 Count number of commands you ran in one day::
 
@@ -113,10 +113,10 @@ Showing detailed information -- ``rash show``
 ---------------------------------------------
 
 **NOT IMPLEMENTED**
-If you give ``--with-id`` to ``rash search`` command, it prints out
+If you give ``--with-command-id`` to ``rash search`` command, it prints out
 ID number for each command history.::
 
-   % rash search --with-id --limit 5 "*git*"
+   % rash search --with-command-id --limit 5 "*git*"
     359  git log
    1253  git help clone
    1677  git help diff
