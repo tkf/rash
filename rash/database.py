@@ -41,6 +41,8 @@ def convert_ts(ts):
 
 
 def normalize_directory(path):
+    if path is None:
+        return None
     if path.endswith(os.path.sep):
         return path[:-len(os.path.sep)]
     else:
