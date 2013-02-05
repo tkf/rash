@@ -452,6 +452,10 @@ class TestInMemoryDataBase(BaseTestCase):
     def test_serach_command_by_environ_in_session(self):
         data1 = self.get_dummy_command_record_data()
         data2 = self.get_dummy_command_record_data()
+        # Database does not distinguish record by different environ,
+        # so other key must be different.
+        data1['command'] = 'git status'
+        data2['command'] = 'hg status'
         data1['session_id'] = 'DUMMY-SESSION-ID-1'
         data2['session_id'] = 'DUMMY-SESSION-ID-1'
         self.db.import_dict(data1)
@@ -487,6 +491,10 @@ class TestInMemoryDataBase(BaseTestCase):
     def test_serach_command_by_glob_environ_in_session(self):
         data1 = self.get_dummy_command_record_data()
         data2 = self.get_dummy_command_record_data()
+        # Database does not distinguish record by different environ,
+        # so other key must be different.
+        data1['command'] = 'git status'
+        data2['command'] = 'hg status'
         data1['session_id'] = 'DUMMY-SESSION-ID-1'
         data2['session_id'] = 'DUMMY-SESSION-ID-1'
         self.db.import_dict(data1)
