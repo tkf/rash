@@ -3,6 +3,7 @@ class CommandRecord(object):
     def __init__(self, **kwds):
         self.command = None
         self.session_history_id = None
+        self.session_id = None
         self.exit_code = None
         self.pipestatus = []
         self.start = None
