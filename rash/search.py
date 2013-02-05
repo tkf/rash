@@ -22,11 +22,12 @@ def search_run(output, format, with_command_id, with_session_id, **kwds):
                 kwds[key] = dt
 
     if with_command_id and with_session_id:
-        format = "{session_history_id}  {command_history_id}  {command}\n"
+        format = ("{session_history_id:>5}  "
+                  "{command_history_id:>5}  {command}\n")
     elif with_command_id:
-        format = "{command_history_id}  {command}\n"
+        format = "{command_history_id:>5}  {command}\n"
     elif with_session_id:
-        format = "{session_history_id}  {command}\n"
+        format = "{session_history_id:>5}  {command}\n"
     else:
         format = format.decode('string_escape')
 
