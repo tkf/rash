@@ -120,7 +120,7 @@ class DataBase(object):
         with self.connection(commit=True) as connection:
             db = connection.cursor()
             ch_id = self._insert_command_history(db, crec)
-            self._insert_environ(db, ch_id, crec.environ)
+            self._insert_session_environ(db, ch_id, crec.environ)
             self._insert_pipe_status(db, ch_id, crec.pipestatus)
 
     def _insert_command_history(self, db, crec):
@@ -138,7 +138,11 @@ class DataBase(object):
              convert_ts(crec.start), convert_ts(crec.stop), crec.exit_code])
         return db.lastrowid
 
-    def _insert_environ(self, db, ch_id, environ):
+    def _isnert_command_environment(self, db, ch_id, environ):
+        self._insert_environ(db, 'command_environment_map', 'ch_id', ch_id,
+                             environ)
+
+    def _insert_environ(self, db, table, id_name, ch_id, environ):
         if not environ:
             return
         for (name, value) in environ.items():
@@ -149,10 +153,10 @@ class DataBase(object):
                 {'variable_name': name, 'variable_value': value})
             db.execute(
                 '''
-                INSERT INTO command_environment_map
-                    (ch_id, ev_id)
+                INSERT INTO {0}
+                    ({1}, ev_id)
                 VALUES (?, ?)
-                ''',
+                '''.format(table, id_name),
                 [ch_id, ev_id])
 
     def _insert_pipe_status(self, db, ch_id, pipe_status):
@@ -380,7 +384,13 @@ class DataBase(object):
     def _update_session_environ(self, db, sh_id, environ):
         if not environ:
             return
-        raise NotImplementedError
+        db.execute('DELETE FROM session_environment_map WHERE sh_id=?',
+                   [sh_id])
+        self._insert_session_environ(db, sh_id, environ)
+
+    def _insert_session_environ(self, db, sh_id, environ):
+        self._insert_environ(db, 'session_environment_map', 'sh_id', sh_id,
+                             environ)
 
     def select_session_by_long_id(self, long_id):
         keys = ['session_history_id', 'session_id', 'start', 'stop']

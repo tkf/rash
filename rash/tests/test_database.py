@@ -225,3 +225,20 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assert_same_session_record(records[0],
                                         to_session_record(session_data))
         self.assertEqual(len(records), 1)
+
+    def test_import_session_record_with_environ(self):
+        session_id = 'DUMMY-SESSION-ID'
+        init_data = {'session_id': session_id, 'start': 100}
+        exit_data = {'session_id': session_id, 'stop': 102}
+        init_data['environ'] = {'SHELL': 'zsh'}
+        self.db.import_init_dict(init_data)
+        self.db.import_exit_dict(exit_data)
+
+        session_data = {}
+        session_data.update(init_data)
+        session_data.update(exit_data)
+
+        records = self.search_session_record(session_id=session_id)
+        self.assert_same_session_record(records[0],
+                                        to_session_record(session_data))
+        self.assertEqual(len(records), 1)
