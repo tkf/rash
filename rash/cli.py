@@ -48,6 +48,7 @@ def main(args=None):
     from . import record
     from . import daemon
     from . import search
+    from . import show
     from . import index
     # from . import MODULE
     parser = get_parser(
@@ -55,6 +56,7 @@ def main(args=None):
         + record.commands
         + daemon.commands
         + search.commands
+        + show.commands
         + index.commands
         # + MODULE.commands
     )

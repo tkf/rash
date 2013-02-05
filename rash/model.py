@@ -1,6 +1,7 @@
 class CommandRecord(object):
 
     def __init__(self, **kwds):
+        self.command_history_id = None
         self.command = None
         self.session_history_id = None
         self.session_id = None

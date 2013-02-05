@@ -223,9 +223,13 @@ class DataBase(object):
         All attributes of `crec` except for `environ` are concerned.
 
         """
-        keys = ['command', 'cwd', 'terminal', 'start', 'stop', 'exit_code']
+        keys = ['command_history_id', 'command', 'session_history_id',
+                'cwd', 'terminal',
+                'start', 'stop', 'exit_code']
         sql = """
-        SELECT CL.command, DL.directory, TL.terminal,
+        SELECT
+            command_history.id, CL.command, session_id,
+            DL.directory, TL.terminal,
             start_time, stop_time, exit_code
         FROM command_history
         LEFT JOIN command_list AS CL ON command_id = CL.id
@@ -266,13 +270,13 @@ class DataBase(object):
             include_exit_code, exclude_exit_code,
             session_history_id=None,
             **_):
-        keys = ['command', 'session_history_id',
+        keys = ['command_history_id', 'command', 'session_history_id',
                 'cwd', 'terminal',
                 'start', 'stop', 'exit_code']
-        columns = ['CL.command', 'session_id',
+        columns = ['command_history.id', 'CL.command', 'session_id',
                    'DL.directory', 'TL.terminal',
                    'start_time', 'stop_time', 'exit_code']
-        max_index = 4
+        max_index = 5
         assert columns[max_index] == 'start_time'
         params = []
         conditions = []
@@ -423,3 +427,76 @@ class DataBase(object):
 
     def search_session_record(self, session_id):
         return self.select_session_by_long_id(session_id)
+
+    def get_full_command_record(self, command_history_id,
+                                merge_session_environ=True):
+        """
+        Get fully retrieved :class:`CommandRecord` instance by ID.
+
+        By "fully", it means that complex slots such as `environ` and
+        `pipestatus` are available.
+
+        :type    command_history_id: int
+        :type merge_session_environ: bool
+
+        """
+        with self.connection() as db:
+            crec = self._select_command_record(db, command_history_id)
+            crec.pipestatus = self._get_pipestatus(db, command_history_id)
+            # Set environment variables
+            cenv = self._select_environ(db, 'command', command_history_id)
+            crec.environ.update(cenv)
+            if merge_session_environ:
+                senv = self._select_environ(
+                    db, 'session', crec.session_history_id)
+                crec.environ.update(senv)
+        return crec
+
+    def _select_command_record(self, db, command_history_id):
+        keys = ['session_history_id', 'command', 'cwd', 'terminal',
+                'start', 'stop', 'exit_code']
+        sql = """
+        SELECT
+            session_id, CL.command, DL.directory, TL.terminal,
+            start_time, stop_time, exit_code
+        FROM command_history
+        LEFT JOIN command_list AS CL ON command_id = CL.id
+        LEFT JOIN directory_list AS DL ON directory_id = DL.id
+        LEFT JOIN terminal_list AS TL ON terminal_id = TL.id
+        WHERE command_history.id = ?
+        """
+        params = [command_history_id]
+        for row in db.execute(sql, params):
+            crec = CommandRecord(**dict(zip(keys, row)))
+            crec.command_history_id = command_history_id
+            return crec
+        raise ValueError("Command record of id={0} is not found"
+                         .format(command_history_id))
+
+    def _get_pipestatus(self, db, command_history_id):
+        sql = """
+        SELECT program_position, exit_code
+        FROM pipe_status_map
+        WHERE ch_id = ?
+        """
+        params = [command_history_id]
+        records = list(db.execute(sql, params))
+        length = max(r[0] for r in records) + 1
+        pipestatus = [None] * length
+        for (i, s) in records:
+            pipestatus[i] = s
+        return pipestatus
+
+    def _select_environ(self, db, recname, recid):
+        sql = """
+        SELECT
+            EVar.variable_name, EVar.variable_value
+        FROM {recname}_environment_map as EMap
+        LEFT JOIN environment_variable AS EVar ON EMap.ev_id = EVar.id
+        WHERE EMap.{hist_id} = ?
+        """.format(
+            recname=recname,
+            hist_id='ch_id' if recname == 'command' else 'sh_id',
+        )
+        params = [recid]
+        return db.execute(sql, params)

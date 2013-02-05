@@ -266,3 +266,80 @@ class TestInMemoryDataBase(BaseTestCase):
         self.test_import_exit_record_and_then_init_record()
         self.test_import_command_record()
         self.check_consistency_one_command_in_one_session()
+
+    def test_get_full_command_record_simple_keys(self):
+        command_data = self.get_dummy_command_record_data()
+        self.db.import_dict(command_data)
+
+        records = self.search_command_record()
+        self.assertEqual(len(records), 1)
+        command_history_id = records[0].command_history_id
+
+        crec = self.db.get_full_command_record(command_history_id)
+        self.assert_same_command_record(crec, to_command_record(command_data))
+
+    def test_get_full_command_record_merging_session_environ(self):
+        session_id = 'DUMMY-SESSION-ID'
+        init_data = {'session_id': session_id, 'start': 100}
+        init_data['environ'] = {'SHELL': 'zsh'}
+        command_data = self.get_dummy_command_record_data()
+        command_data['session_id'] = session_id
+
+        desired_environ = {}
+        desired_environ.update(command_data['environ'])
+        desired_environ.update(init_data['environ'])
+
+        self.db.import_dict(command_data)
+        self.db.import_init_dict(init_data)
+
+        records = self.search_command_record()
+        self.assertEqual(len(records), 1)
+        command_history_id = records[0].command_history_id
+
+        crec = self.db.get_full_command_record(command_history_id)
+        self.assertEqual(crec.environ, desired_environ)
+
+        crec = self.db.get_full_command_record(command_history_id,
+                                               merge_session_environ=False)
+        self.assertEqual(crec.environ, command_data['environ'])
+
+    def test_get_full_command_record_no_environ_leak(self):
+        session_id_1 = 'DUMMY-SESSION-ID-1'
+        session_id_2 = 'DUMMY-SESSION-ID-2'
+        init_data_1 = {'session_id': session_id_1, 'start': 100}
+        init_data_2 = {'session_id': session_id_2, 'start': 100}
+        init_data_1['environ'] = {'SHELL': 'zsh'}
+        init_data_2['environ'] = {'SHELL': 'bash'}
+        command_data_1 = self.get_dummy_command_record_data()
+        command_data_2 = self.get_dummy_command_record_data()
+        command_data_1['session_id'] = session_id_1
+        command_data_2['session_id'] = session_id_2
+
+        desired_environ = {}
+        desired_environ.update(command_data_1['environ'])
+        desired_environ.update(init_data_1['environ'])
+
+        self.db.import_dict(command_data_1)
+        self.db.import_dict(command_data_2)
+        self.db.import_init_dict(init_data_1)
+        self.db.import_init_dict(init_data_2)
+
+        records = list(self.db.select_by_command_record(
+            to_command_record(command_data_1)))
+        self.assertEqual(len(records), 1)
+        command_history_id = records[0].command_history_id
+
+        crec = self.db.get_full_command_record(command_history_id)
+        self.assertEqual(crec.environ, desired_environ)
+
+    def test_get_full_command_record_pipestatus(self):
+        command_data = self.get_dummy_command_record_data()
+        command_data['pipestatus'] = [2, 3, 0]
+        self.db.import_dict(command_data)
+
+        records = self.search_command_record()
+        self.assertEqual(len(records), 1)
+        command_history_id = records[0].command_history_id
+
+        crec = self.db.get_full_command_record(command_history_id)
+        self.assertEqual(crec.pipestatus, command_data['pipestatus'])
