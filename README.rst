@@ -90,7 +90,7 @@ All git commands you ran in one week.::
 Some intensive task you ran in the current project that succeeded and
 took longer than 30 minutes.::
 
-   rash search --under . --include-exit-code 0 --duration-longer-than 30m
+   rash search --cwd-under . --include-exit-code 0 --duration-longer-than 30m
 
 **NOT IMPLEMENTED**
 What did I do after `cd`-ing to some directory?::

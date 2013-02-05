@@ -242,7 +242,7 @@ class DataBase(object):
                 yield CommandRecord(**dict(zip(keys, row)))
 
     def _compile_sql_search_command_record(
-            cls, limit, pattern, cwd, cwd_glob, unique,
+            cls, limit, pattern, cwd, cwd_glob, cwd_under, unique,
             time_after, time_before, **_):
         keys = ['command', 'cwd', 'terminal', 'start', 'stop', 'exit_code']
         columns = ['CL.command', 'DL.directory', 'TL.terminal',
@@ -251,6 +251,9 @@ class DataBase(object):
         assert columns[max_index] == 'start_time'
         params = []
         conditions = []
+
+        if cwd_under:
+            cwd_glob.extend(os.path.join(p, "*") for p in cwd_under)
 
         def add_or_match(template, name, args):
             conditions.extend(concat_expr(

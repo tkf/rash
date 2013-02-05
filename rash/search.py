@@ -46,6 +46,11 @@ def search_add_arguments(parser):
         Same as --cwd but it accepts glob expression.
         """)
     parser.add_argument(
+        '--cwd-under', action='append', default=[],
+        help="""
+        Same as --cwd but include all subdirectories.
+        """)
+    parser.add_argument(
         '--time-after',
         help='commands run after the given time')
     parser.add_argument(
