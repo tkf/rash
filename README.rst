@@ -36,7 +36,7 @@ Here is a list of recorded information [#]_.
 #. The time command is started and terminated.
 #. Environment variable (``$PATH``, ``$SHELL``, ``$TERM``, ``$HOST``, etc.)
 #. Real terminal.  ``$TERM`` is used to fake programs.
-   RASH can detect if you are in tmux, screen or Emacs.
+   RASH can detect if you are in tmux, byobu, screen, gnome-terminal, etc.
 #. Session information.  If you go back and forth in some terminals,
    RASH does not loose in which sequence you ran the commands in which
    terminal.
@@ -112,7 +112,6 @@ Count number of commands you ran in one day::
 Showing detailed information -- ``rash show``
 ---------------------------------------------
 
-**NOT IMPLEMENTED**
 If you give ``--with-command-id`` to ``rash search`` command, it prints out
 ID number for each command history.::
 
@@ -123,11 +122,10 @@ ID number for each command history.::
    1678  git diff --word-diff
    1780  git merge
 
-**NOT IMPLEMENTED**
 You can see all information associated with a command with
 ``rash show`` command::
 
-   rash show --full 1677
+   rash show 1677
 
 
 Dependency
