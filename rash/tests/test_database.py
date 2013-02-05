@@ -320,3 +320,15 @@ class TestInMemoryDataBase(BaseTestCase):
 
         crec = self.db.get_full_command_record(command_history_id)
         self.assertEqual(crec.environ, desired_environ)
+
+    def test_get_full_command_record_pipestatus(self):
+        command_data = self.get_dummy_command_record_data()
+        command_data['pipestatus'] = [2, 3, 0]
+        self.db.import_dict(command_data)
+
+        records = self.search_command_record()
+        self.assertEqual(len(records), 1)
+        command_history_id = records[0].command_history_id
+
+        crec = self.db.get_full_command_record(command_history_id)
+        self.assertEqual(crec.pipestatus, command_data['pipestatus'])
