@@ -38,6 +38,7 @@ def daemon_run(no_error, record_path, keep_json, check_duplicate,
     try:
         setup_daemon_log_file(conf)
         indexer = Indexer(conf, check_duplicate, keep_json, record_path)
+        indexer.index_all()
         watch_record(indexer)
     finally:
         os.remove(conf.daemon_pid_path)
