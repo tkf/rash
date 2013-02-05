@@ -1,7 +1,7 @@
 import os
 import datetime
 
-from ..model import CommandRecord
+from ..model import CommandRecord, SessionRecord
 from ..database import DataBase, normalize_directory
 from .utils import BaseTestCase
 
@@ -17,12 +17,21 @@ def to_sql_timestamp(ts):
         return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def to_command_record(data):
-    crec = CommandRecord(**data)
-    crec.cwd = normalize_directory(crec.cwd)
+def to_record(recclass, data):
+    crec = recclass(**data)
     crec.start = to_sql_timestamp(crec.start)
     crec.stop = to_sql_timestamp(crec.stop)
     return crec
+
+
+def to_command_record(data):
+    crec = to_record(CommandRecord, data)
+    crec.cwd = normalize_directory(crec.cwd)
+    return crec
+
+
+def to_session_record(data):
+    return to_record(SessionRecord, data)
 
 
 class InMemoryDataBase(DataBase):
@@ -172,3 +181,31 @@ class TestInMemoryDataBase(BaseTestCase):
         records = self.search_command_record(
             cwd_glob=[self.abspath('REAL', '*')], unique=False)
         self.assertEqual(len(records), 0)
+
+    def search_session_record(self, **kwds):
+        return list(self.db.search_session_record(**kwds))
+
+    def assert_same_session_record(
+            self, srec1, srec2, keys=['session_id', 'start', 'stop']):
+        asdict = lambda rec: dict((k, getattr(rec, k)) for k in keys)
+        self.assertEqual(asdict(srec1), asdict(srec2))
+
+    def assert_not_same_session_record(self, *args, **kwds):
+        self.assertRaises(AssertionError, self.assert_same_session_record,
+                          *args, **kwds)
+
+    def test_import_session_record(self):
+        session_id = 'DUMMY-SESSION-ID'
+        init_data = {'session_id': session_id, 'start': 100}
+        exit_data = {'session_id': session_id, 'stop': 102}
+        self.db.import_init_dict(init_data)
+        self.db.import_exit_dict(exit_data)
+
+        session_data = {}
+        session_data.update(init_data)
+        session_data.update(exit_data)
+
+        records = self.db.search_session_record(session_id=session_id)
+        self.assert_same_session_record(records[0],
+                                        to_session_record(session_data))
+        self.assertEqual(len(records), 1)
