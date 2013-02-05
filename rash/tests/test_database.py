@@ -205,7 +205,7 @@ class TestInMemoryDataBase(BaseTestCase):
         session_data.update(init_data)
         session_data.update(exit_data)
 
-        records = self.db.search_session_record(session_id=session_id)
+        records = self.search_session_record(session_id=session_id)
         self.assert_same_session_record(records[0],
                                         to_session_record(session_data))
         self.assertEqual(len(records), 1)

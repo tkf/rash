@@ -6,7 +6,7 @@ import warnings
 import itertools
 
 from .utils.iterutils import nonempty, repeat
-from .model import CommandRecord
+from .model import CommandRecord, SessionRecord
 
 schema_version = '0.1.dev1'
 
@@ -26,12 +26,18 @@ def convert_ts(ts):
     """
     Convert timestamp (ts)
 
-    :type ts: int or None
+    :type ts: int or str or None
     :arg  ts: Unix timestamp
-    :rtype: datetime.datetime or None
+    :rtype: datetime.datetime or str or None
 
     """
-    return None if ts is None else datetime.datetime.utcfromtimestamp(ts)
+    if ts is None:
+        return None
+    try:
+        return datetime.datetime.utcfromtimestamp(ts)
+    except TypeError:
+        pass
+    return ts
 
 
 def normalize_directory(path):
@@ -315,3 +321,76 @@ class DataBase(object):
             '{3}'
         ).format(', '.join(columns), where, group_by, sql_limit)
         return (sql, params, keys)
+
+    def import_init_dict(self, dct, overwrite=True):
+        long_id = dct['session_id']
+        srec = SessionRecord(**dct)
+        with self.connection(commit=True) as connection:
+            db = connection.cursor()
+            records = list(self.select_session_by_long_id(long_id))
+            if records:
+                assert len(records) == 1
+                if not overwrite:
+                    return
+                sh_id = self._update_session_history(db, srec)
+            else:
+                sh_id = self._insert_session_history(db, srec)
+            self._update_session_environ(db, sh_id, srec.environ)
+
+    def import_exit_dict(self, dct, overwrite=True):
+        long_id = dct['session_id']
+        srec = SessionRecord(**dct)
+        with self.connection(commit=True) as connection:
+            db = connection.cursor()
+            records = list(self.select_session_by_long_id(long_id))
+            if records:
+                assert len(records) == 1
+                oldrec = records[0]
+                if oldrec.stop is not None and not overwrite:
+                    return
+                oldrec.stop = srec.stop
+                self._update_session_history(db, oldrec)
+            else:
+                self._insert_session_history(db, srec)
+
+    def _insert_session_history(self, db, srec):
+        db.execute(
+            '''
+            INSERT INTO session_history
+                (session_long_id, start_time, stop_time)
+            VALUES (?, ?, ?)
+            ''',
+            [srec.session_id, convert_ts(srec.start), convert_ts(srec.stop)])
+        return db.lastrowid
+
+    def _update_session_history(self, db, srec):
+        assert srec.session_history_id is not None
+        db.execute(
+            '''
+            UPDATE session_history
+            SET session_long_id=?, start_time=?, stop_time=?
+            WHERE id=?
+            ''',
+            [srec.session_id, convert_ts(srec.start), convert_ts(srec.stop),
+             srec.session_history_id])
+        return db.lastrowid
+
+    def _update_session_environ(self, db, sh_id, environ):
+        if not environ:
+            return
+        raise NotImplementedError
+
+    def select_session_by_long_id(self, long_id):
+        keys = ['session_history_id', 'session_id', 'start', 'stop']
+        sql = """
+        SELECT id, session_long_id, start_time, stop_time
+        FROM session_history
+        WHERE session_long_id = ?
+        """
+        params = [long_id]
+        with self.connection() as connection:
+            for row in connection.execute(sql, params):
+                yield SessionRecord(**dict(zip(keys, row)))
+
+    def search_session_record(self, session_id):
+        return self.select_session_by_long_id(session_id)

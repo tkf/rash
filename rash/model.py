@@ -15,6 +15,7 @@ class CommandRecord(object):
 class SessionRecord(object):
 
     def __init__(self, **kwds):
+        self.session_history_id = None
         self.session_id = None
         self.start = None
         self.stop = None
