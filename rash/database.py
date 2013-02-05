@@ -125,16 +125,17 @@ class DataBase(object):
 
     def _insert_command_history(self, db, crec):
         command_id = self._get_maybe_new_command_id(db, crec.command)
+        session_id = self._get_maybe_new_session_id(db, crec.session_id)
         directory_id = self._get_maybe_new_directory_id(db, crec.cwd)
         terminal_id = self._get_maybe_new_terminal_id(db, crec.terminal)
         db.execute(
             '''
             INSERT INTO command_history
-                (command_id, directory_id, terminal_id,
+                (command_id, session_id, directory_id, terminal_id,
                  start_time, stop_time, exit_code)
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             ''',
-            [command_id, directory_id, terminal_id,
+            [command_id, session_id, directory_id, terminal_id,
              convert_ts(crec.start), convert_ts(crec.stop), crec.exit_code])
         return db.lastrowid
 
@@ -176,6 +177,12 @@ class DataBase(object):
             return None
         return self._get_maybe_new_id(
             db, 'command_list', {'command': command})
+
+    def _get_maybe_new_session_id(self, db, session_long_id):
+        if session_long_id is None:
+            return None
+        return self._get_maybe_new_id(
+            db, 'session_history', {'session_long_id': session_long_id})
 
     def _get_maybe_new_directory_id(self, db, directory):
         if directory is None:
