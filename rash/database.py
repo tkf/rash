@@ -266,13 +266,13 @@ class DataBase(object):
             include_exit_code, exclude_exit_code,
             session_history_id=None,
             **_):
-        keys = ['command', 'session_history_id',
+        keys = ['command_history_id', 'command', 'session_history_id',
                 'cwd', 'terminal',
                 'start', 'stop', 'exit_code']
-        columns = ['CL.command', 'session_id',
+        columns = ['command_history.id', 'CL.command', 'session_id',
                    'DL.directory', 'TL.terminal',
                    'start_time', 'stop_time', 'exit_code']
-        max_index = 4
+        max_index = 5
         assert columns[max_index] == 'start_time'
         params = []
         conditions = []
