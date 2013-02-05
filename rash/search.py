@@ -1,4 +1,4 @@
-def search_run(**kwds):
+def search_run(output, format, **kwds):
     """
     Search command history.
 
@@ -21,12 +21,15 @@ def search_run(**kwds):
             if dt:
                 kwds[key] = dt
 
+    format = format.decode('string_escape')
+
     db = DataBase(ConfigStore().db_path)
     for crec in db.search_command_record(**kwds):
-        print(crec.command)
+        output.write(format.format(**crec.__dict__))
 
 
 def search_add_arguments(parser):
+    import argparse
     # Filter
     parser.add_argument(
         'pattern', nargs='*',
@@ -114,9 +117,17 @@ def search_add_arguments(parser):
         Print session ID number.
         """)
     parser.add_argument(
-        '--format',
+        '--format', default=r'{command}\n',
         help="""
-        [NOT IMPLEMENTED]
+        Python string formatter.  Available keys:
+        command, exit_code, pipestatus (a list), start, stop, cwd,
+        command_history_id, session_history_id.
+        """)
+    # Misc
+    parser.add_argument(
+        '--output', default='-', type=argparse.FileType('w'),
+        help="""
+        Output file to write the results in. Default is stdout.
         """)
 
 
