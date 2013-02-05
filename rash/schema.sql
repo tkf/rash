@@ -2,14 +2,24 @@ DROP TABLE IF EXISTS command_history;
 CREATE TABLE command_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   command_id INTEGER,
+  session_id INTEGER,
   directory_id INTEGER,
-  terminal_id INTEGER,
+  terminal_id INTEGER,  -- FIXME: move this to session_history table
   start_time TIMESTAMP,
   stop_time TIMESTAMP,
   exit_code INTEGER,
   FOREIGN KEY(command_id) REFERENCES command_list(id),
+  FOREIGN KEY(session_id) REFERENCES session_history(id),
   FOREIGN KEY(directory_id) REFERENCES directory_list(id),
   FOREIGN KEY(terminal_id) REFERENCES terminal_list(id)
+);
+
+DROP TABLE IF EXISTS session_history;
+CREATE TABLE session_history (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  session_long_id TEXT NOT NULL UNIQUE,
+  start_time TIMESTAMP,
+  stop_time TIMESTAMP
 );
 
 DROP TABLE IF EXISTS command_list;
@@ -42,6 +52,14 @@ CREATE TABLE command_environment_map (
   ch_id INTEGER NOT NULL,
   ev_id INTEGER NOT NULL,
   FOREIGN KEY(ch_id) REFERENCES command_history(id),
+  FOREIGN KEY(ev_id) REFERENCES environment_variable(id)
+);
+
+DROP TABLE IF EXISTS session_environment_map;
+CREATE TABLE session_environment_map (
+  sh_id INTEGER NOT NULL,
+  ev_id INTEGER NOT NULL,
+  FOREIGN KEY(sh_id) REFERENCES session_history(id),
   FOREIGN KEY(ev_id) REFERENCES environment_variable(id)
 );
 
