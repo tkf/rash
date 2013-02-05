@@ -112,7 +112,6 @@ Count number of commands you ran in one day::
 Showing detailed information -- ``rash show``
 ---------------------------------------------
 
-**NOT IMPLEMENTED**
 If you give ``--with-command-id`` to ``rash search`` command, it prints out
 ID number for each command history.::
 

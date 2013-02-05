@@ -1,4 +1,4 @@
-def search_run(**kwds):
+def search_run(output, format, with_command_id, with_session_id, **kwds):
     """
     Search command history.
 
@@ -21,12 +21,23 @@ def search_run(**kwds):
             if dt:
                 kwds[key] = dt
 
+    if with_command_id and with_session_id:
+        format = ("{session_history_id:>5}  "
+                  "{command_history_id:>5}  {command}\n")
+    elif with_command_id:
+        format = "{command_history_id:>5}  {command}\n"
+    elif with_session_id:
+        format = "{session_history_id:>5}  {command}\n"
+    else:
+        format = format.decode('string_escape')
+
     db = DataBase(ConfigStore().db_path)
     for crec in db.search_command_record(**kwds):
-        print(crec.command)
+        output.write(format.format(**crec.__dict__))
 
 
 def search_add_arguments(parser):
+    import argparse
     # Filter
     parser.add_argument(
         'pattern', nargs='*',
@@ -104,19 +115,32 @@ def search_add_arguments(parser):
     parser.add_argument(
         '--with-command-id', action='store_true', default=False,
         help="""
-        [NOT IMPLEMENTED]
         Print command ID number.
+        When this is set, --format option has no effect.
+        If --with-session-id is also specified, session ID comes
+        at the first column then command ID comes the next column.
         """)
     parser.add_argument(
         '--with-session-id', action='store_true', default=False,
         help="""
-        [NOT IMPLEMENTED]
         Print session ID number.
+        When this is set, --format option has no effect.
+        See also: --with-command-id
         """)
     parser.add_argument(
-        '--format',
+        '--format', default=r'{command}\n',
         help="""
-        [NOT IMPLEMENTED]
+        Python string formatter.  Available keys:
+        command, exit_code, pipestatus (a list), start, stop, cwd,
+        command_history_id, session_history_id.
+        See also:
+        http://docs.python.org/library/string.html#format-string-syntax
+        """)
+    # Misc
+    parser.add_argument(
+        '--output', default='-', type=argparse.FileType('w'),
+        help="""
+        Output file to write the results in. Default is stdout.
         """)
 
 
