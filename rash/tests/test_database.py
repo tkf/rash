@@ -94,6 +94,12 @@ class TestInMemoryDataBase(BaseTestCase):
         records = self.search_command_record()
         self.assertEqual(len(records), 0)
 
+    def test_import_empty_command_record(self):
+        self.db.import_dict({})
+        records = self.search_command_record()
+        self.assert_same_command_record(records[0], to_command_record({}))
+        self.assertEqual(len(records), 1)
+
     def test_import_command_record(self):
         data = self.get_dummy_command_record_data()
         self.db.import_dict(data)
