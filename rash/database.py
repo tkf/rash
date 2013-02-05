@@ -330,9 +330,11 @@ class DataBase(object):
             records = list(self.select_session_by_long_id(long_id))
             if records:
                 assert len(records) == 1
-                if not overwrite:
+                oldrec = records[0]
+                if oldrec.start is not None and not overwrite:
                     return
-                sh_id = self._update_session_history(db, srec)
+                oldrec.start = srec.start
+                sh_id = self._update_session_history(db, oldrec)
             else:
                 sh_id = self._insert_session_history(db, srec)
             self._update_session_environ(db, sh_id, srec.environ)
