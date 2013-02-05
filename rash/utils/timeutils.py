@@ -1,9 +1,16 @@
 import time
 import datetime
-from parsedatetime import parsedatetime
+
+try:
+    from parsedatetime import parsedatetime
+    HAS_PARSEDATETIME = True
+except:
+    HAS_PARSEDATETIME = False
 
 
 def parse_datetime(string):
+    if not HAS_PARSEDATETIME:
+        return
     cal = parsedatetime.Calendar()
     dates = cal.parse(string)
     if dates:
