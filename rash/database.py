@@ -396,7 +396,7 @@ class DataBase(object):
             ''',
             [srec.session_id, convert_ts(srec.start), convert_ts(srec.stop),
              srec.session_history_id])
-        return db.lastrowid
+        return srec.session_history_id
 
     def _update_session_environ(self, db, sh_id, environ):
         if not environ:
