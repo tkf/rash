@@ -70,10 +70,10 @@ def search_add_arguments(parser):
         '--duration-less-than',
         help='commands that takes less than the given time')
     parser.add_argument(
-        '--include-exit-code', action='append', default=[],
+        '--include-exit-code', action='append', default=[], type=int,
         help='include command which finished with given exit code.')
     parser.add_argument(
-        '--exclude-exit-code', action='append', default=[],
+        '--exclude-exit-code', action='append', default=[], type=int,
         help='exclude command which finished with given exit code.')
     # Sorter
     parser.add_argument(
