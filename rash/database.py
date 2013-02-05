@@ -256,10 +256,13 @@ class DataBase(object):
             time_after, time_before, duration_longer_than, duration_less_than,
             include_exit_code, exclude_exit_code,
             **_):
-        keys = ['command', 'cwd', 'terminal', 'start', 'stop', 'exit_code']
-        columns = ['CL.command', 'DL.directory', 'TL.terminal',
+        keys = ['command', 'session_history_id',
+                'cwd', 'terminal',
+                'start', 'stop', 'exit_code']
+        columns = ['CL.command', 'session_id',
+                   'DL.directory', 'TL.terminal',
                    'start_time', 'stop_time', 'exit_code']
-        max_index = 3
+        max_index = 4
         assert columns[max_index] == 'start_time'
         params = []
         conditions = []
