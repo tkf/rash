@@ -12,6 +12,10 @@ class BaseTestCase(unittest.TestCase):
         def assertNotIn(self, member, container):
             self.assertTrue(member not in container)
 
+    if not hasattr(unittest.TestCase, 'assertIsInstance'):
+        def assertIsInstance(self, obj, cls, msg=None):
+            self.assertTrue(isinstance(obj, cls), msg)
+
 try:
     skipIf = unittest.skipIf
 except AttributeError:

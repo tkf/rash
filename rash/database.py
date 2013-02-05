@@ -262,6 +262,7 @@ class DataBase(object):
             cls, limit, pattern, cwd, cwd_glob, cwd_under, unique,
             time_after, time_before, duration_longer_than, duration_less_than,
             include_exit_code, exclude_exit_code,
+            session_history_id=None,
             **_):
         keys = ['command', 'session_history_id',
                 'cwd', 'terminal',
@@ -309,6 +310,10 @@ class DataBase(object):
         add_or_match('{0} = ?', 'exit_code', include_exit_code)
         conditions.extend(repeat('exit_code != ?', len(exclude_exit_code)))
         params.extend(exclude_exit_code)
+
+        if session_history_id:
+            conditions.append('(session_id = ?)')
+            params.append(session_history_id)
 
         where = ''
         if conditions:

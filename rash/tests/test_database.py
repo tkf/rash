@@ -246,9 +246,10 @@ class TestInMemoryDataBase(BaseTestCase):
     def check_consistency_one_command_in_one_session(self):
         session_id = 'DUMMY-SESSION-ID'
         session_records = self.search_session_record(session_id=session_id)
-        command_records = self.search_command_record()
-        self.assertEqual(session_records[0].session_history_id,
-                         command_records[0].session_history_id)
+        sh_id = session_records[0].session_history_id
+        self.assertIsInstance(sh_id, int)
+        command_records = self.search_command_record(session_history_id=sh_id)
+        self.assertEqual(sh_id, command_records[0].session_history_id)
 
     def test_import_session_record_after_command_record(self):
         self.test_import_command_record()
