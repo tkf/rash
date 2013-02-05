@@ -139,11 +139,16 @@ Dependency
 
 Python modules:
 
-* watchdog_
-* parsedatetime_
+* watchdog_ [#nopy3k]_
+* parsedatetime_ [#nopy3k]_
 
 .. _watchdog: http://pypi.python.org/pypi/watchdog/
 .. _parsedatetime: http://pypi.python.org/pypi/parsedatetime/
+
+.. [#nopy3k] These modules do not support Python 3.
+             They are not installed in if you use Python 3
+             and related functionality is disabled.
+
 
 Command line program:
 
