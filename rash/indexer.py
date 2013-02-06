@@ -30,7 +30,7 @@ class Indexer(object):
         self.logger = logger
         if not keep_json:
             raise RuntimeError(
-                'At this point, --keep-json should be specified.')  # FIMXE
+                'At this point, --keep-json should be specified.')  # FIXME
         if keep_json:
             check_duplicate = True
         self.conf = conf
