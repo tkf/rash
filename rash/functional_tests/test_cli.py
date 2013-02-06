@@ -362,7 +362,10 @@ class ShellTestMixIn(FunctionalTestMixIn):
                 return True
 
         # The daemon should remove the PID file on exit
-        assert not os.path.exists(self.conf.daemon_pid_path)
+        self.assert_poll(
+            lambda: not os.path.exists(self.conf.daemon_pid_path),
+            "Daemon did not remove PID file at: {0}".format(
+                self.conf.daemon_pid_path))
 
     @staticmethod
     def assert_poll(assertion, message, num=100, tick=0.1):
