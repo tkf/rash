@@ -17,8 +17,9 @@ def daemon_run(no_error, restart, record_path, keep_json, check_duplicate,
     from .config import ConfigStore
     from .indexer import Indexer
     from .log import setup_daemon_log_file
-    from .watchrecord import watch_record
+    from .watchrecord import watch_record, install_sigterm_handler
 
+    install_sigterm_handler()
     conf = ConfigStore()
     if log_level:
         conf.daemon_log_level = log_level

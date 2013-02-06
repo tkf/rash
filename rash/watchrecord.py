@@ -20,6 +20,14 @@ class RecordHandler(FileSystemEventHandler):
             self.__indexer.index_record(event.src_path)
 
 
+def raise_keyboardinterrupt(_signum, _frame):
+    raise KeyboardInterrupt
+
+
+def install_sigterm_handler():
+    signal.signal(signal.SIGTERM, raise_keyboardinterrupt)
+
+
 def watch_record(indexer):
     """
     Start watching `conf.record_path`.
@@ -27,11 +35,6 @@ def watch_record(indexer):
     :type indexer: rash.indexer.Indexer
 
     """
-
-    def handle_sigterm(_signum, _frame):
-        raise KeyboardInterrupt()
-
-    signal.signal(signal.SIGTERM, handle_sigterm)
 
     event_handler = RecordHandler(indexer)
     observer = Observer()
