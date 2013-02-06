@@ -109,11 +109,11 @@ class DataBase(object):
     _db = None
     _need_commit = False
 
-    def get_version_record(self):
+    def get_version_records(self):
         """
-        Get RASH version information stored in DB.
+        Yield RASH version information stored in DB. Latest first.
 
-        :rtype: VersionRecord
+        :rtype: [VersionRecord]
 
         """
         keys = ['id', 'rash_version', 'schema_version', 'updated']
@@ -124,7 +124,7 @@ class DataBase(object):
         """
         with self.connection() as connection:
             for row in connection.execute(sql):
-                return VersionRecord(**dict(zip(keys, row)))
+                yield VersionRecord(**dict(zip(keys, row)))
 
     def import_json(self, json_path, **kwds):
         import json

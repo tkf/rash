@@ -57,7 +57,7 @@ class TestInMemoryDataBase(BaseTestCase):
     def test_info_get_version(self):
         from ..__init__ import __version__
         from ..database import schema_version
-        verrec = self.db.get_version_record()
+        verrec = next(self.db.get_version_records())
         self.assertEqual(verrec.rash_version, __version__)
         self.assertEqual(verrec.schema_version, schema_version)
 
@@ -69,7 +69,7 @@ class TestInMemoryDataBase(BaseTestCase):
         with nested(monkeypatch(__init__, '__version__', new_project_ver),
                     monkeypatch(database, 'schema_version', new_schema_ver)):
             self.db._init_db()
-        verrec = self.db.get_version_record()
+        verrec = next(self.db.get_version_records())
         self.assertEqual(verrec.rash_version, new_project_ver)
         self.assertEqual(verrec.schema_version, new_schema_ver)
 
