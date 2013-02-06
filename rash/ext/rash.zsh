@@ -1,5 +1,5 @@
 ### Record commands
-rash-postexec(){
+_rash-postexec(){
     test -d "$PWD" && \
         rash record \
         --record-type command \
@@ -13,13 +13,13 @@ rash-postexec(){
 
 _RASH_EXECUTING=""
 
-rash-preexec(){
+_rash-preexec(){
     _RASH_START=$(date "+%s")
     _RASH_EXECUTING=t
     _RASH_PWD="$PWD"
 }
 
-rash-precmd(){
+_rash-precmd(){
     # Make sure to copy these variable at very first stage.
     # Otherwise, I will loose these information.
     _RASH_EXIT_CODE="$?"
@@ -29,14 +29,14 @@ rash-precmd(){
 
     if [ -n "$_RASH_EXECUTING" ]
     then
-        rash-postexec
+        _rash-postexec
         _RASH_EXECUTING=""
     fi
 }
 
 autoload -Uz add-zsh-hook
-add-zsh-hook preexec rash-preexec
-add-zsh-hook precmd rash-precmd
+add-zsh-hook preexec _rash-preexec
+add-zsh-hook precmd _rash-precmd
 
 
 ### Record session initialization
@@ -47,8 +47,8 @@ fi
 
 
 ### Record session exit
-rash-before-exit(){
+_rash-before-exit(){
     rash record --record-type exit --session-id "$_RASH_SESSION_ID"
 }
 
-trap "rash-before-exit" EXIT TERM
+trap "_rash-before-exit" EXIT TERM

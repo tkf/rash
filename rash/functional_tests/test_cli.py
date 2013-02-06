@@ -273,19 +273,19 @@ class ShellTestMixIn(FunctionalTestMixIn):
 
     def test_non_existing_directory(self):
         main_script = """
-        rash-precmd
+        _rash-precmd
         mkdir non_existing_directory
 
-        rash-precmd
+        _rash-precmd
         cd non_existing_directory
 
-        rash-precmd
+        _rash-precmd
         rmdir ../non_existing_directory
 
-        rash-precmd
+        _rash-precmd
         :
 
-        rash-precmd
+        _rash-precmd
         cd ..
         """
         script = self.get_script(main_script)
@@ -397,15 +397,15 @@ class ShellTestMixIn(FunctionalTestMixIn):
 class TestZsh(ShellTestMixIn, BaseTestCase):
     shell = 'zsh'
     test_postexec_script = """
-    rash-precmd
+    _rash-precmd
     """
     test_exit_code_script = """
     false
-    rash-precmd
+    _rash-precmd
     """
     test_pipe_status_script = """
     false | true
-    rash-precmd
+    _rash-precmd
     """
 
     def test_zsh_executes_preexec(self):
@@ -420,8 +420,8 @@ class TestZsh(ShellTestMixIn, BaseTestCase):
         echo $preexec_functions
         """)
         (stdout, stderr) = self.run_shell(script)
-        self.assertIn('rash-precmd', stdout)
-        self.assertIn('rash-preexec', stdout)
+        self.assertIn('_rash-precmd', stdout)
+        self.assertIn('_rash-preexec', stdout)
 
 
 class TestBash(ShellTestMixIn, BaseTestCase):
@@ -444,4 +444,4 @@ class TestBash(ShellTestMixIn, BaseTestCase):
     def test_hook_installation(self):
         script = self.get_script('echo $PROMPT_COMMAND')
         (stdout, stderr) = self.run_shell(script)
-        self.assertIn('rash-precmd', stdout)
+        self.assertIn('_rash-precmd', stdout)

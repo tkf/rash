@@ -1,5 +1,5 @@
 ### Record commands
-rash-postexec(){
+_rash-postexec(){
     test -d "$PWD" && \
         rash record \
         --record-type command \
@@ -13,12 +13,12 @@ rash-postexec(){
 
 _RASH_EXECUTING=""
 
-rash-preexec(){
+_rash-preexec(){
     _RASH_EXECUTING=t
     _RASH_PWD="$PWD"
 }
 
-rash-precmd(){
+_rash-precmd(){
     _RASH_EXIT_CODE="$1"
     shift
     _RASH_PIPESTATUS=("$@")
@@ -34,13 +34,13 @@ rash-precmd(){
             _RASH_OPTS=(--start "$start" "${_RASH_OPTS[@]}")
         fi
         _RASH_COMMAND="$command"
-        rash-postexec
+        _rash-postexec
         _RASH_EXECUTING=""
     fi
-    rash-preexec
+    _rash-preexec
 }
 
-export PROMPT_COMMAND="rash-precmd \${?} \${PIPESTATUS[@]}"
+export PROMPT_COMMAND="_rash-precmd \${?} \${PIPESTATUS[@]}"
 
 
 ### Record session initialization
@@ -51,8 +51,8 @@ fi
 
 
 ### Record session exit
-rash-before-exit(){
+_rash-before-exit(){
     rash record --record-type exit --session-id "$_RASH_SESSION_ID"
 }
 
-trap "rash-before-exit" EXIT TERM
+trap "_rash-before-exit" EXIT TERM
