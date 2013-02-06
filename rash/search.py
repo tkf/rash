@@ -43,6 +43,9 @@ def search_add_arguments(parser):
         'pattern', nargs='*',
         help='glob patterns that matches to command.')
     parser.add_argument(
+        '--exclude-pattern', action='append', default=[],
+        help='glob patterns that matches to commands to exclude.')
+    parser.add_argument(
         '--limit', type=int, default=10,
         help='maximum number of history to show. -1 means not limit.')
     parser.add_argument(

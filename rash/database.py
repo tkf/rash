@@ -270,7 +270,8 @@ class DataBase(object):
                 yield CommandRecord(**dict(zip(keys, row)))
 
     def _compile_sql_search_command_record(
-            cls, limit, pattern, cwd, cwd_glob, cwd_under, unique,
+            cls, limit, pattern, exclude_pattern, unique,
+            cwd, cwd_glob, cwd_under,
             time_after, time_before, duration_longer_than, duration_less_than,
             include_exit_code, exclude_exit_code, reverse,
             session_history_id=None,
@@ -296,6 +297,10 @@ class DataBase(object):
             params.extend(args)
 
         add_or_match('glob(?, {0})', 'CL.command', pattern)
+        conditions.extend(repeat('NOT glob(?, CL.command)',
+                                 len(exclude_pattern)))
+        params.extend(exclude_pattern)
+
         add_or_match('glob(?, {0})', 'DL.directory', cwd_glob)
         add_or_match('{0} = ?', 'DL.directory',
                      [normalize_directory(os.path.abspath(p)) for p in cwd])
