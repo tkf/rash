@@ -3,7 +3,7 @@ import os
 
 def subdict_by_key_prefix(dct, prefix):
     items = []
-    for (k, v) in dct.iteritems():
+    for (k, v) in dct.items():
         if k.startswith(prefix):
             items.append((k, v))
     return dict(items)
