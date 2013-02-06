@@ -93,6 +93,14 @@ class Indexer(object):
             self.logger.info('Removing JSON record: %s', json_path)
             os.remove(json_path)
 
+    def find_record_files(self):
+        """
+        Yield paths to record files.
+        """
+        for (root, _, files) in os.walk(self.record_path):
+            for f in (f for f in files if f.endswith('.json')):
+                yield os.path.join(root, f)
+
     def index_all(self):
         """
         Index all records under :attr:`record_path`.
@@ -100,6 +108,5 @@ class Indexer(object):
         self.logger.debug('Start indexing all records under: %s',
                           self.record_path)
         with self.db.connection():
-            for (root, _, files) in os.walk(self.record_path):
-                for f in (f for f in files if f.endswith('.json')):
-                    self.index_record(os.path.join(root, f))
+            for json_path in sorted(self.find_record_files()):
+                self.index_record(json_path)
