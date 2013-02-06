@@ -148,6 +148,27 @@ class TestInMemoryDataBase(BaseTestCase):
         records = self.search_command_record(pattern=['bzr*'], unique=False)
         self.assertEqual(len(records), 0)
 
+    def test_serach_command_by_exclude_pattern(self):
+        data1 = self.get_dummy_command_record_data()
+        data2 = self.get_dummy_command_record_data()
+        data1['command'] = 'git status'
+        data2['command'] = 'hg status'
+        self.db.import_dict(data1)
+        self.db.import_dict(data2)
+        dcrec1 = to_command_record(data1)
+        dcrec2 = to_command_record(data2)
+
+        records = self.search_command_record(exclude_pattern=['hg*'],
+                                             unique=False)
+        crec = records[0]
+        self.assert_same_command_record(crec, dcrec1)
+        self.assert_not_same_command_record(crec, dcrec2)
+        self.assertEqual(len(records), 1)
+
+        records = self.search_command_record(exclude_pattern=['bzr*'],
+                                             unique=False)
+        self.assertEqual(len(records), 2)
+
     def test_serach_command_by_cwd(self):
         data1 = self.get_dummy_command_record_data()
         data2 = self.get_dummy_command_record_data()
