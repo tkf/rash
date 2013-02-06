@@ -42,6 +42,7 @@ class InMemoryDataBase(DataBase):
         db = sqlite3.connect(':memory:')
         self._get_db = lambda: db
         self._init_db()
+        self.update_version_records()
 
 
 class TestInMemoryDataBase(BaseTestCase):
@@ -68,7 +69,7 @@ class TestInMemoryDataBase(BaseTestCase):
         new_schema_ver = '100.0.0'
         with nested(monkeypatch(__init__, '__version__', new_project_ver),
                     monkeypatch(database, 'schema_version', new_schema_ver)):
-            self.db._init_db()
+            self.db.update_version_records()
         records = list(self.db.get_version_records())
         self.assertEqual(len(records), 2)
         self.assertEqual(records[0].rash_version, new_project_ver)
