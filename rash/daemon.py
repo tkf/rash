@@ -77,6 +77,9 @@ def start_daemon_in_subprocess(options, outpath=os.devnull):
     import subprocess
     import sys
     from .utils.py3compat import nested
+    from .utils.pathutils import mkdirp
+    if outpath != os.devnull:
+        mkdirp(os.path.dirname(outpath))
     with nested(open(os.devnull),
                 open(outpath, 'w')) as (stdin, stdout):
         subprocess.Popen(
