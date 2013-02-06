@@ -69,9 +69,12 @@ class TestInMemoryDataBase(BaseTestCase):
         with nested(monkeypatch(__init__, '__version__', new_project_ver),
                     monkeypatch(database, 'schema_version', new_schema_ver)):
             self.db._init_db()
-        verrec = next(self.db.get_version_records())
-        self.assertEqual(verrec.rash_version, new_project_ver)
-        self.assertEqual(verrec.schema_version, new_schema_ver)
+        records = list(self.db.get_version_records())
+        self.assertEqual(len(records), 2)
+        self.assertEqual(records[0].rash_version, new_project_ver)
+        self.assertEqual(records[0].schema_version, new_schema_ver)
+        self.assertEqual(records[1].rash_version, __init__.__version__)
+        self.assertEqual(records[1].schema_version, database.schema_version)
 
     def get_default_search_kwds(self):
         import argparse
