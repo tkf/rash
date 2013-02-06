@@ -34,8 +34,8 @@ _rash-precmd(){
     fi
 }
 
-preexec_functions=($preexec_functions _rash-preexec)
-precmd_functions=($precmd_functions _rash-precmd)
+preexec_functions+=(_rash-preexec)
+precmd_functions+=(_rash-precmd)
 
 
 ### Record session initialization
