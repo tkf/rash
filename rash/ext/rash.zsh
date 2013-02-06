@@ -34,9 +34,8 @@ _rash-precmd(){
     fi
 }
 
-autoload -Uz add-zsh-hook
-add-zsh-hook preexec _rash-preexec
-add-zsh-hook precmd _rash-precmd
+preexec_functions=($preexec_functions _rash-preexec)
+precmd_functions=($precmd_functions _rash-precmd)
 
 
 ### Record session initialization
