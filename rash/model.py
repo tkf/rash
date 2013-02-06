@@ -24,3 +24,13 @@ class SessionRecord(object):
         self.stop = None
         self.environ = {}
         self.__dict__.update(kwds)
+
+
+class VersionRecord(object):
+
+    def __init__(self, **kwds):
+        self.id = None
+        self.rash_version = None
+        self.schema_version = None
+        self.updated = None
+        self.__dict__.update(kwds)

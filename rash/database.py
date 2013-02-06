@@ -6,7 +6,7 @@ import warnings
 import itertools
 
 from .utils.iterutils import nonempty, repeat
-from .model import CommandRecord, SessionRecord
+from .model import CommandRecord, SessionRecord, VersionRecord
 
 schema_version = '0.1.dev1'
 
@@ -108,6 +108,23 @@ class DataBase(object):
                 self._need_commit = False
     _db = None
     _need_commit = False
+
+    def get_version_record(self):
+        """
+        Get RASH version information stored in DB.
+
+        :rtype: VersionRecord
+
+        """
+        keys = ['id', 'rash_version', 'schema_version', 'updated']
+        sql = """
+        SELECT id, rash_version, schema_version, updated
+        FROM rash_info
+        ORDER BY id DESC
+        """
+        with self.connection() as connection:
+            for row in connection.execute(sql):
+                return VersionRecord(**dict(zip(keys, row)))
 
     def import_json(self, json_path, **kwds):
         import json

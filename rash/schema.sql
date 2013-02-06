@@ -75,6 +75,7 @@ CREATE TABLE pipe_status_map (
 
 DROP TABLE IF EXISTS rash_info;
 CREATE TABLE rash_info (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   rash_version TEXT NOT NULL,
   schema_version TEXT NOT NULL,
   updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
