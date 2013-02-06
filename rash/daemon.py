@@ -1,7 +1,7 @@
 import os
 
 
-def daemon_run(no_error, record_path, keep_json, check_duplicate,
+def daemon_run(no_error, restart, record_path, keep_json, check_duplicate,
                log_level):
     """
     Run RASH index daemon.
@@ -27,13 +27,16 @@ def daemon_run(no_error, record_path, keep_json, check_duplicate,
     if os.path.exists(conf.daemon_pid_path):
         if no_error:
             return
+        with open(conf.daemon_pid_path, 'rt') as f:
+            pid = int(f.read().strip())
+        if restart:
+            stop_running_daemon(conf, pid)
         else:
-            pid = open(conf.daemon_pid_path, 'rt').read().strip()
             raise RuntimeError(
                 'There is already a running daemon (PID={0})!'.format(pid))
-    else:
-        with open(conf.daemon_pid_path, 'w') as f:
-            f.write(str(os.getpid()))
+
+    with open(conf.daemon_pid_path, 'w') as f:
+        f.write(str(os.getpid()))
 
     try:
         setup_daemon_log_file(conf)
@@ -42,6 +45,20 @@ def daemon_run(no_error, record_path, keep_json, check_duplicate,
         watch_record(indexer)
     finally:
         os.remove(conf.daemon_pid_path)
+
+
+def stop_running_daemon(conf, pid):
+    import time
+    import signal
+    os.kill(pid, signal.SIGTERM)
+    for _ in range(30):
+        time.sleep(0.1)
+        if not os.path.exists(conf.daemon_pid_path):
+            break
+    else:
+        raise RuntimeError(
+            'Failed to stop running daemon process (PID={0})'
+            .format(pid))
 
 
 def start_daemon_in_subprocess(options, outpath=os.devnull):
@@ -72,6 +89,11 @@ def daemon_add_arguments(parser):
         '--no-error', action='store_true', default=False,
         help="""
         Do nothing if a daemon is already running.
+        """)
+    parser.add_argument(
+        '--restart', action='store_true', default=False,
+        help="""
+        Kill already running daemon process if exist.
         """)
     parser.add_argument(
         '--record-path',
