@@ -1,5 +1,6 @@
 import unittest
 import functools
+from contextlib import contextmanager
 
 
 class BaseTestCase(unittest.TestCase):
@@ -31,3 +32,14 @@ except AttributeError:
                     return func(*args, **kwds)
             return wrapper
         return decorator
+
+
+@contextmanager
+def monkeypatch(obj, name, attr):
+    """
+    Context manager to replace attribute named `name` in `obj` with `attr`.
+    """
+    orig = getattr(obj, name)
+    setattr(obj, name, attr)
+    yield
+    setattr(obj, name, orig)

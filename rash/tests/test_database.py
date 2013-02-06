@@ -3,7 +3,8 @@ import datetime
 
 from ..model import CommandRecord, SessionRecord
 from ..database import DataBase, normalize_directory
-from .utils import BaseTestCase
+from ..utils.py3compat import nested
+from .utils import BaseTestCase, monkeypatch
 
 
 def setdefaults(d, **kwds):
@@ -52,6 +53,25 @@ class TestInMemoryDataBase(BaseTestCase):
 
     def setUp(self):
         self.db = self.dbclass()
+
+    def test_info_get_version(self):
+        from ..__init__ import __version__
+        from ..database import schema_version
+        verrec = self.db.get_version_record()
+        self.assertEqual(verrec.rash_version, __version__)
+        self.assertEqual(verrec.schema_version, schema_version)
+
+    def test_info_version_update(self):
+        from .. import __init__
+        from .. import database
+        new_project_ver = '100.0.0'
+        new_schema_ver = '100.0.0'
+        with nested(monkeypatch(__init__, '__version__', new_project_ver),
+                    monkeypatch(database, 'schema_version', new_schema_ver)):
+            self.db._init_db()
+        verrec = self.db.get_version_record()
+        self.assertEqual(verrec.rash_version, new_project_ver)
+        self.assertEqual(verrec.schema_version, new_schema_ver)
 
     def get_default_search_kwds(self):
         import argparse
