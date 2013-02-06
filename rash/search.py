@@ -87,6 +87,12 @@ def search_add_arguments(parser):
         help='exclude command which finished with given exit code.')
     # Sorter
     parser.add_argument(
+        '--reverse', action='store_true', default=False,
+        help="""
+        Reverse order of the result.
+        By default, most recent commands are shown.
+        """)
+    parser.add_argument(
         '--sort-by-program-frequency',
         help="""
         [NOT IMPLEMENTED]
