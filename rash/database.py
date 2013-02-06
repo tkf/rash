@@ -342,15 +342,20 @@ class DataBase(object):
             params.append(limit)
 
         sql = (
-            'SELECT {0} '
+            'SELECT {columns} '
             'FROM command_history '
             'LEFT JOIN command_list AS CL ON command_id = CL.id '
             'LEFT JOIN directory_list AS DL ON directory_id = DL.id '
             'LEFT JOIN terminal_list AS TL ON terminal_id = TL.id '
-            '{1}{2} '
+            '{where}{group_by} '
             'ORDER BY start_time '
-            '{3}'
-        ).format(', '.join(columns), where, group_by, sql_limit)
+            '{limit}'
+        ).format(
+            columns=', '.join(columns),
+            where=where,
+            group_by=group_by,
+            limit=sql_limit,
+        )
         return (sql, params, keys)
 
     def import_init_dict(self, dct, overwrite=True):
