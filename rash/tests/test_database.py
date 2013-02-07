@@ -153,7 +153,7 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assert_same_command_record(records[0], to_command_record(data))
         self.assertEqual(len(records), 1)
 
-    def test_serach_command_by_pattern(self):
+    def test_search_command_by_pattern(self):
         data1 = self.get_dummy_command_record_data()
         data2 = self.get_dummy_command_record_data()
         data1['command'] = 'git status'
@@ -172,7 +172,7 @@ class TestInMemoryDataBase(BaseTestCase):
         records = self.search_command_record(pattern=['bzr*'], unique=False)
         self.assertEqual(len(records), 0)
 
-    def test_serach_command_by_exclude_pattern(self):
+    def test_search_command_by_exclude_pattern(self):
         data1 = self.get_dummy_command_record_data()
         data2 = self.get_dummy_command_record_data()
         data1['command'] = 'git status'
@@ -193,7 +193,7 @@ class TestInMemoryDataBase(BaseTestCase):
                                              unique=False)
         self.assertEqual(len(records), 2)
 
-    def test_serach_command_by_complex_pattern(self):
+    def test_search_command_by_complex_pattern(self):
         data1 = self.get_dummy_command_record_data()
         data2 = self.get_dummy_command_record_data()
         data1['command'] = 'git status'
@@ -213,7 +213,7 @@ class TestInMemoryDataBase(BaseTestCase):
             unique=False)
         self.assertEqual(len(records), 0)
 
-    def test_serach_command_by_cwd(self):
+    def test_search_command_by_cwd(self):
         data1 = self.get_dummy_command_record_data()
         data2 = self.get_dummy_command_record_data()
         data1['cwd'] = self.abspath('DUMMY', 'A')
@@ -233,7 +233,7 @@ class TestInMemoryDataBase(BaseTestCase):
                                              unique=False)
         self.assertEqual(len(records), 0)
 
-    def test_serach_command_by_cwd_glob(self):
+    def test_search_command_by_cwd_glob(self):
         data1 = self.get_dummy_command_record_data()
         data2 = self.get_dummy_command_record_data()
         data1['cwd'] = self.abspath('DUMMY', 'A')
