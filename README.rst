@@ -128,6 +128,23 @@ You can see all information associated with a command with
    rash show 1677
 
 
+Interactive search -- ``rash isearch`` (experimental!)
+------------------------------------------------------
+
+Searching history using command line is not fast.
+You can use ``rash isearch`` command to interactively search
+history and see the result immediately as you type.
+
+You need percol_ to use this feature.
+
+Zsh user can setup a keybind like this::
+
+  # Type `Ctrl-x r` to start isearch
+  bindkey "^Xr" rash-zle-isearch
+
+_percol: https://github.com/mooz/percol
+
+
 Dependency
 ==========
 
