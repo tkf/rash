@@ -58,11 +58,11 @@ class RashFinder(FinderMultiQueryString):
     lazy_finding = False
 
     def find(self, query, collection=None):
-        # shlex < 2.7.3 does not work with unicode:
-        args = shlex.split(query.encode())
         try:
+            # shlex < 2.7.3 does not work with unicode:
+            args = shlex.split(query.encode())
             kwds = preprocess_kwds(vars(self.__parser.parse_args(args)))
-        except ValueError:
+        except (ValueError, SyntaxError):
             return super(RashFinder, self).find(query, collection)
 
         # SOMEDAY: get rid of this hard-coded search limit by making
