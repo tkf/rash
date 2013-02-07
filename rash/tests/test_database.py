@@ -253,6 +253,25 @@ class TestInMemoryDataBase(BaseTestCase):
             cwd_glob=[self.abspath('REAL', '*')], unique=False)
         self.assertEqual(len(records), 0)
 
+    def test_search_command_sort_by_command_count(self):
+        command_num_pairs = [('command A', 10),
+                             ('command B', 5),
+                             ('command C', 15)]
+        for (command, num) in command_num_pairs:
+            for i in range(num):
+                data = self.get_dummy_command_record_data()
+                data.update(
+                    command=command,
+                    # Use `start` to make the record unique
+                    start=i)
+                self.db.import_dict(data)
+
+        records = self.search_command_record(sort_by='command_count')
+        self.assertEqual(len(records), 3)
+
+        commands = [r.command for r in records]
+        self.assertEqual(commands, ['command C', 'command A', 'command B'])
+
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))
 
