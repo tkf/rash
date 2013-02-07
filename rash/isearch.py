@@ -9,6 +9,12 @@ def isearch_run(query):
 
     _percol: https://github.com/mooz/percol
 
+    If you use zsh, you can setup a keybind like this to quickly
+    launch iserch and execute the result.::
+
+      # Type `Ctrl-x r` to start isearch
+      bindkey "^Xr" rash-zle-isearch
+
     """
     from .config import ConfigStore
     from .interactive_search import launch_isearch
