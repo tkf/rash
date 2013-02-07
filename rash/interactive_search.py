@@ -84,7 +84,7 @@ class RashFinder(FinderMultiQueryString):
             collection)
 
 
-def launch_isearch(conf):
+def launch_isearch(conf, **kwds):
     from percol import Percol
     from percol import tty
     import percol.actions as actions
@@ -99,5 +99,5 @@ def launch_isearch(conf):
         with Percol(descriptors=tty.reconnect_descriptors(tty_f),
                     finder=RashFinder,
                     actions=(actions.output_to_stdout,),
-        ) as percol:
+                    **kwds) as percol:
             percol.loop()
