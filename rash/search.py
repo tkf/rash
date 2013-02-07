@@ -1,4 +1,27 @@
-def search_run(output, format, with_command_id, with_session_id, **kwds):
+SORT_KEY_SYNONYMS = {
+    'count': 'command_count',
+    'time': 'start_time',
+    'start': 'start_time',
+    'stop': 'stop_time',
+    'code': 'exit_code',
+}
+
+inv = {}
+for (k, v) in SORT_KEY_SYNONYMS.items():
+    inv.setdefault(v, []).append(k)
+
+SORT_KEY_SYNONYM_HELPS = []
+for k in sorted(inv):
+    SORT_KEY_SYNONYM_HELPS.append(' = '.join([k] + list(sorted(inv[k]))))
+
+for (k, v) in list(SORT_KEY_SYNONYMS.items()):
+    SORT_KEY_SYNONYMS[v] = k
+
+del k, v, inv
+
+
+def search_run(output, format, with_command_id, with_session_id, sort_by,
+               **kwds):
     """
     Search command history.
 
@@ -30,6 +53,8 @@ def search_run(output, format, with_command_id, with_session_id, **kwds):
         format = "{session_history_id:>5}  {command}\n"
     else:
         format = format.decode('string_escape')
+
+    kwds['sort_by'] = SORT_KEY_SYNONYMS[sort_by]
 
     db = DataBase(ConfigStore().db_path)
     for crec in db.search_command_record(**kwds):
@@ -97,9 +122,10 @@ def search_add_arguments(parser):
         """)
     parser.add_argument(
         '--sort-by', default='start_time',
+        choices=sorted(SORT_KEY_SYNONYMS),
         help="""
-        Sort keys: command_count, start_time, stop_time, exit_code
-        """)
+        Sort key synonyms: {0}
+        """.format(', '.join(SORT_KEY_SYNONYM_HELPS)))
     parser.add_argument(
         '--sort-by-program-frequency',
         help="""
