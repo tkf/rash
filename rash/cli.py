@@ -50,6 +50,7 @@ def main(args=None):
     from . import search
     from . import show
     from . import index
+    from . import isearch
     # from . import MODULE
     parser = get_parser(
         init.commands
@@ -58,6 +59,7 @@ def main(args=None):
         + search.commands
         + show.commands
         + index.commands
+        + isearch.commands
         # + MODULE.commands
     )
     ns = parser.parse_args(args=args)

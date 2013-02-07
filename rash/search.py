@@ -36,6 +36,9 @@ def preprocess_kwds(kwds):
     """
     from .utils.timeutils import parse_datetime, parse_duration
 
+    for key in ['(output', 'format', 'with_command_id', 'with_session_id']:
+        kwds.pop(key, None)
+
     for key in ['time_after', 'time_before']:
         val = kwds[key]
         if val:
