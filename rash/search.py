@@ -1,3 +1,12 @@
+SORT_KEY_SYNONYMS = {
+    'count': 'command_count',
+    'time': 'start_time',
+    'start': 'start_time',
+    'stop': 'stop_time',
+    'code': 'exit_code',
+}
+
+
 def search_run(output, format, with_command_id, with_session_id, **kwds):
     """
     Search command history.
@@ -5,6 +14,26 @@ def search_run(output, format, with_command_id, with_session_id, **kwds):
     """
     from .config import ConfigStore
     from .database import DataBase
+
+    if with_command_id and with_session_id:
+        format = ("{session_history_id:>5}  "
+                  "{command_history_id:>5}  {command}\n")
+    elif with_command_id:
+        format = "{command_history_id:>5}  {command}\n"
+    elif with_session_id:
+        format = "{session_history_id:>5}  {command}\n"
+    else:
+        format = format.decode('string_escape')
+
+    db = DataBase(ConfigStore().db_path)
+    for crec in db.search_command_record(**preprocess_kwds(kwds)):
+        output.write(format.format(**crec.__dict__))
+
+
+def preprocess_kwds(kwds):
+    """
+    Preprocess keyword arguments for `DataBase.search_command_record`.
+    """
     from .utils.timeutils import parse_datetime, parse_duration
 
     for key in ['time_after', 'time_before']:
@@ -21,19 +50,8 @@ def search_run(output, format, with_command_id, with_session_id, **kwds):
             if dt:
                 kwds[key] = dt
 
-    if with_command_id and with_session_id:
-        format = ("{session_history_id:>5}  "
-                  "{command_history_id:>5}  {command}\n")
-    elif with_command_id:
-        format = "{command_history_id:>5}  {command}\n"
-    elif with_session_id:
-        format = "{session_history_id:>5}  {command}\n"
-    else:
-        format = format.decode('string_escape')
-
-    db = DataBase(ConfigStore().db_path)
-    for crec in db.search_command_record(**kwds):
-        output.write(format.format(**crec.__dict__))
+    kwds['sort_by'] = SORT_KEY_SYNONYMS[kwds['sort_by']]
+    return kwds
 
 
 def search_add_arguments(parser):
@@ -94,6 +112,16 @@ def search_add_arguments(parser):
         help="""
         Reverse order of the result.
         By default, most recent commands are shown.
+        """)
+    parser.add_argument(
+        '--sort-by', default='start',
+        choices=sorted(SORT_KEY_SYNONYMS),
+        help="""
+        Sort keys
+        `count`: number of the time command is executed;
+        `start`(=`time`): the time command is executed;
+        `stop`: the time command is finished;
+        `code`: exit code of the command;
         """)
     parser.add_argument(
         '--sort-by-program-frequency',

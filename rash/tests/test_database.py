@@ -79,11 +79,11 @@ class TestInMemoryDataBase(BaseTestCase):
 
     def get_default_search_kwds(self):
         import argparse
-        from ..search import search_add_arguments
+        from ..search import search_add_arguments, preprocess_kwds
         parser = argparse.ArgumentParser()
         search_add_arguments(parser)
         kwds = vars(parser.parse_args([]))
-        return kwds
+        return preprocess_kwds(kwds)
 
     def search_command_record(self, **kwds):
         setdefaults(kwds, **self.get_default_search_kwds())
@@ -252,6 +252,28 @@ class TestInMemoryDataBase(BaseTestCase):
         records = self.search_command_record(
             cwd_glob=[self.abspath('REAL', '*')], unique=False)
         self.assertEqual(len(records), 0)
+
+    def test_search_command_sort_by_command_count(self):
+        command_num_pairs = [('command A', 10),
+                             ('command B', 5),
+                             ('command C', 15)]
+        for (command, num) in command_num_pairs:
+            for i in range(num):
+                data = self.get_dummy_command_record_data()
+                data.update(
+                    command=command,
+                    # Use `start` to make the record unique
+                    start=i)
+                self.db.import_dict(data)
+
+        records = self.search_command_record(sort_by='command_count')
+        self.assertEqual(len(records), 3)
+
+        commands = [r.command for r in records]
+        self.assertEqual(commands, ['command C', 'command A', 'command B'])
+
+        counts = [r.command_count for r in records]
+        self.assertEqual(counts, [15, 10, 5])
 
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))

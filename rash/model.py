@@ -12,6 +12,10 @@ class CommandRecord(object):
         self.terminal = None
         self.cwd = None
         self.environ = {}
+
+        # Non-record attributes (metadata):
+        self.command_count = None
+
         self.__dict__.update(kwds)
 
 
