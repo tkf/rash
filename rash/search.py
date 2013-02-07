@@ -128,6 +128,7 @@ def search_add_arguments(parent_parser):
         `start`(=`time`): the time command is executed;
         `stop`: the time command is finished;
         `code`: exit code of the command;
+        Note that --sort-by=count cannot be used with --no-unique.
         """)
     parser.add_argument(
         '--sort-by-program-frequency',

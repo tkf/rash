@@ -366,6 +366,11 @@ class DataBase(object):
         if unique:
             columns[max_index] = 'MAX({0})'.format(columns[max_index])
             group_by = 'GROUP BY CL.command '
+        elif sort_by == 'command_count':
+            # When not using "GROUP BY", `COUNT(*)` yields just one
+            # row.  As unique is True by default, `unique=False`
+            # should means to ignore `sort_by`
+            sort_by = None
 
         order_by = 'start_time'
         if sort_by:
