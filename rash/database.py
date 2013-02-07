@@ -299,7 +299,7 @@ class DataBase(object):
             cls, limit, pattern, exclude_pattern, unique,
             cwd, cwd_glob, cwd_under,
             time_after, time_before, duration_longer_than, duration_less_than,
-            include_exit_code, exclude_exit_code, reverse,
+            include_exit_code, exclude_exit_code, reverse, sort_by,
             session_history_id=None,
             **_):
         keys = ['command_history_id', 'command', 'session_history_id',
@@ -367,6 +367,13 @@ class DataBase(object):
             columns[max_index] = 'MAX({0})'.format(columns[max_index])
             group_by = 'GROUP BY CL.command '
 
+        order_by = 'start_time'
+        if sort_by:
+            if sort_by == 'command_count':
+                columns.append('COUNT(*) as command_count')
+                keys.append('command_count')
+            order_by = sort_by
+
         order_direction = 'ASC' if reverse else 'DESC'
 
         sql_limit = ''
@@ -381,12 +388,13 @@ class DataBase(object):
             'LEFT JOIN directory_list AS DL ON directory_id = DL.id '
             'LEFT JOIN terminal_list AS TL ON terminal_id = TL.id '
             '{where}{group_by} '
-            'ORDER BY start_time {order_direction} '
+            'ORDER BY {order_by} {order_direction} '
             '{limit}'
         ).format(
             columns=', '.join(columns),
             where=where,
             group_by=group_by,
+            order_by=order_by,
             order_direction=order_direction,
             limit=sql_limit,
         )

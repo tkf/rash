@@ -96,6 +96,11 @@ def search_add_arguments(parser):
         By default, most recent commands are shown.
         """)
     parser.add_argument(
+        '--sort-by', default='start_time',
+        help="""
+        Sort keys: command_count, start_time, stop_time, exit_code
+        """)
+    parser.add_argument(
         '--sort-by-program-frequency',
         help="""
         [NOT IMPLEMENTED]
