@@ -83,7 +83,19 @@ class RashFinder(FinderMultiQueryString):
             collection)
 
 
-def launch_isearch(conf, **kwds):
+def load_rc(percol, path=None, encoding=None):
+    import os
+    from percol import debug
+    if path is None:
+        path = os.path.expanduser("~/.percol.d/rc.py")
+    try:
+        with open(path, 'r') as rc:
+            exec(rc.read().decode(encoding or 'utf-8'), locals())
+    except Exception as e:
+        debug.log("exception", e)
+
+
+def launch_isearch(conf, rcfile=None, input_encoding=None, **kwds):
     from percol import Percol
     from percol import tty
     import percol.actions as actions
@@ -99,4 +111,7 @@ def launch_isearch(conf, **kwds):
                     finder=RashFinder,
                     actions=(actions.output_to_stdout,),
                     **kwds) as percol:
-            percol.loop()
+            load_rc(percol, rcfile, input_encoding)
+            exit_code = percol.loop()
+
+    exit(exit_code)
