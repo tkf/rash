@@ -120,7 +120,7 @@ def search_add_arguments(parent_parser):
         By default, most recent commands are shown.
         """)
     parser.add_argument(
-        '--sort-by', default='start',
+        '--sort-by', default='count',
         choices=sorted(SORT_KEY_SYNONYMS),
         help="""
         Sort keys
