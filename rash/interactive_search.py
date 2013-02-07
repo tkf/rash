@@ -70,6 +70,10 @@ class RashFinder(FinderMultiQueryString):
         # `lazy_finding = True`.
         kwds['limit'] = 50 if kwds['pattern'] else 1000
 
+        # Strict glob search is a little bit cumbersome in interactive
+        # search.  So, make the match a bit more permissive.
+        kwds['pattern'] = list(map("*{0}*".format, kwds['pattern']))
+
         records = self.db.search_command_record(**kwds)
         self.collection = collection = (r.command for r in records)
 
