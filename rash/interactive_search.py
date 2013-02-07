@@ -58,11 +58,6 @@ class RashFinder(FinderMultiQueryString):
     lazy_finding = False
 
     def find(self, query, collection=None):
-        # SOMEDAY: get rid of this hard-coded search limit by making
-        # `search_command_record` thread-safe and setting
-        # `lazy_finding = True`.
-        limit = 1000
-
         # shlex < 2.7.3 does not work with unicode:
         args = shlex.split(query.encode())
         try:
@@ -70,17 +65,17 @@ class RashFinder(FinderMultiQueryString):
         except ValueError:
             return super(RashFinder, self).find(query, collection)
 
-        queries = kwds['pattern']
-        if not queries:
-            limit = 50
+        # SOMEDAY: get rid of this hard-coded search limit by making
+        # `search_command_record` thread-safe and setting
+        # `lazy_finding = True`.
+        kwds['limit'] = 50 if kwds['pattern'] else 1000
 
-        kwds['limit'] = limit
         records = self.db.search_command_record(**kwds)
         self.collection = collection = (r.command for r in records)
 
         return super(RashFinder, self).find(
             self.split_str.join(strip_glob(q, self.split_str)
-                                for q in queries),
+                                for q in kwds['pattern']),
             collection)
 
 
