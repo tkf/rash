@@ -3,7 +3,9 @@ import shlex
 
 try:
     from percol.finder import FinderMultiQueryString
+    assert FinderMultiQueryString  # fool pyflakes
 except ImportError:
+    # Dummy class for making this module importable:
     FinderMultiQueryString = object
 
 from argparse import ArgumentParser

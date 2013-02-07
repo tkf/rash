@@ -5,7 +5,9 @@ try:
     from watchdog.observers import Observer
     from watchdog.events import (
         FileSystemEventHandler, FileCreatedEvent)
+    assert FileSystemEventHandler  # fool pyflakes
 except ImportError:
+    # Dummy class for making this module importable:
     FileSystemEventHandler = object
 
 
