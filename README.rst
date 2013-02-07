@@ -159,6 +159,22 @@ Command line program:
 
 .. _supervisord: http://supervisord.org
 
+Platforms
+---------
+
+UNIX-like systems
+  RASH is tested in Linux and I am using in Linux.
+  It should work in other UNIX-like systems like BSD.
+
+Mac OS
+  I guess it works.  Not tested.
+
+MS Windows
+  Probably no one wants to use a shell tool in windows, but I
+  try to avoid stuff that is platform specific.  Only the
+  daemon launcher will not work on Windows but there is several
+  ways to avoid using it.  See ``rash init --help``.
+
 
 Design principle
 ================

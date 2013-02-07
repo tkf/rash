@@ -29,6 +29,9 @@ def init_run(shell, no_daemon, daemon_options, daemon_outfile):
 
       source $(%(prog)s --no-daemon)
 
+    To see the other methods to launch the daemon process, see
+    ``rash daemon --help``.
+
     """
     init_file = find_init(shell)
     if os.path.exists(init_file):

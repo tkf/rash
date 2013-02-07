@@ -2,9 +2,8 @@ def index_run(record_path, keep_json, check_duplicate):
     """
     Convert raw JSON records into sqlite3 DB.
 
-    .. note:: The idea is to use this command at early stage of
-       development with --keep-json, so that there is no need for
-       DB migration when schema is updated.
+    Normally RASH launches a daemon that takes care of indexing.
+    See ``rash daemon --help``.
 
     """
     from .config import ConfigStore

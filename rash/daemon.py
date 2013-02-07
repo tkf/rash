@@ -10,6 +10,25 @@ def daemon_run(no_error, restart, record_path, keep_json, check_duplicate,
     and translate the JSON files dumped by ``record`` command into
     sqlite3 DB at ``~/.config/rash/data/db.sqlite``.
 
+    ``rash init`` will start RASH automatically by default.
+    But there are alternative ways to start daemon.
+
+    If you want to organize background process in one place such
+    as supervisord_, it is good to add `--restart` option to force
+    stop other daemon process if you accidentally started it in
+    other place.  Here is an example of supervisord_ setup::
+
+      [program:rash-daemon]
+      command=rash daemon --restart
+
+    .. _supervisord: http://supervisord.org/
+
+    Alternatively, you can call ``rash index`` in cron job to
+    avoid using daemon.::
+
+      # Refresh RASH DB every 10 minutes
+      */10 * * * * rash index
+
     """
     # Probably it makes sense to use this daemon to provide search
     # API, so that this daemon is going to be the only process that
