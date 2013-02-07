@@ -272,6 +272,9 @@ class TestInMemoryDataBase(BaseTestCase):
         commands = [r.command for r in records]
         self.assertEqual(commands, ['command C', 'command A', 'command B'])
 
+        counts = [r.command_count for r in records]
+        self.assertEqual(counts, [15, 10, 5])
+
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))
 
