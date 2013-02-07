@@ -54,9 +54,10 @@ def preprocess_kwds(kwds):
     return kwds
 
 
-def search_add_arguments(parser):
+def search_add_arguments(parent_parser):
     import argparse
     # Filter
+    parser = parent_parser.add_argument_group('Filter')
     parser.add_argument(
         'pattern', nargs='*',
         help='glob patterns that matches to command.')
@@ -106,7 +107,9 @@ def search_add_arguments(parser):
     parser.add_argument(
         '--exclude-exit-code', action='append', default=[], type=int,
         help='exclude command which finished with given exit code.')
+
     # Sorter
+    parser = parent_parser.add_argument_group('Sorter')
     parser.add_argument(
         '--reverse', action='store_true', default=False,
         help="""
@@ -129,7 +132,9 @@ def search_add_arguments(parser):
         [NOT IMPLEMENTED]
         most used program comes first.
         """)
+
     # Modifier
+    parser = parent_parser.add_argument_group('Modifier')
     parser.add_argument(
         '--after-context', type=int, metavar='NUM',
         help="""
@@ -148,7 +153,9 @@ def search_add_arguments(parser):
         [NOT IMPLEMENTED]
         Print NUM commands executed before and after matching commands.
         """)
+
     # Formatter
+    parser = parent_parser.add_argument_group('Formatter')
     parser.add_argument(
         '--with-command-id', action='store_true', default=False,
         help="""
@@ -173,7 +180,9 @@ def search_add_arguments(parser):
         See also:
         http://docs.python.org/library/string.html#format-string-syntax
         """)
+
     # Misc
+    parser = parent_parser.add_argument_group('Misc')
     parser.add_argument(
         '--output', default='-', type=argparse.FileType('w'),
         help="""
