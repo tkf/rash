@@ -79,11 +79,11 @@ class TestInMemoryDataBase(BaseTestCase):
 
     def get_default_search_kwds(self):
         import argparse
-        from ..search import search_add_arguments
+        from ..search import search_add_arguments, preprocess_kwds
         parser = argparse.ArgumentParser()
         search_add_arguments(parser)
         kwds = vars(parser.parse_args([]))
-        return kwds
+        return preprocess_kwds(kwds)
 
     def search_command_record(self, **kwds):
         setdefaults(kwds, **self.get_default_search_kwds())

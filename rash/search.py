@@ -6,28 +6,34 @@ SORT_KEY_SYNONYMS = {
     'code': 'exit_code',
 }
 
-inv = {}
-for (k, v) in SORT_KEY_SYNONYMS.items():
-    inv.setdefault(v, []).append(k)
 
-SORT_KEY_SYNONYM_HELPS = []
-for k in sorted(inv):
-    SORT_KEY_SYNONYM_HELPS.append(' = '.join([k] + list(sorted(inv[k]))))
-
-for (k, v) in list(SORT_KEY_SYNONYMS.items()):
-    SORT_KEY_SYNONYMS[v] = k
-
-del k, v, inv
-
-
-def search_run(output, format, with_command_id, with_session_id, sort_by,
-               **kwds):
+def search_run(output, format, with_command_id, with_session_id, **kwds):
     """
     Search command history.
 
     """
     from .config import ConfigStore
     from .database import DataBase
+
+    if with_command_id and with_session_id:
+        format = ("{session_history_id:>5}  "
+                  "{command_history_id:>5}  {command}\n")
+    elif with_command_id:
+        format = "{command_history_id:>5}  {command}\n"
+    elif with_session_id:
+        format = "{session_history_id:>5}  {command}\n"
+    else:
+        format = format.decode('string_escape')
+
+    db = DataBase(ConfigStore().db_path)
+    for crec in db.search_command_record(**preprocess_kwds(kwds)):
+        output.write(format.format(**crec.__dict__))
+
+
+def preprocess_kwds(kwds):
+    """
+    Preprocess keyword arguments for `DataBase.search_command_record`.
+    """
     from .utils.timeutils import parse_datetime, parse_duration
 
     for key in ['time_after', 'time_before']:
@@ -44,21 +50,8 @@ def search_run(output, format, with_command_id, with_session_id, sort_by,
             if dt:
                 kwds[key] = dt
 
-    if with_command_id and with_session_id:
-        format = ("{session_history_id:>5}  "
-                  "{command_history_id:>5}  {command}\n")
-    elif with_command_id:
-        format = "{command_history_id:>5}  {command}\n"
-    elif with_session_id:
-        format = "{session_history_id:>5}  {command}\n"
-    else:
-        format = format.decode('string_escape')
-
-    kwds['sort_by'] = SORT_KEY_SYNONYMS[sort_by]
-
-    db = DataBase(ConfigStore().db_path)
-    for crec in db.search_command_record(**kwds):
-        output.write(format.format(**crec.__dict__))
+    kwds['sort_by'] = SORT_KEY_SYNONYMS[kwds['sort_by']]
+    return kwds
 
 
 def search_add_arguments(parser):
@@ -121,11 +114,15 @@ def search_add_arguments(parser):
         By default, most recent commands are shown.
         """)
     parser.add_argument(
-        '--sort-by', default='start_time',
+        '--sort-by', default='start',
         choices=sorted(SORT_KEY_SYNONYMS),
         help="""
-        Sort key synonyms: {0}
-        """.format(', '.join(SORT_KEY_SYNONYM_HELPS)))
+        Sort keys
+        `count`: number of the time command is executed;
+        `start`(=`time`): the time command is executed;
+        `stop`: the time command is finished;
+        `code`: exit code of the command;
+        """)
     parser.add_argument(
         '--sort-by-program-frequency',
         help="""
