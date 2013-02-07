@@ -143,22 +143,6 @@ Python modules:
              They are not installed in if you use Python 3
              and related functionality is disabled.
 
-
-Command line program:
-
-* nohup [#]_
-
-.. [#] ``nohup`` command is used to launch a daemon process.
-       It is not required if you don't use daemon launched by
-       ``rash init``.  To avoid using ``nohup``, you can give
-       ``--no-daemon`` option to ``rash init``.
-       For example, you can use supervisord_ to launch and monitor
-       process.
-       ``nohup`` may be removed from the dependencies once I implement
-       proper daemon launcher in RASH.
-
-.. _supervisord: http://supervisord.org
-
 Platforms
 ---------
 

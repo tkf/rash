@@ -90,8 +90,6 @@ def start_daemon_in_subprocess(options, outpath=os.devnull):
     :type outpath: str
     :arg  outpath: path to redirect daemon output
 
-    Currently it uses ``nohup`` command to launch a daemon process.
-
     """
     import subprocess
     import sys
@@ -102,8 +100,9 @@ def start_daemon_in_subprocess(options, outpath=os.devnull):
     with nested(open(os.devnull),
                 open(outpath, 'w')) as (stdin, stdout):
         subprocess.Popen(
-            ['nohup', os.path.abspath(sys.executable), '-m', 'rash.cli',
+            [os.path.abspath(sys.executable), '-m', 'rash.cli',
              'daemon', '--no-error'] + options,
+            preexec_fn=os.setsid,
             stdin=stdin, stdout=stdout, stderr=subprocess.STDOUT)
 
 
