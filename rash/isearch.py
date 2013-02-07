@@ -1,6 +1,13 @@
 def isearch_run(query):
     """
-    Interactive search.
+    Interactive history search that updated as you type.
+
+    The query for this program is the same as the one for
+    ``rash search`` command.
+
+    You need percol_ to use this command.
+
+    _percol: https://github.com/mooz/percol
 
     """
     from .config import ConfigStore
