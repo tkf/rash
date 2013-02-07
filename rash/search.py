@@ -153,6 +153,13 @@ def search_add_arguments(parent_parser):
         [NOT IMPLEMENTED]
         Print NUM commands executed before and after matching commands.
         """)
+    parser.add_argument(
+        '--context-type', choices=['session', 'time'],
+        help="""
+        [NOT IMPLEMENTED]
+        `session`: commands executed in the same shell session;
+        `time`: commands executed around the same time;
+        """)
 
     # Formatter
     parser = parent_parser.add_argument_group('Formatter')
