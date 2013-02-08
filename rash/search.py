@@ -65,56 +65,113 @@ def search_add_arguments(parent_parser):
         'pattern', nargs='*',
         help='glob patterns that matches to command.')
     parser.add_argument(
-        '--exclude-pattern', action='append', default=[],
+        '--include-pattern', '-g', action='append', default=[],
+        help='glob patterns that matches to commands to include.')
+    parser.add_argument(
+        '--exclude-pattern', '-G', action='append', default=[],
         help='glob patterns that matches to commands to exclude.')
     parser.add_argument(
-        '--limit', type=int, default=10,
+        '--include-regexp', '-e', action='append', default=[],
+        help="""
+        [NOT IMPLEMENTED]
+        Regular expression patterns that matches to commands to include.
+        """)
+    parser.add_argument(
+        '--exclude-regexp', '-E', action='append', default=[],
+        help="""
+        [NOT IMPLEMENTED]
+        Regular expression patterns that matches to commands to exclude.
+        """)
+    parser.add_argument(
+        '--limit', '-l', type=int, default=10,
         help='maximum number of history to show. -1 means not limit.')
     parser.add_argument(
-        '--no-unique', dest='unique', action='store_false', default=True,
+        '--no-unique', '-a', dest='unique', action='store_false', default=True,
         help="""
         Include all duplicates.
         """)
     parser.add_argument(
-        '--cwd', action='append', default=[],
+        '--cwd', '-d', action='append', default=[],
         help="""
         The working directory at the time when the command was run.
         When given several times, items that match to one of the
         directory are included in the result.
         """)
     parser.add_argument(
-        '--cwd-glob', action='append', default=[],
+        '--cwd-glob', '-D', action='append', default=[],
         help="""
         Same as --cwd but it accepts glob expression.
         """)
     parser.add_argument(
-        '--cwd-under', action='append', default=[],
+        '--cwd-under', '-u', action='append', default=[],
         help="""
         Same as --cwd but include all subdirectories.
         """)
     parser.add_argument(
-        '--time-after',
+        '--time-after', '-t',
         help='commands run after the given time')
     parser.add_argument(
-        '--time-before',
+        '--time-before', '-T',
         help='commands run before the given time')
     parser.add_argument(
-        '--duration-longer-than',
+        '--duration-longer-than', '-S',
         help='commands that takes longer than the given time')
     parser.add_argument(
-        '--duration-less-than',
+        '--duration-less-than', '-s',
         help='commands that takes less than the given time')
     parser.add_argument(
-        '--include-exit-code', action='append', default=[], type=int,
+        '--include-exit-code', '-x', action='append', default=[], type=int,
         help='include command which finished with given exit code.')
     parser.add_argument(
-        '--exclude-exit-code', action='append', default=[], type=int,
+        '--exclude-exit-code', '-X', action='append', default=[], type=int,
         help='exclude command which finished with given exit code.')
+    parser.add_argument(
+        '--include-session', '-n', action='append', default=[], type=int,
+        help="""
+        [NOT IMPLEMENTED]
+        include command which is issued in given session.
+        """)
+    parser.add_argument(
+        '--exclude-session', '-N', action='append', default=[], type=int,
+        help="""
+        [NOT IMPLEMENTED]
+        exclude command which is issued in given session.
+        """)
+    parser.add_argument(
+        '--include-environ-pattern', '-v', action='append', default=[],
+        help="""
+        [NOT IMPLEMENTED]
+        include command which associated with environment variable
+        that matches to given glob pattern.""")
+    parser.add_argument(
+        '--exclude-environ-pattern', '-V', action='append', default=[],
+        help="""
+        [NOT IMPLEMENTED]
+        exclude command which associated with environment variable
+        that matches to given glob pattern.""")
+    parser.add_argument(
+        '--include-environ-regexp', '-w', action='append', default=[],
+        help="""
+        [NOT IMPLEMENTED]
+        include command which associated with environment variable
+        that matches to given glob pattern.""")
+    parser.add_argument(
+        '--exclude-environ-regexp', '-W', action='append', default=[],
+        help="""
+        [NOT IMPLEMENTED]
+        exclude command which associated with environment variable
+        that matches to given glob pattern.""")
+    parser.add_argument(
+        '--ignore-case', '-i',
+        help="""
+        [NOT IMPLEMENTED]
+        Do case insensitive search.
+        """)
 
     # Sorter
     parser = parent_parser.add_argument_group('Sorter')
     parser.add_argument(
-        '--reverse', action='store_true', default=False,
+        '--reverse', '-r', action='store_true', default=False,
         help="""
         Reverse order of the result.
         By default, most recent commands are shown.
@@ -140,19 +197,19 @@ def search_add_arguments(parent_parser):
     # Modifier
     parser = parent_parser.add_argument_group('Modifier')
     parser.add_argument(
-        '--after-context', type=int, metavar='NUM',
+        '--after-context', '-A', type=int, metavar='NUM',
         help="""
         [NOT IMPLEMENTED]
         Print NUM commands executed after matching commands.
         """)
     parser.add_argument(
-        '--before-context', type=int, metavar='NUM',
+        '--before-context', '-B', type=int, metavar='NUM',
         help="""
         [NOT IMPLEMENTED]
         Print NUM commands executed before matching commands.
         """)
     parser.add_argument(
-        '--context', type=int, metavar='NUM',
+        '--context', '-C', type=int, metavar='NUM',
         help="""
         [NOT IMPLEMENTED]
         Print NUM commands executed before and after matching commands.
@@ -190,6 +247,15 @@ def search_add_arguments(parent_parser):
         command_history_id, session_history_id.
         See also:
         http://docs.python.org/library/string.html#format-string-syntax
+        """)
+    parser.add_argument(
+        '-f', dest='format_level', action='count', default=0,
+        help="""
+        [NOT IMPLEMENTED]
+        Set formatting detail.  This can be given multiple times to
+        make more detailed output.  For example, giving it once
+        equivalent to passing --with-command-id and one more -f means
+        adding --with-session-id.
         """)
 
     # Misc
