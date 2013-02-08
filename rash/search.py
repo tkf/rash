@@ -83,14 +83,6 @@ def search_add_arguments(parent_parser):
         Regular expression patterns that matches to commands to exclude.
         """)
     parser.add_argument(
-        '--limit', '-l', type=int, default=10,
-        help='maximum number of history to show. -1 means not limit.')
-    parser.add_argument(
-        '--no-unique', '-a', dest='unique', action='store_false', default=True,
-        help="""
-        Include all duplicates.
-        """)
-    parser.add_argument(
         '--cwd', '-d', action='append', default=[],
         help="""
         The working directory at the time when the command was run.
@@ -161,6 +153,15 @@ def search_add_arguments(parent_parser):
         [NOT IMPLEMENTED]
         exclude command which associated with environment variable
         that matches to given glob pattern.""")
+    # "global" filters
+    parser.add_argument(
+        '--limit', '-l', type=int, default=10,
+        help='maximum number of history to show. -1 means not limit.')
+    parser.add_argument(
+        '--no-unique', '-a', dest='unique', action='store_false', default=True,
+        help="""
+        Include all duplicates.
+        """)
     parser.add_argument(
         '--ignore-case', '-i',
         help="""
