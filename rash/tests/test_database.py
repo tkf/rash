@@ -1,5 +1,6 @@
 import os
 import datetime
+import itertools
 
 from ..model import CommandRecord, SessionRecord
 from ..database import DataBase, normalize_directory
@@ -276,6 +277,36 @@ class TestInMemoryDataBase(BaseTestCase):
 
         counts = [r.command_count for r in records]
         self.assertEqual(counts, [15, 10, 5])
+
+    def test_search_command_with_connection(self):
+        num = 5
+        small_num = 3
+        for i in range(num):
+            data = self.get_dummy_command_record_data()
+            data.update(command='DUMMY-COMMAND-{0}'.format(i))
+            self.db.import_dict(data)
+
+        kwds = dict(unique=False)
+        setdefaults(kwds, **self.get_default_search_kwds())
+
+        # Generator hold connection to DB
+        records = self.db.search_command_record(**kwds)
+        self.assertEqual(len(list(records)), num)
+
+        # Generator can be resumed
+        records = self.db.search_command_record(**kwds)
+        first_half = list(itertools.islice(records, small_num))
+        second_half = list(records)
+        self.assertEqual(len(first_half), small_num)
+        self.assertEqual(len(second_half), num - small_num)
+
+        # Generator stops if the connection is closed
+        records = self.db.search_command_record(**kwds)
+        first_half = list(itertools.islice(records, small_num))
+        self.db.close_connection()
+        second_half = list(records)
+        self.assertEqual(len(first_half), small_num)
+        self.assertEqual(len(second_half), 0)
 
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))
