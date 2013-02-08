@@ -17,6 +17,10 @@ class BaseTestCase(unittest.TestCase):
         def assertIsInstance(self, obj, cls, msg=None):
             self.assertTrue(isinstance(obj, cls), msg)
 
+    if not hasattr(unittest.TestCase, 'assertSetEqual'):
+        def assertSetEqual(self, set1, set2, msg=None):
+            self.assertEqual(set1, set2, msg)
+
 try:
     skipIf = unittest.skipIf
 except AttributeError:
