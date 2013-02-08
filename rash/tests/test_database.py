@@ -163,13 +163,15 @@ class TestInMemoryDataBase(BaseTestCase):
         dcrec1 = to_command_record(data1)
         dcrec2 = to_command_record(data2)
 
-        records = self.search_command_record(pattern=['git*'], unique=False)
+        records = self.search_command_record(include_pattern=['git*'],
+                                             unique=False)
         crec = records[0]
         self.assert_same_command_record(crec, dcrec1)
         self.assert_not_same_command_record(crec, dcrec2)
         self.assertEqual(len(records), 1)
 
-        records = self.search_command_record(pattern=['bzr*'], unique=False)
+        records = self.search_command_record(include_pattern=['bzr*'],
+                                             unique=False)
         self.assertEqual(len(records), 0)
 
     def test_search_command_by_exclude_pattern(self):
@@ -203,13 +205,13 @@ class TestInMemoryDataBase(BaseTestCase):
         dcrec1 = to_command_record(data1)
 
         records = self.search_command_record(
-            pattern=['*status'], exclude_pattern=['hg*'],
+            include_pattern=['*status'], exclude_pattern=['hg*'],
             unique=False)
         self.assertEqual(len(records), 1)
         self.assert_same_command_record(records[0], dcrec1)
 
         records = self.search_command_record(
-            pattern=['hg*'], exclude_pattern=['*status'],
+            include_pattern=['hg*'], exclude_pattern=['*status'],
             unique=False)
         self.assertEqual(len(records), 0)
 
