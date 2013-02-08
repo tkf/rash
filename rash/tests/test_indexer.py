@@ -47,6 +47,7 @@ class TestIndexer(BaseTestCase):
 
     def test_find_record_files(self):
         indexer = self.get_indexer()
+        self.assertEqual(list(indexer.find_record_files()), [])
         desired_paths = self.prepare_records(**self.get_dummy_records())
         actual_paths = list(indexer.find_record_files())
         self.assertSetEqual(set(actual_paths), set(desired_paths))
