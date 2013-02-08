@@ -301,7 +301,7 @@ class DataBase(object):
             time_after, time_before, duration_longer_than, duration_less_than,
             include_exit_code, exclude_exit_code, reverse, sort_by,
             session_history_id=None,
-            **_):
+            **_):  # SOMEDAY: don't ignore unused kwds to search_command_record
         keys = ['command_history_id', 'command', 'session_history_id',
                 'cwd', 'terminal',
                 'start', 'stop', 'exit_code']
