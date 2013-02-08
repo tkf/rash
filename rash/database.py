@@ -114,6 +114,7 @@ class DataBase(object):
         A few methods/generators support :meth:`close_connection`:
 
         - :meth:`search_command_record`
+        - :meth:`select_by_command_record`
 
         """
         if self._db:
@@ -125,6 +126,20 @@ class DataBase(object):
                 db.interrupt()
                 self._db = None
                 self._need_commit = False
+
+    def _executing(self, sql, params=[]):
+        """
+        Execute and yield rows in a way to support :meth:`close_connection`.
+        """
+        with self.connection() as connection:
+            for row in connection.execute(sql, params):
+                yield row
+                if not self._db:
+                    return
+
+    def _select_rows(self, rowclass, keys, sql, params):
+        return (rowclass(**dict(zip(keys, row)))
+                for row in self._executing(sql, params))
 
     def get_version_records(self):
         """
@@ -301,9 +316,7 @@ class DataBase(object):
             crec.command, normalize_directory(crec.cwd), crec.terminal,
             convert_ts(crec.start), convert_ts(crec.stop), crec.exit_code]
         params = list(itertools.chain(*zip(desired_row, desired_row)))
-        with self.connection() as connection:
-            for row in connection.execute(sql, params):
-                yield CommandRecord(**dict(zip(keys, row)))
+        return self._select_rows(CommandRecord, keys, sql, params)
 
     def search_command_record(self, **kwds):
         """
@@ -313,12 +326,7 @@ class DataBase(object):
 
         """
         (sql, params, keys) = self._compile_sql_search_command_record(**kwds)
-        with self.connection() as connection:
-            cur = connection.cursor()
-            for row in cur.execute(sql, params):
-                yield CommandRecord(**dict(zip(keys, row)))
-                if not self._db:
-                    return
+        return self._select_rows(CommandRecord, keys, sql, params)
 
     def _compile_sql_search_command_record(
             cls, limit, include_pattern, exclude_pattern, unique,
