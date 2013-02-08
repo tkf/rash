@@ -28,9 +28,6 @@ class Indexer(object):
         """
         from .log import logger
         self.logger = logger
-        if not keep_json:
-            raise RuntimeError(
-                'At this point, --keep-json should be specified.')  # FIXME
         if keep_json:
             check_duplicate = True
         self.conf = conf

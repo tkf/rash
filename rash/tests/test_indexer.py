@@ -57,3 +57,10 @@ class TestIndexer(BaseTestCase):
         indexer.index_all()
         actual_paths = list(indexer.find_record_files())
         self.assertSetEqual(set(actual_paths), set(desired_paths))
+
+    def test_index_all_and_discard_json(self):
+        self.prepare_records(**self.get_dummy_records())
+        indexer = self.get_indexer(keep_json=False)
+        indexer.index_all()
+        actual_paths = list(indexer.find_record_files())
+        self.assertEqual(actual_paths, [])
