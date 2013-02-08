@@ -103,6 +103,29 @@ class DataBase(object):
     _db = None
     _need_commit = False
 
+    def close_connection(self):
+        """
+        Close connection kept by :meth:`connection`.
+
+        If commit is needed, :meth:`sqlite3.Connection.commit`
+        is called first and then :meth:`sqlite3.Connection.interrupt`
+        is called.
+
+        A few methods/generators support :meth:`close_connection`:
+
+        - :meth:`search_command_record`
+
+        """
+        if self._db:
+            db = self._db
+            try:
+                if self._need_commit:
+                    db.commit()
+            finally:
+                db.interrupt()
+                self._db = None
+                self._need_commit = False
+
     def get_version_records(self):
         """
         Yield RASH version information stored in DB. Latest first.
@@ -294,6 +317,8 @@ class DataBase(object):
             cur = connection.cursor()
             for row in cur.execute(sql, params):
                 yield CommandRecord(**dict(zip(keys, row)))
+                if not self._db:
+                    return
 
     def _compile_sql_search_command_record(
             cls, limit, include_pattern, exclude_pattern, unique,

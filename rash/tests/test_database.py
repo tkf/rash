@@ -300,6 +300,14 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(first_half), small_num)
         self.assertEqual(len(second_half), num - small_num)
 
+        # Generator stops if the connection is closed
+        records = self.db.search_command_record(**kwds)
+        first_half = list(itertools.islice(records, small_num))
+        self.db.close_connection()
+        second_half = list(records)
+        self.assertEqual(len(first_half), small_num)
+        self.assertEqual(len(second_half), 0)
+
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))
 
