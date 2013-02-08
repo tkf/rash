@@ -142,6 +142,13 @@ Zsh user can setup a keybind like this::
   # Type `Ctrl-x r` to start isearch
   bindkey "^Xr" rash-zle-isearch
 
+Defining this function in your rc file can be handy and it is
+usable for bash users.::
+
+  rash-isearch(){
+    eval "$(rash isearch)"
+  }
+
 _percol: https://github.com/mooz/percol
 
 

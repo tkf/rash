@@ -15,6 +15,14 @@ def isearch_run(query):
       # Type `Ctrl-x r` to start isearch
       bindkey "^Xr" rash-zle-isearch
 
+    If you like command or you are not using zsh, you can add
+    something like the following in your rc file to start and
+    execute the chosen command.
+
+      rash-isearch(){
+        eval "$(rash isearch)"
+      }
+
     """
     from .config import ConfigStore
     from .interactive_search import launch_isearch
