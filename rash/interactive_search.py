@@ -76,6 +76,10 @@ class RashFinder(FinderMultiQueryString):
         # search.  So, make the match a bit more permissive.
         kwds['pattern'] = list(map("*{0}*".format, kwds['pattern']))
 
+        # SOMEDAY:  Implement AND in `search_command_record` for `isearch`.
+        # `search_command_record` does OR match while percol does AND
+        # match.  This means `search_command_record` generate wasted
+        # candidates more when there are more patterns.
         records = self.db.search_command_record(**kwds)
         self.collection = collection = (r.command for r in records)
 

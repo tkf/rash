@@ -24,7 +24,8 @@ def daemon_run(no_error, restart, record_path, keep_json, check_duplicate,
     .. _supervisord: http://supervisord.org/
 
     Alternatively, you can call ``rash index`` in cron job to
-    avoid using daemon.::
+    avoid using daemon.  It is useful if you want to use RASH
+    on NFS, as it looks like watchdog does not work on NFS.::
 
       # Refresh RASH DB every 10 minutes
       */10 * * * * rash index

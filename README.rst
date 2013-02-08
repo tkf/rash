@@ -3,12 +3,6 @@
 =============================
 
 
-.. warning:: UNDER CONSTRUCTION!
-
-   It is still useful, but not all of the functions mentioned below
-   are implemented.
-
-
 .. sidebar:: Links:
 
    * `Repository <https://github.com/tkf/rash>`_ (at GitHub)
