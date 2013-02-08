@@ -57,6 +57,11 @@ RASH tested against Python 2.6, 2.7 and 3.2.  However, as watchdog_
 does not work with Python 3, you can't get full power of RASH with
 Python 3.
 
+If you want to use developmental version, just clone the git repository
+and add the following in your RC file.::
+
+  alias rash="PATH/TO/RASH/rash_cli.py"
+
 
 Setup
 =====
