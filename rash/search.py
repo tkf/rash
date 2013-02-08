@@ -53,6 +53,9 @@ def preprocess_kwds(kwds):
             if dt:
                 kwds[key] = dt
 
+    # interpret "pattern" (currently just copying to --include-pattern)
+    kwds.setdefault('include_pattern', []).extend(kwds.pop('pattern', []))
+
     kwds['sort_by'] = SORT_KEY_SYNONYMS[kwds['sort_by']]
     return kwds
 
