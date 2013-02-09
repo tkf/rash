@@ -148,7 +148,7 @@ usable for bash users.::
     eval "$(rash isearch)"
   }
 
-_percol: https://github.com/mooz/percol
+.. _percol: https://github.com/mooz/percol
 
 
 Dependency
