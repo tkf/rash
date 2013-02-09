@@ -123,13 +123,9 @@ def record_run(record_type, print_session_id, **kwds):
         envkeys = ['PATH']
 
     conf = ConfigStore()
-    # FIXME: stop creating the "middle" directory for json_path,
-    # because I don't want to implement directory-cleanup for Indexer
-    # for now.
     json_path = os.path.join(conf.record_path,
                              record_type,
-                             time.strftime('%Y-%m-%d'),
-                             time.strftime('%H%M%S.json'))
+                             time.strftime('%Y-%m-%d-%H%M%S.json'))
     mkdirp(os.path.dirname(json_path))
 
     # Command line options directly map to record keys
