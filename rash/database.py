@@ -24,7 +24,7 @@ import itertools
 from .utils.iterutils import nonempty, repeat
 from .model import CommandRecord, SessionRecord, VersionRecord
 
-schema_version = '0.1.dev1'  # FIXME: bump
+schema_version = '0.1'
 
 
 def concat_expr(operator, conditions):

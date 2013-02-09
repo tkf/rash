@@ -254,6 +254,6 @@ See COPYING for details.
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-__version__ = '0.0.0.dev0'
+__version__ = '0.1.0'
 __author__ = 'Takafumi Arakaki'
 __license__ = 'GNU General Public License v3 (GPLv3)'
