@@ -7,7 +7,8 @@ SORT_KEY_SYNONYMS = {
 }
 
 
-def search_run(output, format, with_command_id, with_session_id, **kwds):
+def search_run(output, format, with_command_id, with_session_id, format_level,
+               **kwds):
     """
     Search command history.
 
@@ -15,10 +16,14 @@ def search_run(output, format, with_command_id, with_session_id, **kwds):
     from .config import ConfigStore
     from .database import DataBase
 
-    if with_command_id and with_session_id:
+    if format_level >= 3:
+        format = ("{session_history_id:>5}  "
+                  "{command_history_id:>5}  "
+                  "{command_count:>4}  {command}\n")
+    elif format_level == 2 or with_command_id and with_session_id:
         format = ("{session_history_id:>5}  "
                   "{command_history_id:>5}  {command}\n")
-    elif with_command_id:
+    elif format_level == 1 or with_command_id:
         format = "{command_history_id:>5}  {command}\n"
     elif with_session_id:
         format = "{session_history_id:>5}  {command}\n"
@@ -270,7 +275,6 @@ def search_add_arguments(parent_parser):
     parser.add_argument(
         '-f', dest='format_level', action='count', default=0,
         help="""
-        [NOT IMPLEMENTED]
         Set formatting detail.  This can be given multiple times to
         make more detailed output.  For example, giving it once
         equivalent to passing --with-command-id and one more -f means
