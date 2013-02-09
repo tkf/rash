@@ -70,7 +70,6 @@ def search_add_arguments(parent_parser):
     parser.add_argument(
         '--match-pattern', '-m', action='append', default=[],
         help="""
-        [NOT IMPLEMENTED]
         Only commands that matches to this glob pattern are listed.
         Unlike --include-pattern/-g, applying this option multiple
         times does AND match.

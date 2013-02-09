@@ -329,7 +329,8 @@ class DataBase(object):
         return self._select_rows(CommandRecord, keys, sql, params)
 
     def _compile_sql_search_command_record(
-            cls, limit, include_pattern, exclude_pattern, unique,
+            cls, limit, unique,
+            match_pattern, include_pattern, exclude_pattern,
             cwd, cwd_glob, cwd_under,
             time_after, time_before, duration_longer_than, duration_less_than,
             include_exit_code, exclude_exit_code, reverse, sort_by,
@@ -355,6 +356,8 @@ class DataBase(object):
                 'OR', repeat(template.format(name), len(args))))
             params.extend(args)
 
+        conditions.extend(repeat('glob(?, CL.command)', len(match_pattern)))
+        params.extend(match_pattern)
         add_or_match('glob(?, {0})', 'CL.command', include_pattern)
         conditions.extend(repeat('NOT glob(?, CL.command)',
                                  len(exclude_pattern)))
