@@ -68,11 +68,27 @@ def search_add_arguments(parent_parser):
         'pattern', nargs='*',
         help='glob patterns that matches to command.')
     parser.add_argument(
+        '--match-pattern', '-m', action='append', default=[],
+        help="""
+        [NOT IMPLEMENTED]
+        Only commands that matches to this glob pattern are listed.
+        Unlike --include-pattern/-g, applying this option multiple
+        times does AND match.
+        """)
+    parser.add_argument(
         '--include-pattern', '-g', action='append', default=[],
         help='glob patterns that matches to commands to include.')
     parser.add_argument(
         '--exclude-pattern', '-G', action='append', default=[],
         help='glob patterns that matches to commands to exclude.')
+    parser.add_argument(
+        '--match-regexp', '-M', action='append', default=[],
+        help="""
+        [NOT IMPLEMENTED]
+        Only commands that matches to this grep pattern are listed.
+        Unlike --include-regexp/-e, applying this option multiple
+        times does AND match.
+        """)
     parser.add_argument(
         '--include-regexp', '-e', action='append', default=[],
         help="""
