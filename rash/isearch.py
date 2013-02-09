@@ -44,7 +44,7 @@ def isearch_add_arguments(parser):
         '--query', '-q', default='',
         help='default query')
     parser.add_argument(
-        'base_query', nargs='+', default=[],
+        'base_query', nargs='*', default=[],
         help="""
         The part of query that is not shown in UI and is impossible
         to rewrite in this session.  Useful for putting long and
