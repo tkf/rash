@@ -66,8 +66,7 @@ class RashFinder(FinderMultiQueryString):
             # shlex < 2.7.3 does not work with unicode:
             args = self.base_query + shlex.split(query.encode())
             ns = self.__parser.parse_args(args)
-            pattern = ns.pattern  # don't let process `pattern`
-            ns.pattern = []
+            pattern = ns.pattern
             kwds = preprocess_kwds(vars(ns))
         except (ValueError, SyntaxError):
             return super(RashFinder, self).find(query, collection)
@@ -76,11 +75,6 @@ class RashFinder(FinderMultiQueryString):
         # `search_command_record` thread-safe and setting
         # `lazy_finding = True`.
         kwds['limit'] = 50 if pattern else 1000
-
-        # Strict glob search is a little bit cumbersome in interactive
-        # search.  So, make the match a bit more permissive.
-        kwds['match_pattern'] = (
-            kwds['match_pattern'] + list(map("*{0}*".format, pattern)))
 
         # SOMEDAY:  Implement AND in `search_command_record` for `isearch`.
         # `search_command_record` does OR match while percol does AND

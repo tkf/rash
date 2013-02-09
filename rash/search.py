@@ -59,7 +59,8 @@ def preprocess_kwds(kwds):
                 kwds[key] = dt
 
     # interpret "pattern" (currently just copying to --include-pattern)
-    kwds.setdefault('include_pattern', []).extend(kwds.pop('pattern', []))
+    less_strict_pattern = list(map("*{0}*".format, kwds.pop('pattern', [])))
+    kwds['match_pattern'] = kwds['match_pattern'] + less_strict_pattern
 
     kwds['sort_by'] = SORT_KEY_SYNONYMS[kwds['sort_by']]
     return kwds
@@ -71,11 +72,16 @@ def search_add_arguments(parent_parser):
     parser = parent_parser.add_argument_group('Filter')
     parser.add_argument(
         'pattern', nargs='*',
-        help='glob patterns that matches to command.')
+        help="""
+        Glob pattern to match substring of command.  It is as same as
+        --match-pattern/-m except that the pattern is going to be
+        wrapped by `*`s.  If you want to use strict glob pattern
+        that matches to entire command, use --match-pattern/-m.
+        """)
     parser.add_argument(
         '--match-pattern', '-m', action='append', default=[],
         help="""
-        Only commands that matches to this glob pattern are listed.
+        Only commands that match to this glob pattern are listed.
         Unlike --include-pattern/-g, applying this option multiple
         times does AND match.
         """)
