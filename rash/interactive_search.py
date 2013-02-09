@@ -77,9 +77,8 @@ class RashFinder(FinderMultiQueryString):
 
         # Strict glob search is a little bit cumbersome in interactive
         # search.  So, make the match a bit more permissive.
-        # kwds['include_pattern'].extend(map("*{0}*".format, pattern))
-        if not kwds['include_pattern']:
-            kwds['include_pattern'] = map("*{0}*".format, pattern)
+        kwds['match_pattern'] = (
+            kwds['match_pattern'] + list(map("*{0}*".format, pattern)))
 
         # SOMEDAY:  Implement AND in `search_command_record` for `isearch`.
         # `search_command_record` does OR match while percol does AND
@@ -88,6 +87,8 @@ class RashFinder(FinderMultiQueryString):
         records = self.db.search_command_record(**kwds)
         self.collection = collection = (r.command for r in records)
 
+        # There will be no filtering in the super class.
+        # I am using it for highlighting matches.
         return super(RashFinder, self).find(
             self.split_str.join(strip_glob(q, self.split_str)
                                 for q in pattern),
