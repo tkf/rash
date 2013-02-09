@@ -2,6 +2,10 @@
 Command line interface.
 """
 
+import argparse
+import textwrap
+
+EPILOG = """
 # Copyright (C) 2013-  Takafumi Arakaki
 
 # This program is free software: you can redistribute it and/or modify
@@ -16,10 +20,7 @@ Command line interface.
 
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-
-import argparse
-import textwrap
+"""
 
 
 class Formatter(argparse.RawDescriptionHelpFormatter,
@@ -45,7 +46,11 @@ def get_parser(commands):
                        will be the description of the subcommand.
 
     """
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(
+        formatter_class=Formatter,
+        description=__doc__,
+        epilog=EPILOG,
+    )
     subparsers = parser.add_subparsers()
 
     for (name, adder, runner) in commands:
