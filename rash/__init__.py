@@ -225,7 +225,8 @@ all JSON records in separated files.
 License
 =======
 
-RASH is licensed under MIT License.
+RASH is licensed under GPL v3.
+See COPYING for details.
 
 
 .. Travis CI build status badge
@@ -240,4 +241,4 @@ RASH is licensed under MIT License.
 
 __version__ = '0.0.0.dev0'
 __author__ = 'Takafumi Arakaki'
-__license__ = "MIT License"
+__license__ = 'GNU General Public License v3 (GPLv3)'
