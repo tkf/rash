@@ -1,5 +1,12 @@
 language: python
+
 before_install:
+
   - pip install tox
+
+  # Install zsh:
+  - sudo apt-get update -qq
+  - sudo apt-get install -qq zsh
+
 script:
   - tox
