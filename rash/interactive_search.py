@@ -122,6 +122,9 @@ def launch_isearch(conf, rcfile=None, input_encoding=None, **kwds):
         with Percol(descriptors=tty.reconnect_descriptors(tty_f),
                     finder=RashFinder,
                     actions=(actions.output_to_stdout,),
+                    # This will be used if the first call for RashFinder.find
+                    # fails to fetch collections from DB.
+                    candidates=[],
                     **kwds) as percol:
             load_rc(percol, rcfile, input_encoding)
             exit_code = percol.loop()
