@@ -127,7 +127,7 @@ class TestIsolation(FunctionalTestMixIn, BaseTestCase):
 class ShellTestMixIn(FunctionalTestMixIn):
 
     shell = 'sh'
-    source_command = '.'
+    eval_command = 'eval'
 
     def run_shell(self, script):
         proc = self.popen(
@@ -164,7 +164,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
             options.extend(['--daemon-outfile', daemon_outfile])
         optstr = ' '.join(options)
         return "{0} $({1} init --shell {2} {3})".format(
-            self.source_command, BASE_COMMAND, self.shell, optstr)
+            self.eval_command, BASE_COMMAND, self.shell, optstr)
 
     def get_script(self, script='', **kwds):
         init_script = self._get_init_script(**kwds)

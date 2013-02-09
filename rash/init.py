@@ -17,7 +17,7 @@ def init_run(shell, no_daemon, daemon_options, daemon_outfile):
     Add the following line in your shell RC file and then you are
     ready to go::
 
-      source $(%(prog)s)
+      eval $(%(prog)s)
 
     To check if your shell is supported, simply run::
 
@@ -27,7 +27,7 @@ def init_run(shell, no_daemon, daemon_options, daemon_outfile):
     automatically inndex shell history records.  To not start daemon,
     use --no-daemon option like this::
 
-      source $(%(prog)s --no-daemon)
+      eval $(%(prog)s --no-daemon)
 
     To see the other methods to launch the daemon process, see
     ``rash daemon --help``.
@@ -35,7 +35,7 @@ def init_run(shell, no_daemon, daemon_options, daemon_outfile):
     """
     init_file = find_init(shell)
     if os.path.exists(init_file):
-        print(init_file)
+        print("source '{0}'".format(init_file))
     else:
         raise RuntimeError(
             "Shell '{0}' is not supported.".format(shell_name(shell)))

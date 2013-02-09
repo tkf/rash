@@ -61,7 +61,7 @@ Setup
 =====
 Add this to your `.zshrc` or `.bashrc`.  That's all.::
 
-   source "$(rash init)"
+   eval "$(rash init)"
 
 For more information, see ``rash init --help``.
 
@@ -200,7 +200,7 @@ store JSON record.  When JSON record arrives, it insert the data into
 database.
 
 `rash record` and `rash daemon` are setup by simple shell snippet
-``source $(rash init)``.
+``eval $(rash init)``.
 
 Finally, you can search through command history using search interface
 such as `rash search`.  This search is very fast as you don't read
