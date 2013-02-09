@@ -2,7 +2,7 @@ language: python
 
 before_install:
 
-  - pip install tox
+  - pip install --quiet --use-mirrors tox
 
   # Install zsh:
   - sudo apt-get update -qq
