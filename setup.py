@@ -35,9 +35,18 @@ setup(
     license=rash.__license__,
     description='Rash Advances Shell History',
     long_description=rash.__doc__,
-    keywords='history, shell',
+    keywords='history, shell, search',
     classifiers=[
         "Development Status :: 3 - Alpha",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 2.6",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.2",
+        "Programming Language :: Unix Shell",
+        "Topic :: System :: Shells",
+        "Topic :: System :: Logging"
         # see: http://pypi.python.org/pypi?%3Aaction=list_classifiers
     ],
     install_requires=install_requires,
