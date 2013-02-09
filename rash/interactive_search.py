@@ -48,6 +48,8 @@ class SafeArgumentParser(ArgumentParser):
 
 class RashFinder(FinderMultiQueryString):
 
+    base_query = []
+
     def __init__(self, *args, **kwds):
         super(RashFinder, self).__init__(*args, **kwds)
 
@@ -62,7 +64,7 @@ class RashFinder(FinderMultiQueryString):
     def find(self, query, collection=None):
         try:
             # shlex < 2.7.3 does not work with unicode:
-            args = shlex.split(query.encode())
+            args = self.base_query + shlex.split(query.encode())
             ns = self.__parser.parse_args(args)
             pattern = ns.pattern  # don't let process `pattern`
             ns.pattern = []
@@ -107,7 +109,8 @@ def load_rc(percol, path=None, encoding=None):
         debug.log("exception", e)
 
 
-def launch_isearch(conf, rcfile=None, input_encoding=None, **kwds):
+def launch_isearch(conf, rcfile=None, input_encoding=None, base_query=[],
+                   **kwds):
     from percol import Percol
     from percol import tty
     import percol.actions as actions
@@ -116,6 +119,7 @@ def launch_isearch(conf, rcfile=None, input_encoding=None, **kwds):
 
     # Pass db instance to finder.  Not clean but works and no harm.
     RashFinder.db = DataBase(conf.db_path)
+    RashFinder.base_query = base_query
 
     ttyname = tty.get_ttyname()
     with open(ttyname, "r+w") as tty_f:
