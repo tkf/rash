@@ -78,7 +78,7 @@ information.  Here is some examples.
 
 Forget how to run automated test for the current project?::
 
-   rash search --cwd . "*test*" "tox*"
+   rash search --cwd . --include-pattern "*test*" --include-pattern "tox*"
 
 All git commands you ran in one week.::
 
@@ -190,16 +190,16 @@ RASH's design is focused on sparseness.  There are several stages
 of data transformation until you see the search result, and they
 are done by separated processes.
 
-First, `rash record` command dumps shell history in raw JSON record.
+First, ``rash record`` command dumps shell history in raw JSON record.
 This part of program does not touches to DB to make process very fast.
 As there is no complex transformation in this command, probably in the
-future version is is better to rewrite it entirely in shell function.
+future version it is better to rewrite it entirely in shell function.
 
-Second, `rash daemon` runs in background and watches the directory to
+Second, ``rash daemon`` runs in background and watches the directory to
 store JSON record.  When JSON record arrives, it insert the data into
 database.
 
-`rash record` and `rash daemon` are setup by simple shell snippet
+``rash record`` and ``rash daemon`` are setup by simple shell snippet
 ``eval $(rash init)``.
 
 Finally, you can search through command history using search interface
