@@ -100,6 +100,9 @@ class DataBase(object):
         SOMEDAY: Get rid of this function.  Keeping connection around as
         an argument to the method using this context manager is
         probably better as it is more explicit.
+        Also, holding "global state" as instance attribute is bad for
+        supporting threaded search, which is required for more fluent
+        percol integration.
 
         """
         if commit:
@@ -352,6 +355,7 @@ class DataBase(object):
             include_exit_code, exclude_exit_code, reverse, sort_by,
             session_history_id=None,
             **_):  # SOMEDAY: don't ignore unused kwds to search_command_record
+        # SOMEDAY: optionally calculate `success_count`
         keys = ['command_history_id', 'command', 'session_history_id',
                 'cwd', 'terminal',
                 'start', 'stop', 'exit_code']
