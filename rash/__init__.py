@@ -80,7 +80,7 @@ information.  Here is some examples.
 
 Forget how to run automated test for the current project?::
 
-   rash search --cwd . "*test*" "tox*"
+   rash search --cwd . --include-pattern "*test*" --include-pattern "tox*"
 
 All git commands you ran in one week.::
 
@@ -153,6 +153,43 @@ usable for bash users.::
 .. _percol: https://github.com/mooz/percol
 
 
+Tips
+----
+
+``rash-testlike`` and ``rash-zle-testlike`` commands defined as the
+following can find test-like commands you entered in the current
+directory.  In the later version I am planning to support this more
+cleanly in RASH configuration.  Add the following in your shell RC
+file until then.::
+
+   MY_RASH_TEST_LIKE=(
+       -fff  # show session/command IDs and command count
+       --exclude-pattern "*rash *"  # don't include rash commands
+       --exclude-pattern "*rash-*"
+       --include-pattern "*test*"
+       --include-pattern "tox*"
+       --include-pattern "make *test*"
+       --include-pattern "make *travis*"
+       --include-pattern "* make *test*"   # to match "ENV=VALUE make test"
+       --include-pattern "* make *travis*"
+       --include-exit-code 0  # exclude failed command
+   )
+
+   rash-testlike(){
+       rash search --cwd . "${MY_RASH_TEST_LIKE[@]}" "$@"
+   }
+
+   rash-zle-testlike(){
+       # Options after "--" are used when searching but cannot be
+       # changed in the interactive search UI.  The option passed
+       # by --query can be modified in the UI.
+       BUFFER=$(rash isearch --query "--cwd . " -- "${MY_RASH_TEST_LIKE[@]}")
+       CURSOR=$#BUFFER
+       zle -R -c
+   }
+   zle -N rash-zle-testlike
+
+
 Dependency
 ==========
 
@@ -192,16 +229,16 @@ RASH's design is focused on sparseness.  There are several stages
 of data transformation until you see the search result, and they
 are done by separated processes.
 
-First, `rash record` command dumps shell history in raw JSON record.
+First, ``rash record`` command dumps shell history in raw JSON record.
 This part of program does not touches to DB to make process very fast.
 As there is no complex transformation in this command, probably in the
-future version is is better to rewrite it entirely in shell function.
+future version it is better to rewrite it entirely in shell function.
 
-Second, `rash daemon` runs in background and watches the directory to
+Second, ``rash daemon`` runs in background and watches the directory to
 store JSON record.  When JSON record arrives, it insert the data into
 database.
 
-`rash record` and `rash daemon` are setup by simple shell snippet
+``rash record`` and ``rash daemon`` are setup by simple shell snippet
 ``eval $(rash init)``.
 
 Finally, you can search through command history using search interface
