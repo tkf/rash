@@ -151,6 +151,43 @@ usable for bash users.::
 .. _percol: https://github.com/mooz/percol
 
 
+Tips
+----
+
+``rash-testlike`` and ``rash-zle-testlike`` commands defined as the
+following can find test-like commands you entered in the current
+directory.  In the later version I am planning to support this more
+cleanly in RASH configuration.  Add the following in your shell RC
+file until then.::
+
+   MY_RASH_TEST_LIKE=(
+       -fff  # show session/command IDs and command count
+       --exclude-pattern "*rash *"  # don't include rash commands
+       --exclude-pattern "*rash-*"
+       --include-pattern "*test*"
+       --include-pattern "tox*"
+       --include-pattern "make *test*"
+       --include-pattern "make *travis*"
+       --include-pattern "* make *test*"   # to match "ENV=VALUE make test"
+       --include-pattern "* make *travis*"
+       --include-exit-code 0  # exclude failed command
+   )
+
+   rash-testlike(){
+       rash search --cwd . "${MY_RASH_TEST_LIKE[@]}" "$@"
+   }
+
+   rash-zle-testlike(){
+       # Options after "--" are used when searching but cannot be
+       # changed in the interactive search UI.  The option passed
+       # by --query can be modified in the UI.
+       BUFFER=$(rash isearch --query "--cwd . " -- "${MY_RASH_TEST_LIKE[@]}")
+       CURSOR=$#BUFFER
+       zle -R -c
+   }
+   zle -N rash-zle-testlike
+
+
 Dependency
 ==========
 
