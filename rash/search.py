@@ -221,7 +221,6 @@ def search_add_arguments(parent_parser):
     parser.add_argument(
         '--ignore-case', '-i', action='store_true', default=False,
         help="""
-        [NOT IMPLEMENTED]
         Do case insensitive search.
         """)
 

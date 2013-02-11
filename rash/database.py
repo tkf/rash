@@ -353,6 +353,7 @@ class DataBase(object):
             cwd, cwd_glob, cwd_under,
             time_after, time_before, duration_longer_than, duration_less_than,
             include_exit_code, exclude_exit_code, reverse, sort_by,
+            ignore_case,
             session_history_id=None,
             **_):  # SOMEDAY: don't ignore unused kwds to search_command_record
         # SOMEDAY: optionally calculate `success_count`
@@ -371,19 +372,24 @@ class DataBase(object):
             cwd_glob.extend(os.path.join(os.path.abspath(p), "*")
                             for p in cwd_under)
 
+        if ignore_case:
+            glob = "glob(lower({0}), lower({1}))".format
+        else:
+            glob = "glob({0}, {1})".format
+
         def add_or_match(template, name, args):
             conditions.extend(concat_expr(
                 'OR', repeat(template.format(name), len(args))))
             params.extend(args)
 
-        conditions.extend(repeat('glob(?, CL.command)', len(match_pattern)))
+        conditions.extend(repeat(glob('?', 'CL.command'), len(match_pattern)))
         params.extend(match_pattern)
-        add_or_match('glob(?, {0})', 'CL.command', include_pattern)
-        conditions.extend(repeat('NOT glob(?, CL.command)',
+        add_or_match(glob('?', '{0}'), 'CL.command', include_pattern)
+        conditions.extend(repeat('NOT ' + glob('?', 'CL.command'),
                                  len(exclude_pattern)))
         params.extend(exclude_pattern)
 
-        add_or_match('glob(?, {0})', 'DL.directory', cwd_glob)
+        add_or_match(glob('?', '{0}'), 'DL.directory', cwd_glob)
         add_or_match('{0} = ?', 'DL.directory',
                      [normalize_directory(os.path.abspath(p)) for p in cwd])
 
