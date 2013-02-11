@@ -212,7 +212,7 @@ def search_add_arguments(parent_parser):
     # "global" filters
     parser.add_argument(
         '--limit', '-l', metavar='NUM', type=int, default=10,
-        help='maximum number of history to show. -1 means not limit.')
+        help='maximum number of history to show. -1 means no limit.')
     parser.add_argument(
         '--no-unique', '-a', dest='unique', action='store_false', default=True,
         help="""
