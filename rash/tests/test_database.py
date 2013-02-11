@@ -249,6 +249,31 @@ class TestInMemoryDataBase(BaseTestCase):
                                              unique=False)
         self.assertEqual(len(records), 3)
 
+    def test_search_command_by_regexp(self):
+        data1 = self.get_dummy_command_record_data()
+        data2 = self.get_dummy_command_record_data()
+        data1['command'] = 'git status'
+        data2['command'] = 'hg status'
+        self.db.import_dict(data1)
+        self.db.import_dict(data2)
+        dcrec1 = to_command_record(data1)
+        dcrec2 = to_command_record(data2)
+
+        records = self.search_command_record(match_regexp=['g.*', '.*st.*'],
+                                             unique=False)
+        self.assert_same_command_record(records[0], dcrec1)
+        self.assertEqual(len(records), 1)
+
+        records = self.search_command_record(include_regexp=['git.*'],
+                                             unique=False)
+        self.assert_same_command_record(records[0], dcrec1)
+        self.assertEqual(len(records), 1)
+
+        records = self.search_command_record(exclude_regexp=['git.*'],
+                                             unique=False)
+        self.assert_same_command_record(records[0], dcrec2)
+        self.assertEqual(len(records), 1)
+
     def test_search_command_by_cwd(self):
         data1 = self.get_dummy_command_record_data()
         data2 = self.get_dummy_command_record_data()
