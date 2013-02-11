@@ -95,20 +95,21 @@ def search_add_arguments(parent_parser):
         that matches to entire command, use --match-pattern/-m.
         """)
     parser.add_argument(
-        '--match-pattern', '-m', action='append', default=[],
+        '--match-pattern', '-m', metavar='GLOB', action='append', default=[],
         help="""
         Only commands that match to this glob pattern are listed.
         Unlike --include-pattern/-g, applying this option multiple
         times does AND match.
         """)
     parser.add_argument(
-        '--include-pattern', '-g', action='append', default=[],
+        '--include-pattern', '-g', metavar='GLOB', action='append', default=[],
         help='glob patterns that matches to commands to include.')
     parser.add_argument(
-        '--exclude-pattern', '-G', action='append', default=[],
+        '--exclude-pattern', '-G', metavar='GLOB', action='append', default=[],
         help='glob patterns that matches to commands to exclude.')
     parser.add_argument(
-        '--match-regexp', '-M', action='append', default=[],
+        '--match-regexp', '-M',
+        metavar='REGEXP', action='append', default=[],
         help="""
         [NOT IMPLEMENTED]
         Only commands that matches to this grep pattern are listed.
@@ -116,91 +117,101 @@ def search_add_arguments(parent_parser):
         times does AND match.
         """)
     parser.add_argument(
-        '--include-regexp', '-e', action='append', default=[],
+        '--include-regexp', '-e',
+        metavar='REGEXP', action='append', default=[],
         help="""
         [NOT IMPLEMENTED]
         Regular expression patterns that matches to commands to include.
         """)
     parser.add_argument(
-        '--exclude-regexp', '-E', action='append', default=[],
+        '--exclude-regexp', '-E',
+        metavar='REGEXP', action='append', default=[],
         help="""
         [NOT IMPLEMENTED]
         Regular expression patterns that matches to commands to exclude.
         """)
     parser.add_argument(
-        '--cwd', '-d', action='append', default=[],
+        '--cwd', '-d', metavar='DIR', action='append', default=[],
         help="""
         The working directory at the time when the command was run.
         When given several times, items that match to one of the
         directory are included in the result.
         """)
     parser.add_argument(
-        '--cwd-glob', '-D', action='append', default=[],
+        '--cwd-glob', '-D', metavar='GLOB', action='append', default=[],
         help="""
         Same as --cwd but it accepts glob expression.
         """)
     parser.add_argument(
-        '--cwd-under', '-u', action='append', default=[],
+        '--cwd-under', '-u', metavar='DIR', action='append', default=[],
         help="""
         Same as --cwd but include all subdirectories.
         """)
     parser.add_argument(
-        '--time-after', '-t',
+        '--time-after', '-t', metavar='TIME',
         help='commands run after the given time')
     parser.add_argument(
-        '--time-before', '-T',
+        '--time-before', '-T', metavar='TIME',
         help='commands run before the given time')
     parser.add_argument(
-        '--duration-longer-than', '-S',
+        '--duration-longer-than', '-S', metavar='DURATION',
         help='commands that takes longer than the given time')
     parser.add_argument(
-        '--duration-less-than', '-s',
+        '--duration-less-than', '-s', metavar='DURATION',
         help='commands that takes less than the given time')
     parser.add_argument(
-        '--include-exit-code', '-x', action='append', default=[], type=int,
+        '--include-exit-code', '-x',
+        metavar='CODE', action='append', default=[], type=int,
         help='include command which finished with given exit code.')
     parser.add_argument(
-        '--exclude-exit-code', '-X', action='append', default=[], type=int,
+        '--exclude-exit-code', '-X',
+        metavar='CODE', action='append', default=[], type=int,
         help='exclude command which finished with given exit code.')
     parser.add_argument(
-        '--include-session', '-n', action='append', default=[], type=int,
+        '--include-session', '-n',
+        metavar='ID', action='append', default=[], type=int,
         help="""
         [NOT IMPLEMENTED]
         include command which is issued in given session.
         """)
     parser.add_argument(
-        '--exclude-session', '-N', action='append', default=[], type=int,
+        '--exclude-session', '-N',
+        metavar='ID', action='append', default=[], type=int,
         help="""
         [NOT IMPLEMENTED]
         exclude command which is issued in given session.
         """)
     parser.add_argument(
-        '--include-environ-pattern', '-v', action='append', default=[],
+        '--include-environ-pattern', '-v',
+        metavar='NAME=GLOB', action='append', default=[],
         help="""
         [NOT IMPLEMENTED]
         include command which associated with environment variable
         that matches to given glob pattern.""")
     parser.add_argument(
-        '--exclude-environ-pattern', '-V', action='append', default=[],
+        '--exclude-environ-pattern', '-V',
+        metavar='NAME=GLOB', action='append', default=[],
         help="""
         [NOT IMPLEMENTED]
         exclude command which associated with environment variable
         that matches to given glob pattern.""")
     parser.add_argument(
-        '--include-environ-regexp', '-w', action='append', default=[],
+        '--include-environ-regexp', '-w',
+        metavar='NAME=REGEXP', action='append', default=[],
         help="""
         [NOT IMPLEMENTED]
         include command which associated with environment variable
         that matches to given glob pattern.""")
     parser.add_argument(
-        '--exclude-environ-regexp', '-W', action='append', default=[],
+        '--exclude-environ-regexp', '-W',
+        metavar='NAME=REGEXP', action='append', default=[],
         help="""
         [NOT IMPLEMENTED]
         exclude command which associated with environment variable
         that matches to given glob pattern.""")
     # "global" filters
     parser.add_argument(
-        '--limit', '-l', type=int, default=10,
+        '--limit', '-l', metavar='NUM', type=int, default=10,
         help='maximum number of history to show. -1 means not limit.')
     parser.add_argument(
         '--no-unique', '-a', dest='unique', action='store_false', default=True,
@@ -208,7 +219,7 @@ def search_add_arguments(parent_parser):
         Include all duplicates.
         """)
     parser.add_argument(
-        '--ignore-case', '-i',
+        '--ignore-case', '-i', action='store_true', default=False,
         help="""
         [NOT IMPLEMENTED]
         Do case insensitive search.
@@ -234,7 +245,7 @@ def search_add_arguments(parent_parser):
         Note that --sort-by=count cannot be used with --no-unique.
         """)
     parser.add_argument(
-        '--sort-by-program-frequency',
+        '--sort-by-program-frequency', action='store_true', default=False,
         help="""
         [NOT IMPLEMENTED]
         most used program comes first.
