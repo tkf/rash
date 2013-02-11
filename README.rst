@@ -219,6 +219,31 @@ MS Windows
   daemon launcher will not work on Windows but there is several
   ways to avoid using it.  See ``rash init --help``.
 
+Shells
+------
+
+RASH currently supports zsh and bash.
+
+Using RASH in old version of zsh
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+RASH depends on ``precmd_functions`` / ``preexec_functions`` hooks in
+zsh.  In old version zsh doesn't have it.  However, you can use RASH
+by adding this in your ``.zshrc``.::
+
+    precmd(){
+        for f in $precmd_functions
+        do
+            "$f"
+        done
+    }
+    preexec(){
+        for f in $preexec_functions
+        do
+            "$f"
+        done
+    }
+
 
 Design principle
 ================
