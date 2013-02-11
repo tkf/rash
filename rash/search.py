@@ -111,7 +111,6 @@ def search_add_arguments(parent_parser):
         '--match-regexp', '-M',
         metavar='REGEXP', action='append', default=[],
         help="""
-        [NOT IMPLEMENTED]
         Only commands that matches to this grep pattern are listed.
         Unlike --include-regexp/-e, applying this option multiple
         times does AND match.
@@ -120,14 +119,12 @@ def search_add_arguments(parent_parser):
         '--include-regexp', '-e',
         metavar='REGEXP', action='append', default=[],
         help="""
-        [NOT IMPLEMENTED]
         Regular expression patterns that matches to commands to include.
         """)
     parser.add_argument(
         '--exclude-regexp', '-E',
         metavar='REGEXP', action='append', default=[],
         help="""
-        [NOT IMPLEMENTED]
         Regular expression patterns that matches to commands to exclude.
         """)
     parser.add_argument(

@@ -15,6 +15,7 @@
 
 
 import os
+import re
 import sqlite3
 from contextlib import closing, contextmanager
 import datetime
@@ -68,6 +69,11 @@ def normalize_directory(path):
         return path + os.path.sep
 
 
+def sql_regexp_func(expr, item):
+    print "matching", expr, item
+    return re.match(expr, item) is not None
+
+
 class DataBase(object):
 
     schemapath = os.path.join(
@@ -113,6 +119,7 @@ class DataBase(object):
             try:
                 with self._get_db() as db:
                     self._db = db
+                    db.create_function("REGEXP", 2, sql_regexp_func)
                     yield self._db
                     if self._need_commit:
                         db.commit()
@@ -350,6 +357,7 @@ class DataBase(object):
     def _compile_sql_search_command_record(
             cls, limit, unique,
             match_pattern, include_pattern, exclude_pattern,
+            match_regexp, include_regexp, exclude_regexp,
             cwd, cwd_glob, cwd_under,
             time_after, time_before, duration_longer_than, duration_less_than,
             include_exit_code, exclude_exit_code, reverse, sort_by,
@@ -382,12 +390,18 @@ class DataBase(object):
                 'OR', repeat(template.format(name), len(args))))
             params.extend(args)
 
-        conditions.extend(repeat(glob('?', 'CL.command'), len(match_pattern)))
-        params.extend(match_pattern)
-        add_or_match(glob('?', '{0}'), 'CL.command', include_pattern)
-        conditions.extend(repeat('NOT ' + glob('?', 'CL.command'),
-                                 len(exclude_pattern)))
-        params.extend(exclude_pattern)
+        def add_matches(matcher, match_params, include_params, exclude_params):
+            conditions.extend(repeat(matcher('?', 'CL.command'),
+                                     len(match_params)))
+            params.extend(match_params)
+            add_or_match(matcher('?', '{0}'), 'CL.command', include_params)
+            conditions.extend(repeat('NOT ' + matcher('?', 'CL.command'),
+                                     len(exclude_params)))
+            params.extend(exclude_params)
+
+        add_matches(glob, match_pattern, include_pattern, exclude_pattern)
+        add_matches("regexp({0}, {1})".format,
+                    match_regexp, include_regexp, exclude_regexp)
 
         add_or_match(glob('?', '{0}'), 'DL.directory', cwd_glob)
         add_or_match('{0} = ?', 'DL.directory',
