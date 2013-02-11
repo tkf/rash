@@ -33,6 +33,11 @@ _rash-preexec(){
     _RASH_START=$(date "+%s")
     _RASH_EXECUTING=t
     _RASH_PWD="$PWD"
+    _RASH_COMMAND=
+}
+
+_rash-zshaddhistory(){
+    _RASH_COMMAND="${1%%$'\n'}"
 }
 
 _rash-precmd(){
@@ -41,7 +46,12 @@ _rash-precmd(){
     _RASH_EXIT_CODE="$?"
     _RASH_PIPESTATUS=("${pipestatus[@]}")
     _RASH_OPTS=(--start "$_RASH_START")
-    _RASH_COMMAND="$(builtin history -n -1)"
+
+    if [ -z "$_RASH_COMMAND" ]
+    then
+        # Some old zsh (< 4.3?) does not support zshaddhistory.
+        _RASH_COMMAND="$(builtin history -n -1)"
+    fi
 
     if [ -n "$_RASH_EXECUTING" ]
     then
@@ -52,6 +62,7 @@ _rash-precmd(){
 
 preexec_functions+=(_rash-preexec)
 precmd_functions+=(_rash-precmd)
+zshaddhistory_functions+=(_rash-zshaddhistory)
 
 
 ### Record session initialization
