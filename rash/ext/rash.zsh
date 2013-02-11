@@ -40,6 +40,23 @@ _rash-zshaddhistory(){
     _RASH_DEBUG_COMMAND_LOG_TYPE=zshaddhistory  # SOMEDAY: remove this
 }
 
+_rash-history-fallback(){
+    # reading "$(builtin history -n -1)" directly does not work when
+    # command contains newlines.
+    local num command
+    read -r num command <<< "$(builtin history -1)"
+    _RASH_COMMAND="$history[$num]"
+    _RASH_DEBUG_COMMAND_LOG_TYPE=history-array
+
+    # `$history' may not work as it is not documented.  In that case,
+    # fallback to $(builtin history -n -1):
+    if [ -z "$_RASH_COMMAND" -a -n "$command" ]
+    then
+        _RASH_COMMAND="$(builtin history -n -1)"
+        _RASH_DEBUG_COMMAND_LOG_TYPE=history-builtin
+    fi
+}
+
 _rash-precmd(){
     # Make sure to copy these variable at very first stage.
     # Otherwise, I will loose these information.
@@ -49,9 +66,8 @@ _rash-precmd(){
 
     if [ -z "$_RASH_COMMAND" ]
     then
-        _RASH_DEBUG_COMMAND_LOG_TYPE=builtin-history
         # Some old zsh (< 4.3?) does not support zshaddhistory.
-        _RASH_COMMAND="$(builtin history -n -1)"
+        _rash-history-fallback
     fi
 
     if [ -n "$_RASH_EXECUTING" ]
