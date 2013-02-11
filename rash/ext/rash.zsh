@@ -35,23 +35,52 @@ _rash-preexec(){
     _RASH_PWD="$PWD"
 }
 
+_rash-zshaddhistory(){
+    _RASH_COMMAND="${1%%$'\n'}"
+    _RASH_DEBUG_COMMAND_LOG_TYPE=zshaddhistory  # SOMEDAY: remove this
+}
+
+_rash-history-fallback(){
+    # reading "$(builtin history -n -1)" directly does not work when
+    # command contains newlines.
+    local num command
+    read -r num command <<< "$(builtin history -1)"
+    _RASH_COMMAND="$history[$num]"
+    _RASH_DEBUG_COMMAND_LOG_TYPE=history-array
+
+    # `$history' may not work as it is not documented.  In that case,
+    # fallback to $(builtin history -n -1):
+    if [ -z "$_RASH_COMMAND" -a -n "$command" ]
+    then
+        _RASH_COMMAND="$(builtin history -n -1)"
+        _RASH_DEBUG_COMMAND_LOG_TYPE=history-builtin
+    fi
+}
+
 _rash-precmd(){
     # Make sure to copy these variable at very first stage.
     # Otherwise, I will loose these information.
     _RASH_EXIT_CODE="$?"
     _RASH_PIPESTATUS=("${pipestatus[@]}")
     _RASH_OPTS=(--start "$_RASH_START")
-    _RASH_COMMAND="$(builtin history -n -1)"
+
+    if [ -z "$_RASH_COMMAND" ]
+    then
+        # Some old zsh (< 4.3?) does not support zshaddhistory.
+        _rash-history-fallback
+    fi
 
     if [ -n "$_RASH_EXECUTING" ]
     then
         _rash-postexec
         _RASH_EXECUTING=""
+        _RASH_COMMAND=""
     fi
 }
 
 preexec_functions+=(_rash-preexec)
 precmd_functions+=(_rash-precmd)
+zshaddhistory_functions+=(_rash-zshaddhistory)
 
 
 ### Record session initialization
