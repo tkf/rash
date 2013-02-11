@@ -39,8 +39,13 @@ def init_run(shell, no_daemon, daemon_options, daemon_outfile):
 
       %(prog)s --no-daemon
 
+    If you want to specify shell other than $SHELL, you can give
+    --shell option::
+
+      eval $(%(prog)s --shell zsh)
+
     By default, this command also starts daemon in background to
-    automatically inndex shell history records.  To not start daemon,
+    automatically index shell history records.  To not start daemon,
     use --no-daemon option like this::
 
       eval $(%(prog)s --no-daemon)
