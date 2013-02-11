@@ -232,6 +232,23 @@ class TestInMemoryDataBase(BaseTestCase):
             unique=False)
         self.assertEqual(len(records), 0)
 
+    def test_search_command_by_pattern_ignore_case(self):
+        for (i, case) in enumerate([str.lower, str.upper, str.capitalize]):
+            data = self.get_dummy_command_record_data()
+            data.update(command=case('command'))
+            self.db.import_dict(data)
+
+        # Default search is case-sensitive
+        records = self.search_command_record(include_pattern=['command'],
+                                             unique=False)
+        self.assertEqual(len(records), 1)
+
+        # Perform case-insensitive search
+        records = self.search_command_record(include_pattern=['command'],
+                                             ignore_case=True,
+                                             unique=False)
+        self.assertEqual(len(records), 3)
+
     def test_search_command_by_cwd(self):
         data1 = self.get_dummy_command_record_data()
         data2 = self.get_dummy_command_record_data()
