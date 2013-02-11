@@ -33,11 +33,11 @@ _rash-preexec(){
     _RASH_START=$(date "+%s")
     _RASH_EXECUTING=t
     _RASH_PWD="$PWD"
-    _RASH_COMMAND=
 }
 
 _rash-zshaddhistory(){
     _RASH_COMMAND="${1%%$'\n'}"
+    _RASH_DEBUG_COMMAND_LOG_TYPE=zshaddhistory  # SOMEDAY: remove this
 }
 
 _rash-precmd(){
@@ -49,6 +49,7 @@ _rash-precmd(){
 
     if [ -z "$_RASH_COMMAND" ]
     then
+        _RASH_DEBUG_COMMAND_LOG_TYPE=builtin-history
         # Some old zsh (< 4.3?) does not support zshaddhistory.
         _RASH_COMMAND="$(builtin history -n -1)"
     fi
@@ -57,6 +58,7 @@ _rash-precmd(){
     then
         _rash-postexec
         _RASH_EXECUTING=""
+        _RASH_COMMAND=""
     fi
 }
 
