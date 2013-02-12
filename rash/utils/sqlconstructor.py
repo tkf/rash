@@ -94,6 +94,15 @@ class SQLConstructor(object):
         return (self.sql, self.params, self.keys)
 
     @staticmethod
+    def _adapt_params(params):
+        if isinstance(params, (tuple, list)):
+            return params
+        elif params is None:
+            return []
+        else:
+            return [params]
+
+    @staticmethod
     def _adapt_matcher(matcher):
         if isinstance(matcher, str):
             return matcher.format
@@ -101,11 +110,13 @@ class SQLConstructor(object):
             return matcher
 
     def add_and_matches(self, matcher, lhs, params):
+        params = self._adapt_params(params)
         expr = repeat(self._adapt_matcher(matcher)(lhs, '?'), len(params))
         self.conditions.extend(expr)
         self.params.extend(params)
 
     def add_or_matches(self, matcher, lhs, params):
+        params = self._adapt_params(params)
         expr = repeat(self._adapt_matcher(matcher)(lhs, '?'), len(params))
         self.conditions.extend(concat_expr('OR', expr))
         self.params.extend(params)

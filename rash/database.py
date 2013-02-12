@@ -424,27 +424,19 @@ class DataBase(object):
             eq, 'DL.directory',
             [normalize_directory(os.path.abspath(p)) for p in cwd])
 
-        if time_after:
-            sc.add_and_matches('DATETIME({0}) >= {1}', 'start_time',
-                               [time_after])
-        if time_before:
-            sc.add_and_matches('DATETIME({0}) <= {1}', 'start_time',
-                               [time_before])
+        sc.add_and_matches('DATETIME({0}) >= {1}', 'start_time', time_after)
+        sc.add_and_matches('DATETIME({0}) <= {1}', 'start_time', time_before)
 
         command_duration = (
             '(JULIANDAY(stop_time) - JULIANDAY(start_time)) * 60 * 60 * 24')
-        if duration_longer_than:
-            sc.add_and_matches('({0} >= {1})', command_duration,
-                               [duration_longer_than])
-        if duration_less_than:
-            sc.add_and_matches('({0} <= {1})', command_duration,
-                               [duration_less_than])
+        sc.add_and_matches('({0} >= {1})', command_duration,
+                           duration_longer_than)
+        sc.add_and_matches('({0} <= {1})', command_duration,
+                           duration_less_than)
 
         sc.add_matches(eq, 'exit_code',
                        [], include_exit_code, exclude_exit_code)
-
-        if session_history_id:
-            sc.add_and_matches(eq, 'session_id', [session_history_id])
+        sc.add_and_matches(eq, 'session_id', session_history_id)
 
         if unique:
             sc.uniquify_by('CL.command', 'start_time')
