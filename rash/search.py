@@ -17,6 +17,7 @@
 SORT_KEY_SYNONYMS = {
     'count': 'command_count',
     'success': 'success_count',
+    'program_count': 'program_count',
     'time': 'start_time',
     'start': 'start_time',
     'stop': 'stop_time',
@@ -48,7 +49,7 @@ def search_run(output, format, with_command_id, with_session_id, format_level,
         format = format.decode('string_escape')
 
     fmtkeys = formatter_keys(format)
-    candidates = set(['command_count', 'success_count'])
+    candidates = set(['command_count', 'success_count', 'program_count'])
     kwds['additional_columns'] = candidates & set(fmtkeys)
 
     db = DataBase(ConfigStore().db_path)
@@ -253,16 +254,11 @@ def search_add_arguments(parent_parser):
         Sort keys
         `count`: number of the time command is executed;
         `success`: number of the time command is succeeded;
+        `program_count`: number of the time *program* is used;
         `start`(=`time`): the time command is executed;
         `stop`: the time command is finished;
         `code`: exit code of the command;
         Note that --sort-by=count cannot be used with --no-unique.
-        """)
-    parser.add_argument(
-        '--sort-by-program-frequency', action='store_true', default=False,
-        help="""
-        [NOT IMPLEMENTED]
-        most used program comes first.
         """)
 
     # Modifier

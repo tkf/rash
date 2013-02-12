@@ -141,10 +141,8 @@ class DataBase(object):
                 with self._get_db() as db:
                     self._db = db
                     db.create_function("REGEXP", 2, sql_regexp_func)
-                    # SOMEDAY: use sql_program_name_func to implement
-                    #          --sort-by-program-frequency flag
-                    # db.create_function("PROGRAM_NAME", 1,
-                    #                    sql_program_name_func)
+                    db.create_function("PROGRAM_NAME", 1,
+                                       sql_program_name_func)
                     yield self._db
                     if self._need_commit:
                         db.commit()
@@ -449,6 +447,10 @@ class DataBase(object):
             sc.join(cls._sc_success_count(),
                     on='command_id = success_command.id')
             sc.add_column('success_count')
+        if sort_by == 'program_count' or 'program_count' in additional_columns:
+            sc.join(cls._sc_program_count(),
+                    on='command_id = command_program.id')
+            sc.add_column('program_count')
 
         return sc.compile()
 
@@ -461,6 +463,17 @@ class DataBase(object):
             ['command_id AS id', count],
             ['command_id', 'success_count'],
             group_by=['command_id'], table_alias=table_alias)
+
+    @staticmethod
+    def _sc_program_count(table_alias='command_program'):
+        return SQLConstructor(
+            'command_history '
+            'LEFT JOIN command_list AS CL ON command_id = CL.id',
+            ['command_id AS id',
+             'PROGRAM_NAME(CL.command) AS program',
+             'COUNT(*) AS program_count'],
+            ['command_id', 'program', 'program_count'],
+            group_by=['program'], table_alias=table_alias)
 
     def import_init_dict(self, dct, overwrite=True):
         long_id = dct['session_id']
