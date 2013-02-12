@@ -70,7 +70,6 @@ def normalize_directory(path):
 
 
 def sql_regexp_func(expr, item):
-    print "matching", expr, item
     return re.match(expr, item) is not None
 
 
