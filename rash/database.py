@@ -22,7 +22,8 @@ import datetime
 import warnings
 import itertools
 
-from .utils.iterutils import nonempty, repeat
+from .utils.iterutils import nonempty
+from .utils.sqlconstructor import SQLConstructor
 from .model import CommandRecord, SessionRecord, VersionRecord
 
 schema_version = '0.1'
@@ -395,115 +396,69 @@ class DataBase(object):
         columns = ['command_history.id', 'CL.command', 'session_id',
                    'DL.directory', 'TL.terminal',
                    'start_time', 'stop_time', 'exit_code']
-        max_index = 5
-        assert columns[max_index] == 'start_time'
-        params = []
-        conditions = []
+        source = (
+            'command_history '
+            'LEFT JOIN command_list AS CL ON command_id = CL.id '
+            'LEFT JOIN directory_list AS DL ON directory_id = DL.id '
+            'LEFT JOIN terminal_list AS TL ON terminal_id = TL.id')
 
         if cwd_under:
             cwd_glob.extend(os.path.join(os.path.abspath(p), "*")
                             for p in cwd_under)
 
         if ignore_case:
-            glob = "glob(lower({0}), lower({1}))".format
+            glob = "glob(lower({1}), lower({0}))".format
         else:
-            glob = "glob({0}, {1})".format
+            glob = "glob({1}, {0})".format
+        regexp = "regexp({1}, {0})"
+        eq = '{0} = {1}'
 
-        def add_or_match(template, name, args):
-            conditions.extend(concat_expr(
-                'OR', repeat(template.format(name), len(args))))
-            params.extend(args)
-
-        def add_matches(matcher, match_params, include_params, exclude_params):
-            conditions.extend(repeat(matcher('?', 'CL.command'),
-                                     len(match_params)))
-            params.extend(match_params)
-            add_or_match(matcher('?', '{0}'), 'CL.command', include_params)
-            conditions.extend(repeat('NOT ' + matcher('?', 'CL.command'),
-                                     len(exclude_params)))
-            params.extend(exclude_params)
-
-        add_matches(glob, match_pattern, include_pattern, exclude_pattern)
-        add_matches("regexp({0}, {1})".format,
-                    match_regexp, include_regexp, exclude_regexp)
-
-        add_or_match(glob('?', '{0}'), 'DL.directory', cwd_glob)
-        add_or_match('{0} = ?', 'DL.directory',
-                     [normalize_directory(os.path.abspath(p)) for p in cwd])
+        sc = SQLConstructor(source, columns, keys,
+                            reverse=reverse, limit=limit)
+        sc.add_matches(glob, 'CL.command',
+                       match_pattern, include_pattern, exclude_pattern)
+        sc.add_matches(regexp, 'CL.command',
+                       match_regexp, include_regexp, exclude_regexp)
+        sc.add_or_matches(glob, 'DL.directory', cwd_glob)
+        sc.add_or_matches(
+            eq, 'DL.directory',
+            [normalize_directory(os.path.abspath(p)) for p in cwd])
 
         if time_after:
-            conditions.append('DATETIME(start_time) >= ?')
-            params.append(time_after)
-
+            sc.add_and_matches('DATETIME({0}) >= {1}', 'start_time',
+                               [time_after])
         if time_before:
-            conditions.append('DATETIME(start_time) <= ?')
-            params.append(time_before)
+            sc.add_and_matches('DATETIME({0}) <= {1}', 'start_time',
+                               [time_before])
 
         command_duration = (
             '(JULIANDAY(stop_time) - JULIANDAY(start_time)) * 60 * 60 * 24')
-
         if duration_longer_than:
-            conditions.append('({0} >= ?)'.format(command_duration))
-            params.append(duration_longer_than)
-
+            sc.add_and_matches('({0} >= {1})', command_duration,
+                               [duration_longer_than])
         if duration_less_than:
-            conditions.append('({0} <= ?)'.format(command_duration))
-            params.append(duration_less_than)
+            sc.add_and_matches('({0} <= {1})', command_duration,
+                               [duration_less_than])
 
-        add_or_match('{0} = ?', 'exit_code', include_exit_code)
-        conditions.extend(repeat('exit_code != ?', len(exclude_exit_code)))
-        params.extend(exclude_exit_code)
+        sc.add_matches(eq, 'exit_code',
+                       [], include_exit_code, exclude_exit_code)
 
         if session_history_id:
-            conditions.append('(session_id = ?)')
-            params.append(session_history_id)
+            sc.add_and_matches(eq, 'session_id', [session_history_id])
 
-        where = ''
-        if conditions:
-            where = 'WHERE {0} '.format(" AND ".join(conditions))
-
-        group_by = ''
         if unique:
-            columns[max_index] = 'MAX({0})'.format(columns[max_index])
-            group_by = 'GROUP BY CL.command '
+            sc.uniquify_by('CL.command', 'start_time')
         elif sort_by == 'command_count':
             # When not using "GROUP BY", `COUNT(*)` yields just one
             # row.  As unique is True by default, `unique=False`
             # should means to ignore `sort_by`
             sort_by = None
 
-        order_by = 'start_time'
-        if sort_by:
-            if sort_by == 'command_count':
-                columns.append('COUNT(*) as command_count')
-                keys.append('command_count')
-            order_by = sort_by
+        sc.order_by = sort_by or 'start_time'
+        if sc.order_by == 'command_count':
+            sc.add_column('COUNT(*) as command_count', 'command_count')
 
-        order_direction = 'ASC' if reverse else 'DESC'
-
-        sql_limit = ''
-        if limit and limit >= 0:
-            sql_limit = 'LIMIT ?'
-            params.append(limit)
-
-        sql = (
-            'SELECT {columns} '
-            'FROM command_history '
-            'LEFT JOIN command_list AS CL ON command_id = CL.id '
-            'LEFT JOIN directory_list AS DL ON directory_id = DL.id '
-            'LEFT JOIN terminal_list AS TL ON terminal_id = TL.id '
-            '{where}{group_by} '
-            'ORDER BY {order_by} {order_direction} '
-            '{limit}'
-        ).format(
-            columns=', '.join(columns),
-            where=where,
-            group_by=group_by,
-            order_by=order_by,
-            order_direction=order_direction,
-            limit=sql_limit,
-        )
-        return (sql, params, keys)
+        return sc.compile()
 
     def import_init_dict(self, dct, overwrite=True):
         long_id = dct['session_id']
