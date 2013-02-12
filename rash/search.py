@@ -16,6 +16,7 @@
 
 SORT_KEY_SYNONYMS = {
     'count': 'command_count',
+    'success': 'success_count',
     'time': 'start_time',
     'start': 'start_time',
     'stop': 'stop_time',
@@ -235,6 +236,7 @@ def search_add_arguments(parent_parser):
         help="""
         Sort keys
         `count`: number of the time command is executed;
+        `success`: number of the time command is succeeded;
         `start`(=`time`): the time command is executed;
         `stop`: the time command is finished;
         `code`: exit code of the command;

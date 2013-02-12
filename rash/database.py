@@ -445,8 +445,22 @@ class DataBase(object):
 
         if sort_by == 'command_count':
             sc.add_column('COUNT(*) as command_count', 'command_count')
+        if sort_by == 'success_count':
+            sc.join(cls._sc_success_count(),
+                    on='command_id = success_command.id')
+            sc.add_column('success_count')
 
         return sc.compile()
+
+    @staticmethod
+    def _sc_success_count(table_alias='success_command'):
+        count = ('COUNT(CASE WHEN exit_code = 0 THEN 1 ELSE NULL END)'
+                 ' AS success_count')
+        return SQLConstructor(
+            'command_history',
+            ['command_id AS id', count],
+            ['command_id', 'success_count'],
+            group_by=['command_id'], table_alias=table_alias)
 
     def import_init_dict(self, dct, overwrite=True):
         long_id = dct['session_id']

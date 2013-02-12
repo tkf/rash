@@ -47,7 +47,8 @@ class SQLConstructor(object):
     """
 
     def __init__(self, join_source, columns, keys=None,
-                group_by=None, order_by=None, reverse=False, limit=None):
+                 group_by=None, order_by=None, reverse=False, limit=None,
+                 table_alias=None):
         self.join_source = join_source
         self.columns = columns[:]
         self.keys = columns[:] if keys is None else keys[:]
@@ -55,9 +56,22 @@ class SQLConstructor(object):
         self.order_by = order_by
         self.reverse = reverse
         self.limit = limit
+        self.table_alias = table_alias
 
         self.params = []
         self.conditions = []
+
+    def join(self, source, op='LEFT JOIN', on=''):
+        if isinstance(source, SQLConstructor):
+            (sql, params, _) = source.compile()
+            self.params = params + self.params
+            jsrc = '( {0} )'.format(sql)
+            if source.table_alias:
+                jsrc += ' AS ' + source.table_alias
+        else:
+            jsrc = source
+        constraint = 'ON {0}'.format(on) if on else ''
+        self.join_source = ' '.join([self.join_source, op, jsrc, constraint])
 
     @property
     def sql_where(self):
