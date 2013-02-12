@@ -449,7 +449,7 @@ class DataBase(object):
             sc.add_column('success_count')
         if sort_by == 'program_count' or 'program_count' in additional_columns:
             sc.join(cls._sc_program_count(),
-                    on='command_id = command_program.id')
+                    on='PROGRAM_NAME(CL.command) = command_program.program')
             sc.add_column('program_count')
 
         return sc.compile()
@@ -469,10 +469,9 @@ class DataBase(object):
         return SQLConstructor(
             'command_history '
             'LEFT JOIN command_list AS CL ON command_id = CL.id',
-            ['command_id AS id',
-             'PROGRAM_NAME(CL.command) AS program',
+            ['PROGRAM_NAME(CL.command) AS program',
              'COUNT(*) AS program_count'],
-            ['command_id', 'program', 'program_count'],
+            ['program', 'program_count'],
             group_by=['program'], table_alias=table_alias)
 
     def import_init_dict(self, dct, overwrite=True):
