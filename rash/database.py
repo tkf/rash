@@ -74,6 +74,27 @@ def sql_regexp_func(expr, item):
     return re.match(expr, item) is not None
 
 
+def sql_program_name_func(command):
+    """
+    Extract program name from `command`.
+
+    >>> sql_program_name_func('ls')
+    'ls'
+    >>> sql_program_name_func('git status')
+    'git'
+    >>> sql_program_name_func('EMACS=emacs make')
+    'make'
+
+    :type command: str
+
+    """
+    args = command.split(' ')
+    for prog in args:
+        if '=' not in prog:
+            return prog
+    return args[0]
+
+
 class DataBase(object):
 
     schemapath = os.path.join(
@@ -120,6 +141,10 @@ class DataBase(object):
                 with self._get_db() as db:
                     self._db = db
                     db.create_function("REGEXP", 2, sql_regexp_func)
+                    # SOMEDAY: use sql_program_name_func to implement
+                    #          --sort-by-program-frequency flag
+                    # db.create_function("PROGRAM_NAME", 1,
+                    #                    sql_program_name_func)
                     yield self._db
                     if self._need_commit:
                         db.commit()
