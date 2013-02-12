@@ -183,17 +183,15 @@ def search_add_arguments(parent_parser):
         metavar='CODE', action='append', default=[], type=int,
         help='exclude command which finished with given exit code.')
     parser.add_argument(
-        '--include-session', '-n',
+        '--include-session', '-n', dest='include_session_history_id',
         metavar='ID', action='append', default=[], type=int,
         help="""
-        [NOT IMPLEMENTED]
         include command which is issued in given session.
         """)
     parser.add_argument(
-        '--exclude-session', '-N',
+        '--exclude-session', '-N', dest='exclude_session_history_id',
         metavar='ID', action='append', default=[], type=int,
         help="""
-        [NOT IMPLEMENTED]
         exclude command which is issued in given session.
         """)
     parser.add_argument(

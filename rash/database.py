@@ -383,9 +383,11 @@ class DataBase(object):
             match_regexp, include_regexp, exclude_regexp,
             cwd, cwd_glob, cwd_under,
             time_after, time_before, duration_longer_than, duration_less_than,
-            include_exit_code, exclude_exit_code, reverse, sort_by,
+            include_exit_code, exclude_exit_code,
+            include_session_history_id, exclude_session_history_id,
+            reverse, sort_by,
             ignore_case,
-            session_history_id=None, additional_columns=[],
+            additional_columns=[],
             **_):  # SOMEDAY: don't ignore unused kwds to search_command_record
         # SOMEDAY: optionally calculate `success_count`
         keys = ['command_history_id', 'command', 'session_history_id',
@@ -436,7 +438,8 @@ class DataBase(object):
         sc.add_and_matches('({0} <= {1})', comdura, duration_less_than)
         sc.add_matches(eq, 'exit_code',
                        [], include_exit_code, exclude_exit_code)
-        sc.add_and_matches(eq, 'session_id', session_history_id)
+        sc.add_matches(eq, 'session_id', [],
+                       include_session_history_id, exclude_session_history_id)
 
         if unique:
             sc.uniquify_by('CL.command', 'start_time')
