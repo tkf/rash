@@ -413,7 +413,14 @@ class DataBase(object):
         regexp = "regexp({1}, {0})"
         eq = '{0} = {1}'
 
+        if not unique and sort_by == 'command_count':
+            # When not using "GROUP BY", `COUNT(*)` yields just one
+            # row.  As unique is True by default, `unique=False`
+            # should mean to ignore ``sort_by='command_count'``.
+            sort_by = None
+
         sc = SQLConstructor(source, columns, keys,
+                            order_by=sort_by or 'start_time',
                             reverse=reverse, limit=limit)
         sc.add_matches(glob, 'CL.command',
                        match_pattern, include_pattern, exclude_pattern)
@@ -435,14 +442,8 @@ class DataBase(object):
 
         if unique:
             sc.uniquify_by('CL.command', 'start_time')
-        elif sort_by == 'command_count':
-            # When not using "GROUP BY", `COUNT(*)` yields just one
-            # row.  As unique is True by default, `unique=False`
-            # should means to ignore `sort_by`
-            sort_by = None
 
-        sc.order_by = sort_by or 'start_time'
-        if sc.order_by == 'command_count':
+        if sort_by == 'command_count':
             sc.add_column('COUNT(*) as command_count', 'command_count')
 
         return sc.compile()
