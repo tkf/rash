@@ -100,8 +100,12 @@ trap "_rash-before-exit" EXIT TERM
 
 ### zle isearch widget
 rash-zle-isearch(){
-    BUFFER=$(rash isearch --query "$LBUFFER")
-    CURSOR=$#BUFFER
+    local result=$(rash isearch --query "$LBUFFER")
+    if [ -n "$result" ]
+    then
+        BUFFER="$result"
+        CURSOR=$#BUFFER
+    fi
     zle -R -c
 }
 zle -N rash-zle-isearch
