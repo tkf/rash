@@ -98,11 +98,6 @@ All failed commands you ran at this directory.::
 
    rash search --cwd . --exclude-exit-code 0
 
-**NOT IMPLEMENTED**
-Top 5 programs you use most.::
-
-   rash search --limit 5 --sort-by-program-frequency
-
 Count number of commands you ran in one day::
 
    rash search --limit -1 --no-unique --time-after "1 day ago" | wc -l
