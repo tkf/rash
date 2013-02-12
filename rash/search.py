@@ -47,9 +47,25 @@ def search_run(output, format, with_command_id, with_session_id, format_level,
     else:
         format = format.decode('string_escape')
 
+    fmtkeys = formatter_keys(format)
+    candidates = set(['command_count', 'success_count'])
+    kwds['additional_columns'] = candidates & set(fmtkeys)
+
     db = DataBase(ConfigStore().db_path)
     for crec in db.search_command_record(**preprocess_kwds(kwds)):
         output.write(format.format(**crec.__dict__))
+
+
+def formatter_keys(format_string):
+    """
+    Return required fields in `format_string`.
+
+    >>> sorted(formatter_keys('{1} {key}'))
+    ['1', 'key']
+
+    """
+    from string import Formatter
+    return (tp[1] for tp in Formatter().parse(format_string))
 
 
 def preprocess_kwds(kwds):

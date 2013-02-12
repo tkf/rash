@@ -387,7 +387,7 @@ class DataBase(object):
             time_after, time_before, duration_longer_than, duration_less_than,
             include_exit_code, exclude_exit_code, reverse, sort_by,
             ignore_case,
-            session_history_id=None,
+            session_history_id=None, additional_columns=[],
             **_):  # SOMEDAY: don't ignore unused kwds to search_command_record
         # SOMEDAY: optionally calculate `success_count`
         keys = ['command_history_id', 'command', 'session_history_id',
@@ -443,9 +443,9 @@ class DataBase(object):
         if unique:
             sc.uniquify_by('CL.command', 'start_time')
 
-        if sort_by == 'command_count':
+        if sort_by == 'command_count' or 'command_count' in additional_columns:
             sc.add_column('COUNT(*) as command_count', 'command_count')
-        if sort_by == 'success_count':
+        if sort_by == 'success_count' or 'success_count' in additional_columns:
             sc.join(cls._sc_success_count(),
                     on='command_id = success_command.id')
             sc.add_column('success_count')
