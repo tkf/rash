@@ -467,13 +467,15 @@ class DataBase(object):
         if unique:
             sc.uniquify_by('CL.command', 'start_time')
 
-        if sort_by == 'command_count' or 'command_count' in additional_columns:
+        need = lambda *x: (sort_by in x or set(x) & additional_columns)
+        if need('command_count'):
             sc.add_column('COUNT(*) as command_count', 'command_count')
-        if sort_by == 'success_count' or 'success_count' in additional_columns:
+        if need('success_count', 'success_ratio'):
             sc.join(cls._sc_success_count(),
                     on='command_id = success_command.id')
             sc.add_column('success_count')
-        if sort_by == 'program_count' or 'program_count' in additional_columns:
+            sc.add_column('(success_count * 1.0 / COUNT(*))', 'success_ratio')
+        if need('program_count'):
             sc.join(cls._sc_program_count(),
                     on='PROGRAM_NAME(CL.command) = command_program.program')
             sc.add_column('program_count')

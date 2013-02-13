@@ -16,7 +16,8 @@
 
 SORT_KEY_SYNONYMS = {
     'count': 'command_count',
-    'success': 'success_count',
+    'success_count': 'success_count',
+    'success_ratio': 'success_ratio',
     'program_count': 'program_count',
     'time': 'start_time',
     'start': 'start_time',
@@ -49,7 +50,8 @@ def search_run(output, format, with_command_id, with_session_id, format_level,
         format = format.decode('string_escape')
 
     fmtkeys = formatter_keys(format)
-    candidates = set(['command_count', 'success_count', 'program_count'])
+    candidates = set([
+        'command_count', 'success_count', 'success_ratio', 'program_count'])
     kwds['additional_columns'] = candidates & set(fmtkeys)
 
     db = DataBase(ConfigStore().db_path)
@@ -265,7 +267,7 @@ def search_add_arguments(parent_parser):
         help="""
         Sort keys
         `count`: number of the time command is executed;
-        `success`: number of the time command is succeeded;
+        `success_count`: number of the time command is succeeded;
         `program_count`: number of the time *program* is used;
         `start`(=`time`): the time command is executed;
         `stop`: the time command is finished;
