@@ -467,7 +467,7 @@ class DataBase(object):
         if unique:
             sc.uniquify_by('CL.command', 'start_time')
 
-        need = lambda *x: (sort_by in x or set(x) & additional_columns)
+        need = lambda *x: (sort_by in x or set(x) & set(additional_columns))
         if need('command_count'):
             sc.add_column('COUNT(*) as command_count', 'command_count')
         if need('success_count', 'success_ratio'):
