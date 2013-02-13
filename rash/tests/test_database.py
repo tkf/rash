@@ -366,6 +366,29 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(first_half), small_num)
         self.assertEqual(len(second_half), 0)
 
+    def search_environ_record(self, **kwds):
+        return list(self.db.search_environ_record(**kwds))
+
+    def test_search_environ_by_pattern(self):
+        command_environ_list = [
+            {'PATH': 'DIR-1'},
+            {'PATH': 'DIR-2', 'PYTHONPATH': 'DIR-1'},
+        ]
+        for (i, environ) in enumerate(command_environ_list):
+            data = self.get_dummy_command_record_data()
+            data.update(command='command', start=i, environ=environ)
+            self.db.import_dict(data)
+
+        records = self.search_environ_record(
+            include_pattern=[('PATH', 'DIR*')])
+        self.assertEqual(len(records), 2)
+
+        records = self.search_environ_record(
+            include_pattern=[('PATH', 'DIR-1')])
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0].variable_name, 'PATH')
+        self.assertEqual(records[0].variable_value, 'DIR-1')
+
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))
 

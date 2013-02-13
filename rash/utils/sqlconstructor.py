@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import itertools
+
 from .iterutils import repeat
 
 
@@ -123,25 +125,37 @@ class SQLConstructor(object):
         else:
             return matcher
 
-    def add_and_matches(self, matcher, lhs, params):
-        params = self._adapt_params(params)
-        expr = repeat(self._adapt_matcher(matcher)(lhs, '?'), len(params))
-        self.conditions.extend(expr)
-        self.params.extend(params)
+    @staticmethod
+    def _default_flatten(numq):
+        if numq == 1:
+            return lambda x: x
+        else:
+            return lambda x: itertools.chain(*x)
 
-    def add_or_matches(self, matcher, lhs, params):
+    def add_and_matches(self, matcher, lhs, params, numq=1, flatten=None):
         params = self._adapt_params(params)
-        expr = repeat(self._adapt_matcher(matcher)(lhs, '?'), len(params))
+        qs = ['?'] * numq
+        flatten = flatten or self._default_flatten(numq)
+        expr = repeat(self._adapt_matcher(matcher)(lhs, *qs), len(params))
+        self.conditions.extend(expr)
+        self.params.extend(flatten(params))
+
+    def add_or_matches(self, matcher, lhs, params, numq=1, flatten=None):
+        params = self._adapt_params(params)
+        qs = ['?'] * numq
+        flatten = flatten or self._default_flatten(numq)
+        expr = repeat(self._adapt_matcher(matcher)(lhs, *qs), len(params))
         self.conditions.extend(concat_expr('OR', expr))
-        self.params.extend(params)
+        self.params.extend(flatten(params))
 
     def add_matches(self, matcher, lhs,
-                    match_params=[], include_params=[], exclude_params=[]):
+                    match_params=[], include_params=[], exclude_params=[],
+                    numq=1, flatten=None):
         matcher = self._adapt_matcher(matcher)
-        notmatcher = lambda x, y: 'NOT ' + matcher(x, y)
-        self.add_and_matches(matcher, lhs, match_params)
-        self.add_or_matches(matcher, lhs, include_params)
-        self.add_and_matches(notmatcher, lhs, exclude_params)
+        notmatcher = lambda *args: 'NOT ' + matcher(*args)
+        self.add_and_matches(matcher, lhs, match_params, numq, flatten)
+        self.add_or_matches(matcher, lhs, include_params, numq, flatten)
+        self.add_and_matches(notmatcher, lhs, exclude_params, numq, flatten)
 
     def uniquify_by(self, column, chooser=None, aggregate='MAX'):
         self.group_by.append(column)

@@ -24,7 +24,7 @@ import itertools
 
 from .utils.iterutils import nonempty
 from .utils.sqlconstructor import SQLConstructor
-from .model import CommandRecord, SessionRecord, VersionRecord
+from .model import CommandRecord, SessionRecord, VersionRecord, EnvironRecord
 
 schema_version = '0.1'
 
@@ -389,7 +389,6 @@ class DataBase(object):
             ignore_case,
             additional_columns=[],
             **_):  # SOMEDAY: don't ignore unused kwds to search_command_record
-        # SOMEDAY: optionally calculate `success_count`
         keys = ['command_history_id', 'command', 'session_history_id',
                 'cwd', 'terminal',
                 'start', 'stop', 'exit_code']
@@ -476,6 +475,29 @@ class DataBase(object):
              'COUNT(*) AS program_count'],
             ['program', 'program_count'],
             group_by=['program'], table_alias=table_alias)
+
+    @staticmethod
+    def _sc_matched_environment_variable(
+            match_pattern=[], include_pattern=[], exclude_pattern=[],
+            match_regexp=[], include_regexp=[], exclude_regexp=[],
+            table_alias='matched_environment_variable'):
+        glob = "({0[0]} = {1} AND glob({2}, {0[1]}))".format
+        regexp = "({0[0]} = {1} AND regexp({2}, {0[1]}))".format
+        sc = SQLConstructor(
+            'environment_variable',
+            ['id', 'variable_name', 'variable_value'],
+            ['environment_variable_id', 'variable_name', 'variable_value'],
+            table_alias=table_alias)
+        sc.add_matches(glob, ['variable_name', 'variable_value'],
+                       match_pattern, include_pattern, exclude_pattern, numq=2)
+        sc.add_matches(regexp, ['variable_name', 'variable_value'],
+                       match_regexp, include_regexp, exclude_regexp, numq=2)
+        return sc
+
+    def search_environ_record(self, **kwds):
+        sc = self._sc_matched_environment_variable(**kwds)
+        (sql, params, keys) = sc.compile()
+        return self._select_rows(EnvironRecord, keys, sql, params)
 
     def import_init_dict(self, dct, overwrite=True):
         long_id = dct['session_id']

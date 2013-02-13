@@ -86,6 +86,29 @@ class SessionRecord(object):
         )
 
 
+class EnvironRecord(object):
+
+    """
+    Environment variable record.
+
+    >>> EnvironRecord(variable_name='PWD', variable_value='DUMMY/PATH')
+    <EnvironRecord: PWD=DUMMY/PATH>
+
+    """
+
+    def __init__(self, **kwds):
+        self.environment_variable_id = None
+        self.variable_name = None
+        self.variable_value = None
+        self.__dict__.update(kwds)
+
+    def __repr__(self):
+        return '<{0}: {1}={2}>'.format(
+            self.__class__.__name__,
+            self.variable_name, self.variable_value,
+        )
+
+
 class VersionRecord(object):
 
     """
