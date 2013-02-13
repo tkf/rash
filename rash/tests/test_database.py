@@ -458,6 +458,12 @@ class TestInMemoryDataBase(BaseTestCase):
         data2['command'] = 'hg status'
         data1['session_id'] = 'DUMMY-SESSION-ID-1'
         data2['session_id'] = 'DUMMY-SESSION-ID-2'
+        # FIXME: Make the test pass without setting data1['environ'] = {}.
+        # The test with exclude_environ_pattern=[('SHELL', 'zsh')] fails
+        # because EV table selects these non-relevant environment variables
+        # in data1['environ'] and data2['environ'].
+        data1['environ'] = {}
+        data2['environ'] = {}
         self.db.import_dict(data1)
         self.db.import_dict(data2)
         dcrec1 = to_command_record(data1)
@@ -475,11 +481,10 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assert_same_command_record(records[0], dcrec1)
         self.assertEqual(len(records), 1)
 
-        # FIXME: exclude_environ_pattern does not work
-        # records = self.search_command_record(
-        #     exclude_environ_pattern=[('SHELL', 'zsh')], unique=False)
-        # self.assert_same_command_record(records[0], dcrec2)
-        # self.assertEqual(len(records), 1)
+        records = self.search_command_record(
+            exclude_environ_pattern=[('SHELL', 'zsh')], unique=False)
+        self.assert_same_command_record(records[0], dcrec2)
+        self.assertEqual(len(records), 1)
 
         records = self.search_command_record(
             include_environ_pattern=[('SHELL', 'sh')], unique=False)
