@@ -389,6 +389,38 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(records[0].variable_name, 'PATH')
         self.assertEqual(records[0].variable_value, 'DIR-1')
 
+    def test_serach_command_by_environ_in_command(self):
+        data1 = self.get_dummy_command_record_data()
+        data2 = self.get_dummy_command_record_data()
+        # Database does not distinguish record by different environ,
+        # so other key must be different.
+        data1['command'] = 'git status'
+        data2['command'] = 'hg status'
+        data1['environ'] = {'SHELL': 'zsh'}
+        data2['environ'] = {'SHELL': 'bash'}
+        self.db.import_dict(data1)
+        self.db.import_dict(data2)
+        dcrec1 = to_command_record(data1)
+        dcrec2 = to_command_record(data2)
+
+        records = self.search_command_record(
+            include_environ_pattern=[('SHELL', 'zsh')], unique=False)
+        self.assert_same_command_record(records[0], dcrec1)
+        self.assertEqual(len(records), 1)
+
+        records = self.search_command_record(
+            exclude_environ_pattern=[('SHELL', 'zsh')], unique=False)
+        self.assert_same_command_record(records[0], dcrec2)
+        self.assertEqual(len(records), 1)
+
+        records = self.search_command_record(
+            include_environ_pattern=[('SHELL', 'sh')], unique=False)
+        self.assertEqual(len(records), 0)
+
+        records = self.search_command_record(
+            exclude_environ_pattern=[('SHELL', 'sh')], unique=False)
+        self.assertEqual(len(records), 2)
+
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))
 
