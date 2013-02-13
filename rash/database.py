@@ -385,6 +385,10 @@ class DataBase(object):
             time_after, time_before, duration_longer_than, duration_less_than,
             include_exit_code, exclude_exit_code,
             include_session_history_id, exclude_session_history_id,
+            match_environ_pattern, include_environ_pattern,
+            exclude_environ_pattern,
+            match_environ_regexp, include_environ_regexp,
+            exclude_environ_regexp,
             reverse, sort_by,
             ignore_case,
             additional_columns=[],
@@ -439,6 +443,26 @@ class DataBase(object):
                        [], include_exit_code, exclude_exit_code)
         sc.add_matches(eq, 'session_id', [],
                        include_session_history_id, exclude_session_history_id)
+
+        if match_environ_pattern or include_environ_pattern or \
+           exclude_environ_pattern or match_environ_regexp or \
+           include_environ_regexp:
+            evsc = cls._sc_matched_environment_variable(
+                match_environ_pattern, include_environ_pattern,
+                exclude_environ_pattern,
+                match_environ_regexp, include_environ_regexp,
+                exclude_environ_regexp,
+                table_alias='EV')
+            cesc = SQLConstructor('command_environment_map',
+                                  ['ch_id', 'ev_id'], table_alias='CEMap')
+            cesc.join(evsc, op='INNER JOIN', on='ev_id = EV.id')
+            sesc = SQLConstructor('session_environment_map',
+                                  ['sh_id', 'ev_id'], table_alias='SEMap')
+            sesc.join(evsc, op='INNER JOIN', on='ev_id = EV.id')
+            sc.join(cesc, on='command_history.id = CEMap.ch_id')
+            sc.join(sesc, on='session_id = SEMap.sh_id')
+            sc.conditions.append(
+                '(CEMap.ev_id IS NOT NULL OR SEMap.ev_id IS NOT NULL)')
 
         if unique:
             sc.uniquify_by('CL.command', 'start_time')
