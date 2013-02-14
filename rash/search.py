@@ -34,7 +34,7 @@ def search_run(output, format, with_command_id, with_session_id, format_level,
     """
     from .config import ConfigStore
     from .database import DataBase
-    from .query import preprocess_kwds
+    from .query import expand_query, preprocess_kwds
 
     if format_level >= 3:
         format = ("{session_history_id:>5}  "
@@ -55,7 +55,9 @@ def search_run(output, format, with_command_id, with_session_id, format_level,
         'command_count', 'success_count', 'success_ratio', 'program_count'])
     kwds['additional_columns'] = candidates & set(fmtkeys)
 
-    db = DataBase(ConfigStore().db_path)
+    confstore = ConfigStore()
+    kwds = expand_query(confstore.get_config(), kwds)
+    db = DataBase(confstore.db_path)
     for crec in db.search_command_record(**preprocess_kwds(kwds)):
         output.write(format.format(**crec.__dict__))
 

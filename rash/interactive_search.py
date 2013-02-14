@@ -25,7 +25,7 @@ except ImportError:
     FinderMultiQueryString = object
 
 from .search import search_add_arguments
-from .query import SafeArgumentParser, preprocess_kwds
+from .query import SafeArgumentParser, expand_query, preprocess_kwds
 
 
 def strip_glob(string, split_str=' '):
@@ -71,7 +71,7 @@ class RashFinder(FinderMultiQueryString):
             # shlex < 2.7.3 does not work with unicode:
             args = self.base_query + shlex.split(query.encode())
             ns = self.__parser.parse_args(args)
-            kwds = preprocess_kwds(vars(ns))
+            kwds = preprocess_kwds(expand_query(self.rashconfig, vars(ns)))
         except (ValueError, SyntaxError):
             return super(RashFinder, self).find(query, collection)
 
@@ -116,6 +116,7 @@ def launch_isearch(conf, rcfile=None, input_encoding=None,
     RashFinder.db = DataBase(conf.db_path)
     RashFinder.base_query = (config.isearch_base_query if base_query is None
                              else base_query)
+    RashFinder.rashconfig = config
 
     ttyname = tty.get_ttyname()
     with open(ttyname, "r+w") as tty_f:

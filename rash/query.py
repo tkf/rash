@@ -15,7 +15,7 @@
 
 from argparse import ArgumentParser
 
-from .search import SORT_KEY_SYNONYMS
+from .search import SORT_KEY_SYNONYMS, search_add_arguments
 
 
 class SafeArgumentParser(ArgumentParser):
@@ -27,6 +27,38 @@ class SafeArgumentParser(ArgumentParser):
         pass
 
     print_help = print_version = print_usage
+
+
+def expand_query(config, kwds):
+    """
+    Expand `kwds` based on `config.search_query_expander`.
+
+    :type config: .config.Configuration
+    :type kwds: dict
+    :rtype: dict
+    :return: Return `kwds`, modified in place.
+
+    """
+    pattern = []
+    expander = config.search_pattern_expander
+    for query in kwds.pop('pattern', []):
+        expansion = expander(query)
+        if expansion is None:
+            pattern.append(query)
+        else:
+            parser = SafeArgumentParser()
+            search_add_arguments(parser)
+            ns = parser.parse_args(expansion)
+            for (key, value) in vars(ns).items():
+                if isinstance(value, (list, tuple)):
+                    if not kwds.get(key):
+                        kwds[key] = value
+                    else:
+                        kwds[key].extend(value)
+                else:
+                    kwds[key] = value
+    kwds['pattern'] = pattern
+    return kwds
 
 
 def preprocess_kwds(kwds):
