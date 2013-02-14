@@ -122,6 +122,11 @@ class Configuration(object):
         self.record_environ = {
             'init': [
                 'SHELL', 'TERM', 'HOST', 'TTY', 'USER', 'DISPLAY',
+                # SOMEDAY: Reevaluate if "RASH_SPENV_TERMINAL" is the
+                # right choice.  Here, I am using `environ` dict as a
+                # generic key value store.  Using 'RASH_SPENV_' as a
+                # prefix key, it is very easy to add new variable to
+                # track.
                 'RASH_SPENV_TERMINAL',
             ],
             'exit': [],
