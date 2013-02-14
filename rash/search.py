@@ -26,8 +26,7 @@ SORT_KEY_SYNONYMS = {
 }
 
 
-def search_run(output, format, with_command_id, with_session_id, format_level,
-               **kwds):
+def search_run(output, **kwds):
     """
     Search command history.
 
@@ -36,6 +35,21 @@ def search_run(output, format, with_command_id, with_session_id, format_level,
     from .database import DataBase
     from .query import expand_query, preprocess_kwds
 
+    confstore = ConfigStore()
+    kwds = expand_query(confstore.get_config(), kwds)
+    format = get_formatter(**kwds)
+    fmtkeys = formatter_keys(format)
+    candidates = set([
+        'command_count', 'success_count', 'success_ratio', 'program_count'])
+    kwds['additional_columns'] = candidates & set(fmtkeys)
+
+    db = DataBase(confstore.db_path)
+    for crec in db.search_command_record(**preprocess_kwds(kwds)):
+        output.write(format.format(**crec.__dict__))
+
+
+def get_formatter(
+        format, with_command_id, with_session_id, format_level, **_):
     if format_level >= 3:
         format = ("{session_history_id:>5}  "
                   "{command_history_id:>5}  "
@@ -49,17 +63,7 @@ def search_run(output, format, with_command_id, with_session_id, format_level,
         format = "{session_history_id:>5}  {command}\n"
     else:
         format = format.decode('string_escape')
-
-    fmtkeys = formatter_keys(format)
-    candidates = set([
-        'command_count', 'success_count', 'success_ratio', 'program_count'])
-    kwds['additional_columns'] = candidates & set(fmtkeys)
-
-    confstore = ConfigStore()
-    kwds = expand_query(confstore.get_config(), kwds)
-    db = DataBase(confstore.db_path)
-    for crec in db.search_command_record(**preprocess_kwds(kwds)):
-        output.write(format.format(**crec.__dict__))
+    return format
 
 
 def formatter_keys(format_string):
