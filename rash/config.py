@@ -48,6 +48,11 @@ class ConfigStore(object):
         Root directory for any RASH related data files (``~/.config/rash``).
         """
 
+        self.config_path = os.path.join(self.base_path, 'config.py')
+        """
+        File to store user configuration (``~/.config/rash/config.py``).
+        """
+
         self.data_path = os.path.join(self.base_path, 'data')
         """
         Directory to store data collected by RASH (``~/.config/rash/data``).
@@ -79,3 +84,96 @@ class ConfigStore(object):
         """
 
         mkdirp(self.record_path)
+
+    def get_config(self):
+        """
+        Load user configuration or return default when not found.
+
+        :rtype: :class:`Configuration`
+
+        """
+        if not self._config:
+            namespace = {}
+            if os.path.exists(self.config_path):
+                execfile(self.config_path, namespace)
+            self._config = namespace.get('config') or Configuration()
+        return self._config
+    _config = None
+
+
+class Configuration(object):
+
+    """
+    RASH configuration interface.
+
+    If you define an object named `config` in ``~/.config/rash/config.py``,
+    it is going to be loaded by RASH.
+
+    Example::
+
+        from rash.config import Configuration
+        config = Configuration()
+        config.isearch_query = '-u .'
+
+    """
+
+    def __init__(self):
+
+        self.record_environ = {
+            'init': [
+                'SHELL', 'TERM', 'HOST', 'TTY', 'USER', 'DISPLAY',
+                'RASH_SPENV_TERMINAL',
+            ],
+            'exit': [],
+            'command': ['PATH'],
+        }
+        """
+        Environment variables to record.
+
+        Each key (str) represent record type (init/exit/command).
+        Each value (list of str) is a list of environment variables to
+        record.
+
+        Example usage:
+
+        >>> config = Configuration()
+        >>> config.record_environ['init'] += ['VIRTUAL_ENV', 'PYTHONPATH']
+
+        """
+
+        self.search_pattern_expander = lambda _: None
+        """
+        Search query expander.
+
+        It must be a callable object that returns a list of string when
+        "expanding" search query.  Returning None means to use the query
+        as-is.
+
+        Example::
+
+        >>> def pattern_expander(query):
+        ...     if query == 'test':
+        ...         return ["--exclude-pattern", "*rash *",
+        ...                 "--include-pattern", "*test*"]
+        >>> config = Configuration()
+        >>> config.search_pattern_expander = pattern_expander
+
+        then,::
+
+            rash search test
+
+        is equivalent to::
+
+            rash search --exclude-pattern "*rash *" --include-pattern "*test*"
+
+        """
+
+        self.isearch_query = ''
+        """
+        Set default value (str) for "isearch --query".
+        """
+
+        self.isearch_base_query = []
+        """
+        Set default value (list of str) for "isearch --base-query".
+        """
