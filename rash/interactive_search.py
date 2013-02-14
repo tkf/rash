@@ -24,8 +24,8 @@ except ImportError:
     # Dummy class for making this module importable:
     FinderMultiQueryString = object
 
-from argparse import ArgumentParser
-from .search import search_add_arguments, preprocess_kwds
+from .search import search_add_arguments
+from .query import SafeArgumentParser, preprocess_kwds
 
 
 def strip_glob(string, split_str=' '):
@@ -49,17 +49,6 @@ def strip_glob(string, split_str=' '):
     return string.strip()
 
 _GLOB_PORTION_RE = re.compile(r'\*|.\?|\[[^\]]+\]')
-
-
-class SafeArgumentParser(ArgumentParser):
-
-    def exit(self, *_, **__):
-        raise ValueError
-
-    def print_usage(self, *_):
-        pass
-
-    print_help = print_version = print_usage
 
 
 class RashFinder(FinderMultiQueryString):

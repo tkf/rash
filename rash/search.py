@@ -34,6 +34,7 @@ def search_run(output, format, with_command_id, with_session_id, format_level,
     """
     from .config import ConfigStore
     from .database import DataBase
+    from .query import preprocess_kwds
 
     if format_level >= 3:
         format = ("{session_history_id:>5}  "
@@ -69,37 +70,6 @@ def formatter_keys(format_string):
     """
     from string import Formatter
     return (tp[1] for tp in Formatter().parse(format_string))
-
-
-def preprocess_kwds(kwds):
-    """
-    Preprocess keyword arguments for `DataBase.search_command_record`.
-    """
-    from .utils.timeutils import parse_datetime, parse_duration
-
-    for key in ['output', 'format', 'with_command_id', 'with_session_id']:
-        kwds.pop(key, None)
-
-    for key in ['time_after', 'time_before']:
-        val = kwds[key]
-        if val:
-            dt = parse_datetime(val)
-            if dt:
-                kwds[key] = dt
-
-    for key in ['duration_longer_than', 'duration_less_than']:
-        val = kwds[key]
-        if val:
-            dt = parse_duration(val)
-            if dt:
-                kwds[key] = dt
-
-    # interpret "pattern" (currently just copying to --include-pattern)
-    less_strict_pattern = list(map("*{0}*".format, kwds.pop('pattern', [])))
-    kwds['match_pattern'] = kwds['match_pattern'] + less_strict_pattern
-
-    kwds['sort_by'] = SORT_KEY_SYNONYMS[kwds['sort_by']]
-    return kwds
 
 
 def search_add_arguments(parent_parser):
