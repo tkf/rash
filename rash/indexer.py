@@ -31,8 +31,8 @@ class Indexer(object):
         """
         Create an indexer.
 
-        :type            cfstore: rash.config.ConfigStore
-        :arg             cfstore:
+        :type         cfstore: rash.config.ConfigStore
+        :arg          cfstore:
         :type check_duplicate: bool
         :arg  check_duplicate: See :meth:`DataBase.import_dict`.
         :type       keep_json: bool
