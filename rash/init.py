@@ -26,6 +26,14 @@ def find_init(shell):
     return os.path.join(rash_dir, 'ext', 'rash.{0}'.format(shell_name(shell)))
 
 
+INIT_TEMPLATE = """\
+source '{file}'
+_RASH_VERSION='{version}'
+"""
+# Currently `_RASH_VERSION` is not used anywhere, but it is useful to
+# see when RASH for a long lasting shell session is initialized.
+
+
 def init_run(shell, no_daemon, daemon_options, daemon_outfile):
     """
     Configure your shell.
@@ -54,9 +62,12 @@ def init_run(shell, no_daemon, daemon_options, daemon_outfile):
     ``rash daemon --help``.
 
     """
+    import sys
+    from .__init__ import __version__
     init_file = find_init(shell)
     if os.path.exists(init_file):
-        print("source '{0}'".format(init_file))
+        sys.stdout.write(INIT_TEMPLATE.format(
+            file=init_file, version=__version__))
     else:
         raise RuntimeError(
             "Shell '{0}' is not supported.".format(shell_name(shell)))
