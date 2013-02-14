@@ -82,10 +82,26 @@ def main(args=None):
         + index.commands
         + isearch.commands
         # + MODULE.commands
+        + misc_commands
     )
     ns = parser.parse_args(args=args)
     applyargs = lambda func, **kwds: func(**kwds)
     applyargs(**vars(ns))
+
+
+def version_run():
+    """Print version number."""
+    from .__init__ import __version__
+    print(__version__)
+
+
+def version_add_arguments(parser):
+    pass
+
+
+misc_commands = [
+    ('version', version_add_arguments, version_run),
+]
 
 
 if __name__ == '__main__':
