@@ -57,10 +57,10 @@ def isearch_run(**kwds):
 
 def isearch_add_arguments(parser):
     parser.add_argument(
-        '--query', '-q', default='',
+        '--query', '-q', default=None,
         help='default query')
     parser.add_argument(
-        'base_query', nargs='*', default=[],
+        'base_query', nargs='*', default=None,
         help="""
         The part of query that is not shown in UI and is impossible
         to rewrite in this session.  Useful for putting long and
