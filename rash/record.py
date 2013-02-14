@@ -107,13 +107,13 @@ def record_run(record_type, print_session_id, **kwds):
         raise RuntimeError(
             '--print-session-id should be used with --record-type=init')
 
-    conf = ConfigStore()
+    cfstore = ConfigStore()
     # SOMEDAY: Pass a list of environment variables to shell by "rash
     # init" and don't read configuration in "rash record" command.  It
     # is faster.
-    config = conf.get_config()
+    config = cfstore.get_config()
     envkeys = config.record_environ[record_type]
-    json_path = os.path.join(conf.record_path,
+    json_path = os.path.join(cfstore.record_path,
                              record_type,
                              time.strftime('%Y-%m-%d-%H%M%S.json'))
     mkdirp(os.path.dirname(json_path))

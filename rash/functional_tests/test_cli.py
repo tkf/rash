@@ -81,13 +81,13 @@ class FunctionalTestMixIn(object):
         if 'XDG_CONFIG_HOME' in self.environ:
             del self.environ['XDG_CONFIG_HOME']
 
-        self.conf = ConfigStore(self.conf_base_path)
+        self.cfstore = ConfigStore(self.conf_base_path)
 
     def tearDown(self):
         # Kill daemon if exists
         try:
-            if os.path.exists(self.conf.daemon_pid_path):
-                with open(self.conf.daemon_pid_path) as f:
+            if os.path.exists(self.cfstore.daemon_pid_path):
+                with open(self.cfstore.daemon_pid_path) as f:
                     pid = f.read().strip()
                 print("Daemon (PID={0}) may be left alive.  Killing it..."
                       .format(pid))
@@ -129,8 +129,8 @@ class TestIsolation(FunctionalTestMixIn, BaseTestCase):
             stderr=subprocess.PIPE)
         (stdout, stderr) = proc.communicate(textwrap.dedent("""
         from rash.config import ConfigStore
-        conf = ConfigStore()
-        print(repr(conf.base_path))
+        cfstore = ConfigStore()
+        print(repr(cfstore.base_path))
         """).encode())
         stderr = stderr.decode()
         stdout = stdout.decode()
@@ -155,7 +155,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
         return (stdout.decode(), stderr.decode())
 
     def get_record_data(self, record_type):
-        top = os.path.join(self.conf.record_path, record_type)
+        top = os.path.join(self.cfstore.record_path, record_type)
         for (root, _, files) in os.walk(top):
             for f in files:
                 path = os.path.join(root, f)
@@ -194,7 +194,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
         self.assertFalse(stderr)
         self.assertIn('_RASH_SESSION_ID is defined', stdout)
 
-        assert os.path.isdir(self.conf.record_path)
+        assert os.path.isdir(self.cfstore.record_path)
         records = self.get_all_record_data()
         self.assertEqual(len(records['init']), 1)
         self.assertEqual(len(records['exit']), 1)
@@ -310,7 +310,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
 
     @skipIf(PY3, "watchdog does not support Python 3")
     def test_daemon(self):
-        daemon_outfile = os.path.join(self.conf.base_path, 'daemon.out')
+        daemon_outfile = os.path.join(self.cfstore.base_path, 'daemon.out')
         script = self.get_script(
             no_daemon=False, daemon_outfile=daemon_outfile,
             daemon_options=['--keep-json', '--log-level=DEBUG'])
@@ -319,7 +319,7 @@ class ShellTestMixIn(FunctionalTestMixIn):
         # These are useful when debugging, so let's leave them:
         print(stderr)
         print(stdout)
-        print(self.conf.daemon_pid_path)
+        print(self.cfstore.daemon_pid_path)
 
         # Print daemon process output for debugging
         with open(daemon_outfile) as f:
@@ -331,16 +331,16 @@ class ShellTestMixIn(FunctionalTestMixIn):
         # The daemon process should create a PID file containing a number
         @self.assert_poll_do(
             "Daemon did not produce PID file at: {0}"
-            .format(self.conf.daemon_pid_path))
+            .format(self.cfstore.daemon_pid_path))
         def pid_file_contains_a_number():
             try:
-                with open(self.conf.daemon_pid_path) as f:
+                with open(self.cfstore.daemon_pid_path) as f:
                     return f.read().strip().isdigit()
             except IOError:
                 return False
 
         # Read the PID file
-        with open(self.conf.daemon_pid_path) as f:
+        with open(self.cfstore.daemon_pid_path) as f:
             pid = int(f.read().strip())
 
         # The daemon process should be alive
@@ -353,13 +353,13 @@ class ShellTestMixIn(FunctionalTestMixIn):
                 '("ps --pid {0}" failed).'.format(pid))
 
         # The daemon should create a log file
-        self.assert_poll(lambda: os.path.exists(self.conf.daemon_log_path),
+        self.assert_poll(lambda: os.path.exists(self.cfstore.daemon_log_path),
                          "daemon_log_path={0!r} is not created on time"
-                         .format(self.conf.daemon_log_path))
+                         .format(self.cfstore.daemon_log_path))
 
         # The daemon should write some debug message to the log file
         # (Note: --log-level=DEBUG is given by $RASH_INIT_DAEMON_OPTIONS)
-        with open(self.conf.daemon_log_path) as f:
+        with open(self.cfstore.daemon_log_path) as f:
             @self.assert_poll_do("Nothing written in log file.")
             def log_file_written():
                 return f.read().strip()
@@ -379,9 +379,9 @@ class ShellTestMixIn(FunctionalTestMixIn):
 
         # The daemon should remove the PID file on exit
         self.assert_poll(
-            lambda: not os.path.exists(self.conf.daemon_pid_path),
+            lambda: not os.path.exists(self.cfstore.daemon_pid_path),
             "Daemon did not remove PID file at: {0}".format(
-                self.conf.daemon_pid_path))
+                self.cfstore.daemon_pid_path))
 
     @staticmethod
     def assert_poll(assertion, message, num=100, tick=0.1):

@@ -24,8 +24,8 @@ def index_run(record_path, keep_json, check_duplicate):
     """
     from .config import ConfigStore
     from .indexer import Indexer
-    conf = ConfigStore()
-    indexer = Indexer(conf, check_duplicate, keep_json, record_path)
+    cfstore = ConfigStore()
+    indexer = Indexer(cfstore, check_duplicate, keep_json, record_path)
     indexer.index_all()
 
 

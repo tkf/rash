@@ -102,7 +102,7 @@ def load_rc(percol, path=None, encoding=None):
         debug.log("exception", e)
 
 
-def launch_isearch(conf, rcfile=None, input_encoding=None,
+def launch_isearch(cfstore, rcfile=None, input_encoding=None,
                    base_query=None, query=None, **kwds):
     from percol import Percol
     from percol import tty
@@ -110,10 +110,10 @@ def launch_isearch(conf, rcfile=None, input_encoding=None,
 
     from .database import DataBase
 
-    config = conf.get_config()
+    config = cfstore.get_config()
 
     # Pass db instance to finder.  Not clean but works and no harm.
-    RashFinder.db = DataBase(conf.db_path)
+    RashFinder.db = DataBase(cfstore.db_path)
     RashFinder.base_query = (config.isearch_base_query if base_query is None
                              else base_query)
     RashFinder.rashconfig = config
