@@ -48,7 +48,7 @@ def install_sigterm_handler():
 
 def watch_record(indexer):
     """
-    Start watching `conf.record_path`.
+    Start watching `cfstore.record_path`.
 
     :type indexer: rash.indexer.Indexer
 

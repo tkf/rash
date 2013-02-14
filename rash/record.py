@@ -107,23 +107,13 @@ def record_run(record_type, print_session_id, **kwds):
         raise RuntimeError(
             '--print-session-id should be used with --record-type=init')
 
-    # SOMEDAY: make environment variables to log configurable
-    if record_type == 'init':
-        envkeys = [
-            'SHELL', 'TERM', 'HOST', 'TTY', 'USER', 'DISPLAY',
-            # SOMEDAY: Reevaluate if "RASH_SPENV_TERMINAL" is the right choice.
-            # Here, I am using `environ` dict as a generic key value store.
-            # Using 'RASH_SPENV_' as a prefix key, it is very easy to add
-            # new variable to track.
-            'RASH_SPENV_TERMINAL',
-        ]
-    elif record_type == 'exit':
-        envkeys = []
-    elif record_type == 'command':
-        envkeys = ['PATH']
-
-    conf = ConfigStore()
-    json_path = os.path.join(conf.record_path,
+    cfstore = ConfigStore()
+    # SOMEDAY: Pass a list of environment variables to shell by "rash
+    # init" and don't read configuration in "rash record" command.  It
+    # is faster.
+    config = cfstore.get_config()
+    envkeys = config.record_environ[record_type]
+    json_path = os.path.join(cfstore.record_path,
                              record_type,
                              time.strftime('%Y-%m-%d-%H%M%S.json'))
     mkdirp(os.path.dirname(json_path))

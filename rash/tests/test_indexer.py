@@ -29,13 +29,13 @@ class TestIndexer(BaseTestCase):
 
     def setUp(self):
         self.base_path = tempfile.mkdtemp(prefix='rash-test-')
-        self.conf = ConfigStore(self.base_path)
+        self.cfstore = ConfigStore(self.base_path)
 
     def tearDown(self):
         shutil.rmtree(self.base_path)
 
     def get_indexer(self, keep_json=True, check_duplicate=True):
-        return Indexer(self.conf, check_duplicate, keep_json)
+        return Indexer(self.cfstore, check_duplicate, keep_json)
 
     def prepare_records(self, **records):
         if set(records) > set(['command', 'init', 'exit']):
@@ -44,7 +44,7 @@ class TestIndexer(BaseTestCase):
         paths = []
         for (rectype, data_list) in records.items():
             for (i, data) in enumerate(data_list):
-                json_path = os.path.join(self.conf.record_path,
+                json_path = os.path.join(self.cfstore.record_path,
                                          rectype,
                                          '{0:05d}.json'.format(i))
                 mkdirp(os.path.dirname(json_path))

@@ -26,15 +26,30 @@ SORT_KEY_SYNONYMS = {
 }
 
 
-def search_run(output, format, with_command_id, with_session_id, format_level,
-               **kwds):
+def search_run(output, **kwds):
     """
     Search command history.
 
     """
     from .config import ConfigStore
     from .database import DataBase
+    from .query import expand_query, preprocess_kwds
 
+    cfstore = ConfigStore()
+    kwds = expand_query(cfstore.get_config(), kwds)
+    format = get_formatter(**kwds)
+    fmtkeys = formatter_keys(format)
+    candidates = set([
+        'command_count', 'success_count', 'success_ratio', 'program_count'])
+    kwds['additional_columns'] = candidates & set(fmtkeys)
+
+    db = DataBase(cfstore.db_path)
+    for crec in db.search_command_record(**preprocess_kwds(kwds)):
+        output.write(format.format(**crec.__dict__))
+
+
+def get_formatter(
+        format, with_command_id, with_session_id, format_level, **_):
     if format_level >= 3:
         format = ("{session_history_id:>5}  "
                   "{command_history_id:>5}  "
@@ -48,15 +63,7 @@ def search_run(output, format, with_command_id, with_session_id, format_level,
         format = "{session_history_id:>5}  {command}\n"
     else:
         format = format.decode('string_escape')
-
-    fmtkeys = formatter_keys(format)
-    candidates = set([
-        'command_count', 'success_count', 'success_ratio', 'program_count'])
-    kwds['additional_columns'] = candidates & set(fmtkeys)
-
-    db = DataBase(ConfigStore().db_path)
-    for crec in db.search_command_record(**preprocess_kwds(kwds)):
-        output.write(format.format(**crec.__dict__))
+    return format
 
 
 def formatter_keys(format_string):
@@ -69,37 +76,6 @@ def formatter_keys(format_string):
     """
     from string import Formatter
     return (tp[1] for tp in Formatter().parse(format_string))
-
-
-def preprocess_kwds(kwds):
-    """
-    Preprocess keyword arguments for `DataBase.search_command_record`.
-    """
-    from .utils.timeutils import parse_datetime, parse_duration
-
-    for key in ['output', 'format', 'with_command_id', 'with_session_id']:
-        kwds.pop(key, None)
-
-    for key in ['time_after', 'time_before']:
-        val = kwds[key]
-        if val:
-            dt = parse_datetime(val)
-            if dt:
-                kwds[key] = dt
-
-    for key in ['duration_longer_than', 'duration_less_than']:
-        val = kwds[key]
-        if val:
-            dt = parse_duration(val)
-            if dt:
-                kwds[key] = dt
-
-    # interpret "pattern" (currently just copying to --include-pattern)
-    less_strict_pattern = list(map("*{0}*".format, kwds.pop('pattern', [])))
-    kwds['match_pattern'] = kwds['match_pattern'] + less_strict_pattern
-
-    kwds['sort_by'] = SORT_KEY_SYNONYMS[kwds['sort_by']]
-    return kwds
 
 
 def search_add_arguments(parent_parser):

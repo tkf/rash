@@ -56,41 +56,41 @@ def daemon_run(no_error, restart, record_path, keep_json, check_duplicate,
     from .watchrecord import watch_record, install_sigterm_handler
 
     install_sigterm_handler()
-    conf = ConfigStore()
+    cfstore = ConfigStore()
     if log_level:
-        conf.daemon_log_level = log_level
+        cfstore.daemon_log_level = log_level
 
     # SOMEDAY: make PID checking/writing atomic if possible
-    if os.path.exists(conf.daemon_pid_path):
+    if os.path.exists(cfstore.daemon_pid_path):
         if no_error:
             return
-        with open(conf.daemon_pid_path, 'rt') as f:
+        with open(cfstore.daemon_pid_path, 'rt') as f:
             pid = int(f.read().strip())
         if restart:
-            stop_running_daemon(conf, pid)
+            stop_running_daemon(cfstore, pid)
         else:
             raise RuntimeError(
                 'There is already a running daemon (PID={0})!'.format(pid))
 
-    with open(conf.daemon_pid_path, 'w') as f:
+    with open(cfstore.daemon_pid_path, 'w') as f:
         f.write(str(os.getpid()))
 
     try:
-        setup_daemon_log_file(conf)
-        indexer = Indexer(conf, check_duplicate, keep_json, record_path)
+        setup_daemon_log_file(cfstore)
+        indexer = Indexer(cfstore, check_duplicate, keep_json, record_path)
         indexer.index_all()
         watch_record(indexer)
     finally:
-        os.remove(conf.daemon_pid_path)
+        os.remove(cfstore.daemon_pid_path)
 
 
-def stop_running_daemon(conf, pid):
+def stop_running_daemon(cfstore, pid):
     import time
     import signal
     os.kill(pid, signal.SIGTERM)
     for _ in range(30):
         time.sleep(0.1)
-        if not os.path.exists(conf.daemon_pid_path):
+        if not os.path.exists(cfstore.daemon_pid_path):
             break
     else:
         raise RuntimeError(

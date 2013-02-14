@@ -96,7 +96,8 @@ class TestInMemoryDataBase(BaseTestCase):
 
     def get_default_search_kwds(self):
         import argparse
-        from ..search import search_add_arguments, preprocess_kwds
+        from ..search import search_add_arguments
+        from ..query import preprocess_kwds
         parser = argparse.ArgumentParser()
         search_add_arguments(parser)
         kwds = vars(parser.parse_args([]))

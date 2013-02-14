@@ -24,8 +24,8 @@ except ImportError:
     # Dummy class for making this module importable:
     FinderMultiQueryString = object
 
-from argparse import ArgumentParser
-from .search import search_add_arguments, preprocess_kwds
+from .search import search_add_arguments
+from .query import SafeArgumentParser, expand_query, preprocess_kwds
 
 
 def strip_glob(string, split_str=' '):
@@ -51,17 +51,6 @@ def strip_glob(string, split_str=' '):
 _GLOB_PORTION_RE = re.compile(r'\*|.\?|\[[^\]]+\]')
 
 
-class SafeArgumentParser(ArgumentParser):
-
-    def exit(self, *_, **__):
-        raise ValueError
-
-    def print_usage(self, *_):
-        pass
-
-    print_help = print_version = print_usage
-
-
 class RashFinder(FinderMultiQueryString):
 
     base_query = []
@@ -82,7 +71,7 @@ class RashFinder(FinderMultiQueryString):
             # shlex < 2.7.3 does not work with unicode:
             args = self.base_query + shlex.split(query.encode())
             ns = self.__parser.parse_args(args)
-            kwds = preprocess_kwds(vars(ns))
+            kwds = preprocess_kwds(expand_query(self.rashconfig, vars(ns)))
         except (ValueError, SyntaxError):
             return super(RashFinder, self).find(query, collection)
 
@@ -113,17 +102,21 @@ def load_rc(percol, path=None, encoding=None):
         debug.log("exception", e)
 
 
-def launch_isearch(conf, rcfile=None, input_encoding=None, base_query=[],
-                   **kwds):
+def launch_isearch(cfstore, rcfile=None, input_encoding=None,
+                   base_query=None, query=None, **kwds):
     from percol import Percol
     from percol import tty
     import percol.actions as actions
 
     from .database import DataBase
 
+    config = cfstore.get_config()
+
     # Pass db instance to finder.  Not clean but works and no harm.
-    RashFinder.db = DataBase(conf.db_path)
-    RashFinder.base_query = base_query
+    RashFinder.db = DataBase(cfstore.db_path)
+    RashFinder.base_query = (config.isearch_base_query if base_query is None
+                             else base_query)
+    RashFinder.rashconfig = config
 
     ttyname = tty.get_ttyname()
     with open(ttyname, "r+w") as tty_f:
@@ -133,6 +126,7 @@ def launch_isearch(conf, rcfile=None, input_encoding=None, base_query=[],
                     # This will be used if the first call for RashFinder.find
                     # fails to fetch collections from DB.
                     candidates=[],
+                    query=config.isearch_query if query is None else query,
                     **kwds) as percol:
             load_rc(percol, rcfile, input_encoding)
             exit_code = percol.loop()

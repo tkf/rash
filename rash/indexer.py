@@ -27,30 +27,30 @@ class Indexer(object):
     Translate JSON files into SQLite DB.
     """
 
-    def __init__(self, conf, check_duplicate, keep_json, record_path=None):
+    def __init__(self, cfstore, check_duplicate, keep_json, record_path=None):
         """
         Create an indexer.
 
-        :type            conf: rash.config.ConfigStore
-        :arg             conf:
+        :type         cfstore: rash.config.ConfigStore
+        :arg          cfstore:
         :type check_duplicate: bool
         :arg  check_duplicate: See :meth:`DataBase.import_dict`.
         :type       keep_json: bool
         :arg        keep_json: Do not remove JSON files.
                                Imply ``check_duplicate=True``.
         :type     record_path: str or None
-        :arg      record_path: Default to `conf.record_path`.
+        :arg      record_path: Default to `cfstore.record_path`.
 
         """
         from .log import logger
         self.logger = logger
         if keep_json:
             check_duplicate = True
-        self.conf = conf
+        self.cfstore = cfstore
         self.check_duplicate = check_duplicate
         self.keep_json = keep_json
-        self.record_path = record_path or conf.record_path
-        self.db = DataBase(conf.db_path)
+        self.record_path = record_path or cfstore.record_path
+        self.db = DataBase(cfstore.db_path)
         if record_path:
             self.check_path(record_path, '`record_path`')
 
@@ -60,7 +60,7 @@ class Indexer(object):
         self.logger.debug('record_path = %r', self.record_path)
 
     def get_record_type(self, path):
-        relpath = os.path.relpath(path, self.conf.record_path)
+        relpath = os.path.relpath(path, self.cfstore.record_path)
         dirs = relpath.split(os.path.sep, 1)
         return dirs[0] if dirs else None
 
@@ -69,7 +69,7 @@ class Indexer(object):
             raise RuntimeError(
                 '{0} must be under {1}'.format(
                     name,
-                    os.path.join(self.conf.record_path,
+                    os.path.join(self.cfstore.record_path,
                                  '{command,init,exit}',
                                  '')))
 
