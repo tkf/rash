@@ -169,6 +169,30 @@ class Configuration(object):
 
         """
 
+        self.search_kwds_adapter = lambda x: x
+        """
+        A function to transform keyword arguments.
+
+        This function takes a dictionary from command line argument
+        parser and can modify the dictionary to do whatever you want
+        do with it.  It is much more lower-level and powerful than
+        :attr:`search_alias`.  This function must return the modified,
+        or possibly new dictionary.
+
+        Example definition that does the same effect as the example in
+        :attr:`search_alias`::
+
+            def adapter(kwds):
+                if 'test' in kwds.get('pattern', []):
+                    kwds['pattern'] = [p for p in kwds['pattern']
+                                       if p != 'test']
+                    kwds['exclude_pattern'].append("*rash *")
+                    kwds['include_pattern'].append("*test*")
+                return kwds
+            config.search_kwds_adapter = adapter
+
+        """
+
         self.isearch_query = ''
         """
         Set default value (str) for "isearch --query".

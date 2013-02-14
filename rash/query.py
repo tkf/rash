@@ -57,7 +57,7 @@ def expand_query(config, kwds):
                 else:
                     kwds[key] = value
     kwds['pattern'] = pattern
-    return kwds
+    return config.search_kwds_adapter(kwds)
 
 
 def preprocess_kwds(kwds):
