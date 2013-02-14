@@ -142,7 +142,7 @@ class Configuration(object):
         Example usage:
 
         >>> config = Configuration()
-        >>> config.record_environ['init'] += ['VIRTUAL_ENV', 'PYTHONPATH']
+        >>> config.record_environ['command'] += ['VIRTUAL_ENV', 'PYTHONPATH']
 
         """
 
