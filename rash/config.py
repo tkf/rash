@@ -146,22 +146,18 @@ class Configuration(object):
 
         """
 
-        self.search_pattern_expander = lambda _: None
-        """
-        Search query expander.
+        self.search_alias = {}
+        r"""
+        Search query alias.
 
-        It must be a callable object that returns a list of string when
-        "expanding" search query.  Returning None means to use the query
-        as-is.
+        It must be a dict-like object that maps a str to a list of str
+        when "expanding" search query.
 
         Example::
 
-        >>> def pattern_expander(query):
-        ...     if query == 'test':
-        ...         return ["--exclude-pattern", "*rash *",
-        ...                 "--include-pattern", "*test*"]
         >>> config = Configuration()
-        >>> config.search_pattern_expander = pattern_expander
+        >>> config.search_alias['test'] = \
+        ...     ["--exclude-pattern", "*rash *", "--include-pattern", "*test*"]
 
         then,::
 

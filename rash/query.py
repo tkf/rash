@@ -40,9 +40,8 @@ def expand_query(config, kwds):
 
     """
     pattern = []
-    expander = config.search_pattern_expander
     for query in kwds.pop('pattern', []):
-        expansion = expander(query)
+        expansion = config.search_alias.get(query)
         if expansion is None:
             pattern.append(query)
         else:
