@@ -114,17 +114,40 @@ class Configuration(object):
     If you define an object named `config` in ``~/.config/rash/config.py``,
     it is going to be loaded by RASH.
 
-    Example::
+    Example:
 
-        from rash.config import Configuration
-        config = Configuration()
-        config.isearch_query = '-u .'
+    >>> from rash.config import Configuration
+    >>> config = Configuration()
+    >>> config.isearch.query = '-u .'
 
     """
 
     def __init__(self):
+        self.record = RecordConfig()
+        """
+        (see: :class:`rash.config.RecordConfig`)
+        """
 
-        self.record_environ = {
+        self.search = SearchConfig()
+        """
+        (see: :class:`rash.config.SearchConfig`)
+        """
+
+        self.isearch = ISearchConfig()
+        """
+        (see: :class:`rash.config.ISearchConfig`)
+        """
+
+
+class RecordConfig(object):
+
+    """
+    Recording configuration.
+    """
+
+    def __init__(self):
+
+        self.environ = {
             'init': [
                 'SHELL', 'TERM', 'HOST', 'TTY', 'USER', 'DISPLAY',
                 # SOMEDAY: Reevaluate if "RASH_SPENV_TERMINAL" is the
@@ -147,11 +170,20 @@ class Configuration(object):
         Example usage:
 
         >>> config = Configuration()
-        >>> config.record_environ['command'] += ['VIRTUAL_ENV', 'PYTHONPATH']
+        >>> config.record.environ['command'] += ['VIRTUAL_ENV', 'PYTHONPATH']
 
         """
 
-        self.search_alias = {}
+
+class SearchConfig(object):
+
+    """
+    Search configuration.
+    """
+
+    def __init__(self):
+
+        self.alias = {}
         r"""
         Search query alias.
 
@@ -161,7 +193,7 @@ class Configuration(object):
         Example:
 
         >>> config = Configuration()
-        >>> config.search_alias['test'] = \
+        >>> config.search.alias['test'] = \
         ...     ["--exclude-pattern", "*rash *", "--include-pattern", "*test*"]
 
         then,::
@@ -174,36 +206,47 @@ class Configuration(object):
 
         """
 
-        self.search_kwds_adapter = lambda x: x
+        self.kwds_adapter = lambda x: x
         """
         A function to transform keyword arguments.
 
         This function takes a dictionary from command line argument
         parser and can modify the dictionary to do whatever you want
         do with it.  It is much more lower-level and powerful than
-        :attr:`search_alias`.  This function must return the modified,
+        :attr:`alias`.  This function must return the modified,
         or possibly new dictionary.
 
         Example definition that does the same effect as the example in
-        :attr:`search_alias`::
+        :attr:`alias`:
 
-            def adapter(kwds):
-                if 'test' in kwds.get('pattern', []):
-                    kwds['pattern'] = [p for p in kwds['pattern']
-                                       if p != 'test']
-                    kwds['exclude_pattern'].append("*rash *")
-                    kwds['include_pattern'].append("*test*")
-                return kwds
-            config.search_kwds_adapter = adapter
+        >>> def adapter(kwds):
+        ...     if 'test' in kwds.get('pattern', []):
+        ...         kwds['pattern'] = [p for p in kwds['pattern']
+        ...                            if p != 'test']
+        ...         kwds['exclude_pattern'].append("*rash *")
+        ...         kwds['include_pattern'].append("*test*")
+        ...     return kwds
+        ...
+        >>> config = Configuration()
+        >>> config.search.kwds_adapter = adapter
 
         """
 
-        self.isearch_query = ''
+
+class ISearchConfig(object):
+
+    """
+    Interactive search configuration.
+    """
+
+    def __init__(self):
+
+        self.query = ''
         """
         Set default value (str) for "isearch --query".
         """
 
-        self.isearch_base_query = []
+        self.base_query = []
         """
         Set default value (list of str) for "isearch --base-query".
         """

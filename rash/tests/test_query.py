@@ -22,8 +22,8 @@ class TestExpandQuery(BaseTestCase):
 
     def setUp(self):
         self.config = Configuration()
-        self.config.search_alias['test'] = ["--include-pattern", "*test*"]
-        self.config.search_alias['build'] = ["--include-pattern", "*build*"]
+        self.config.search.alias['test'] = ["--include-pattern", "*test*"]
+        self.config.search.alias['build'] = ["--include-pattern", "*build*"]
 
     def test_alias_no_query_no_expansion(self):
         kwds = expand_query(self.config, {})

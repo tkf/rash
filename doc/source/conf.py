@@ -7,6 +7,7 @@ sys.path.insert(0, dirname(dirname(dirname(__file__))))
 # -- General configuration ------------------------------------------------
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.doctest',
     'sphinx.ext.todo',
 ]
 
