@@ -112,7 +112,7 @@ def record_run(record_type, print_session_id, **kwds):
     # init" and don't read configuration in "rash record" command.  It
     # is faster.
     config = cfstore.get_config()
-    envkeys = config.record_environ[record_type]
+    envkeys = config.record.environ[record_type]
     json_path = os.path.join(cfstore.record_path,
                              record_type,
                              time.strftime('%Y-%m-%d-%H%M%S.json'))

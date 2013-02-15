@@ -31,7 +31,7 @@ class SafeArgumentParser(ArgumentParser):
 
 def expand_query(config, kwds):
     """
-    Expand `kwds` based on `config.search_query_expander`.
+    Expand `kwds` based on `config.search.query_expander`.
 
     :type config: .config.Configuration
     :type kwds: dict
@@ -41,7 +41,7 @@ def expand_query(config, kwds):
     """
     pattern = []
     for query in kwds.pop('pattern', []):
-        expansion = config.search_alias.get(query)
+        expansion = config.search.alias.get(query)
         if expansion is None:
             pattern.append(query)
         else:
@@ -57,7 +57,7 @@ def expand_query(config, kwds):
                 else:
                     kwds[key] = value
     kwds['pattern'] = pattern
-    return config.search_kwds_adapter(kwds)
+    return config.search.kwds_adapter(kwds)
 
 
 def preprocess_kwds(kwds):
