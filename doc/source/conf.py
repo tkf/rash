@@ -78,3 +78,9 @@ texinfo_documents = [
    u'Takafumi Arakaki', 'RASH', 'One line description of project.',
    'Miscellaneous'),
 ]
+
+
+# -- Options for extensions -----------------------------------------------
+
+autodoc_member_order = 'bysource'
+autodoc_default_flags = ['members']
