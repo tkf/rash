@@ -322,6 +322,22 @@ class TestInMemoryDataBase(BaseTestCase):
         counts = [r.command_count for r in records]
         self.assertEqual(counts, [15, 10, 5])
 
+    def test_search_command_sort_by_success_count(self):
+        exit_codes = [[0, 1, 2, 0], [0, 0, 0]]
+        commands = ['COMMAND-{0}'.format(i)
+                    for (i, codes) in enumerate(exit_codes) for _ in codes]
+        self.prepare_command_record(command=commands,
+                                    exit_code=itertools.chain(*exit_codes),
+                                    start=range(len(commands)))
+
+        records = self.search_command_record(sort_by='success_count')
+        self.assertEqual(len(records), 2)
+
+        attrs = lambda key: [getattr(r, key) for r in records]
+        self.assertEqual(attrs('command'), ['COMMAND-1', 'COMMAND-0'])
+        self.assertEqual(attrs('success_count'), [3, 2])
+        self.assertEqual(attrs('success_ratio'), [1.0, 0.5])
+
     def test_search_command_with_connection(self):
         num = 5
         small_num = 3
