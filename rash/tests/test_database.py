@@ -21,7 +21,7 @@ import itertools
 from ..model import CommandRecord, SessionRecord
 from ..database import DataBase, normalize_directory
 from ..utils.py3compat import nested
-from .utils import BaseTestCase, monkeypatch
+from .utils import BaseTestCase, monkeypatch, izip_dict
 
 
 def setdefaults(d, **kwds):
@@ -172,15 +172,16 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 1)
 
     def prepare_command_record(self, command=['git status', 'hg status'],
-                               cwd=[]):
+                               **kwds):
         def update(data, **kwds):
             for (k, v) in kwds.items():
                 if v is not None:
                     data[k] = v
         records = []
-        for (command, cwd) in itertools.izip_longest(command, cwd):
+        kwds.update(command=command)
+        for dct in izip_dict(kwds):
             data = self.get_dummy_command_record_data()
-            update(data, command=command, cwd=cwd)
+            update(data, **dct)
             self.db.import_dict(data)
             records.append(to_command_record(data))
         return records
