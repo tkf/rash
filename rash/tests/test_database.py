@@ -21,7 +21,7 @@ import itertools
 from ..model import CommandRecord, SessionRecord
 from ..database import DataBase, normalize_directory
 from ..utils.py3compat import nested
-from .utils import BaseTestCase, monkeypatch
+from .utils import BaseTestCase, monkeypatch, izip_dict
 
 
 def setdefaults(d, **kwds):
@@ -171,15 +171,34 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assert_same_command_record(records[0], to_command_record(data))
         self.assertEqual(len(records), 1)
 
+    def prepare_command_record(self, command=['git status', 'hg status'],
+                               **kwds):
+        """
+        Import command records specified by `kwds`.
+
+        The keyword argument is same as the one used in command record.
+        But its value is a list instead of actual value.  The values in
+        the list is zipped and mixed in the dummy command record data
+        and imported to the test DB.
+
+        :rtype: list of CommandRecord
+
+        """
+        def update(data, **kwds):
+            for (k, v) in kwds.items():
+                if v is not None:
+                    data[k] = v
+        records = []
+        kwds.update(command=command)
+        for dct in izip_dict(kwds):
+            data = self.get_dummy_command_record_data()
+            update(data, **dct)
+            self.db.import_dict(data)
+            records.append(to_command_record(data))
+        return records
+
     def test_search_command_by_pattern(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        (dcrec1, dcrec2) = self.prepare_command_record()
 
         records = self.search_command_record(include_pattern=['git*'],
                                              unique=False)
@@ -193,14 +212,7 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 0)
 
     def test_search_command_by_exclude_pattern(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        (dcrec1, dcrec2) = self.prepare_command_record()
 
         records = self.search_command_record(exclude_pattern=['hg*'],
                                              unique=False)
@@ -214,13 +226,7 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 2)
 
     def test_search_command_by_complex_pattern(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
+        (dcrec1, dcrec2) = self.prepare_command_record()
 
         records = self.search_command_record(
             include_pattern=['*status'], exclude_pattern=['hg*'],
@@ -234,10 +240,8 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 0)
 
     def test_search_command_by_pattern_ignore_case(self):
-        for (i, case) in enumerate([str.lower, str.upper, str.capitalize]):
-            data = self.get_dummy_command_record_data()
-            data.update(command=case('command'))
-            self.db.import_dict(data)
+        self.prepare_command_record(
+            [f('command') for f in [str.lower, str.upper, str.capitalize]])
 
         # Default search is case-sensitive
         records = self.search_command_record(include_pattern=['command'],
@@ -251,14 +255,7 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 3)
 
     def test_search_command_by_regexp(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        (dcrec1, dcrec2) = self.prepare_command_record()
 
         records = self.search_command_record(match_regexp=['g.*', '.*st.*'],
                                              unique=False)
@@ -276,16 +273,10 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 1)
 
     def test_search_command_by_cwd(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        data1['cwd'] = self.abspath('DUMMY', 'A')
-        data2['cwd'] = self.abspath('DUMMY', 'B')
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        cwd_list = [self.abspath('DUMMY', 'A'), self.abspath('DUMMY', 'B')]
+        (dcrec1, dcrec2) = self.prepare_command_record(cwd=cwd_list)
 
-        records = self.search_command_record(cwd=[data1['cwd']], unique=False)
+        records = self.search_command_record(cwd=[cwd_list[0]], unique=False)
         crec = records[0]
         self.assert_same_command_record(crec, dcrec1)
         self.assert_not_same_command_record(crec, dcrec2)
@@ -296,14 +287,8 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 0)
 
     def test_search_command_by_cwd_glob(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        data1['cwd'] = self.abspath('DUMMY', 'A')
-        data2['cwd'] = self.abspath('DUMMY', 'B')
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        cwd_list = [self.abspath('DUMMY', 'A'), self.abspath('DUMMY', 'B')]
+        (dcrec1, dcrec2) = self.prepare_command_record(cwd=cwd_list)
 
         records = self.search_command_record(
             cwd_glob=[self.abspath('DUMMY', '*')], unique=False)
@@ -337,13 +322,42 @@ class TestInMemoryDataBase(BaseTestCase):
         counts = [r.command_count for r in records]
         self.assertEqual(counts, [15, 10, 5])
 
+    def prepare_command_record_from_exit_codes(self, exit_codes):
+        commands = ['COMMAND-{0}'.format(i)
+                    for (i, codes) in enumerate(exit_codes) for _ in codes]
+        self.prepare_command_record(command=commands,
+                                    exit_code=itertools.chain(*exit_codes),
+                                    start=range(len(commands)))
+
+    def test_search_command_sort_by_success_count(self):
+        self.prepare_command_record_from_exit_codes([[0, 1, 2, 0], [0, 0, 0]])
+
+        records = self.search_command_record(sort_by='success_count')
+        self.assertEqual(len(records), 2)
+
+        attrs = lambda key: [getattr(r, key) for r in records]
+        self.assertEqual(attrs('command'), ['COMMAND-1', 'COMMAND-0'])
+        self.assertEqual(attrs('success_count'), [3, 2])
+        self.assertEqual(attrs('success_ratio'), [1.0, 0.5])
+
+    def test_search_command_sort_by_success_ratio(self):
+        self.prepare_command_record_from_exit_codes([[0, 1, 2, 0],
+                                                     [1, 2, 3],
+                                                     [0, 0, 0]])
+
+        records = self.search_command_record(sort_by='success_ratio')
+        self.assertEqual(len(records), 3)
+
+        attrs = lambda key: [getattr(r, key) for r in records]
+        self.assertEqual(attrs('command'),
+                         ['COMMAND-2', 'COMMAND-0', 'COMMAND-1'])
+        self.assertEqual(attrs('success_count'), [3, 2, 0])
+        self.assertEqual(attrs('success_ratio'), [1.0, 0.5, 0.0])
+
     def test_search_command_with_connection(self):
         num = 5
         small_num = 3
-        for i in range(num):
-            data = self.get_dummy_command_record_data()
-            data.update(command='DUMMY-COMMAND-{0}'.format(i))
-            self.db.import_dict(data)
+        self.prepare_command_record(map('COMMAND-{0}'.format, range(num)))
 
         kwds = dict(unique=False)
         setdefaults(kwds, **self.get_default_search_kwds())
@@ -375,10 +389,8 @@ class TestInMemoryDataBase(BaseTestCase):
             {'PATH': 'DIR-1'},
             {'PATH': 'DIR-2', 'PYTHONPATH': 'DIR-1'},
         ]
-        for (i, environ) in enumerate(command_environ_list):
-            data = self.get_dummy_command_record_data()
-            data.update(command='command', start=i, environ=environ)
-            self.db.import_dict(data)
+        self.prepare_command_record(environ=command_environ_list,
+                                    start=range(len(command_environ_list)))
 
         records = self.search_environ_record(
             include_pattern=[('PATH', 'DIR*')])
@@ -391,18 +403,8 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(records[0].variable_value, 'DIR-1')
 
     def test_serach_command_by_environ_in_command(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        # Database does not distinguish record by different environ,
-        # so other key must be different.
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        data1['environ'] = {'SHELL': 'zsh'}
-        data2['environ'] = {'SHELL': 'bash'}
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        (dcrec1, dcrec2) = self.prepare_command_record(
+            environ=[{'SHELL': 'zsh'}, {'SHELL': 'bash'}])
 
         records = self.search_command_record(
             include_environ_pattern=[('SHELL', 'zsh')], unique=False)
@@ -423,18 +425,8 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 2)
 
     def test_serach_command_by_glob_environ_in_command(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        # Database does not distinguish record by different environ,
-        # so other key must be different.
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        data1['environ'] = {'SHELL': 'zsh'}
-        data2['environ'] = {'SHELL': 'bash'}
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        (dcrec1, dcrec2) = self.prepare_command_record(
+            environ=[{'SHELL': 'zsh'}, {'SHELL': 'bash'}])
 
         records = self.search_command_record(
             include_environ_pattern=[('SHELL', '*sh')], unique=False)
@@ -451,24 +443,14 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 2)
 
     def test_serach_command_by_environ_in_session(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        # Database does not distinguish record by different environ,
-        # so other key must be different.
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        data1['session_id'] = 'DUMMY-SESSION-ID-1'
-        data2['session_id'] = 'DUMMY-SESSION-ID-2'
+        sessions = ['DUMMY-SESSION-ID-1', 'DUMMY-SESSION-ID-2']
         # FIXME: Make the test pass without setting data1['environ'] = {}.
         # The test with exclude_environ_pattern=[('SHELL', 'zsh')] fails
         # because EV table selects these non-relevant environment variables
         # in data1['environ'] and data2['environ'].
-        data1['environ'] = {}
-        data2['environ'] = {}
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        environs = [{}, {}]  # data1,2['environ'] = {}
+        (dcrec1, dcrec2) = self.prepare_command_record(session_id=sessions,
+                                                       environ=environs)
 
         init_data_1 = {'session_id': 'DUMMY-SESSION-ID-1',
                        'environ': {'SHELL': 'zsh'}}
@@ -496,18 +478,8 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 2)
 
     def test_serach_command_by_glob_environ_in_session(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        # Database does not distinguish record by different environ,
-        # so other key must be different.
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        data1['session_id'] = 'DUMMY-SESSION-ID-1'
-        data2['session_id'] = 'DUMMY-SESSION-ID-2'
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        sessions = ['DUMMY-SESSION-ID-1', 'DUMMY-SESSION-ID-2']
+        (dcrec1, dcrec2) = self.prepare_command_record(session_id=sessions)
 
         init_data_1 = {'session_id': 'DUMMY-SESSION-ID-1',
                        'environ': {'SHELL': 'zsh'}}

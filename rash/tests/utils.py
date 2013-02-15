@@ -15,6 +15,7 @@
 
 
 import unittest
+import itertools
 import functools
 from contextlib import contextmanager
 
@@ -63,3 +64,16 @@ def monkeypatch(obj, name, attr):
     setattr(obj, name, attr)
     yield
     setattr(obj, name, orig)
+
+
+def izip_dict(dictionary, fillvalue=None):
+    """
+    Zip values in `dictionary` and yield dictionaries with same keys.
+
+    >>> list(izip_dict({'a': [1, 2, 3], 'b': [4, 5]}))
+    [{'a': 1, 'b': 4}, {'a': 2, 'b': 5}, {'a': 3, 'b': None}]
+
+    """
+    (keys, lists) = zip(*dictionary.items())
+    for values in itertools.izip_longest(*lists, fillvalue=fillvalue):
+        yield dict(zip(keys, values))
