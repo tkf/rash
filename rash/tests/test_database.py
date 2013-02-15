@@ -346,10 +346,8 @@ class TestInMemoryDataBase(BaseTestCase):
             {'PATH': 'DIR-1'},
             {'PATH': 'DIR-2', 'PYTHONPATH': 'DIR-1'},
         ]
-        for (i, environ) in enumerate(command_environ_list):
-            data = self.get_dummy_command_record_data()
-            data.update(command='command', start=i, environ=environ)
-            self.db.import_dict(data)
+        self.prepare_command_record(environ=command_environ_list,
+                                    start=range(len(command_environ_list)))
 
         records = self.search_environ_record(
             include_pattern=[('PATH', 'DIR*')])
@@ -362,18 +360,8 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(records[0].variable_value, 'DIR-1')
 
     def test_serach_command_by_environ_in_command(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        # Database does not distinguish record by different environ,
-        # so other key must be different.
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        data1['environ'] = {'SHELL': 'zsh'}
-        data2['environ'] = {'SHELL': 'bash'}
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        (dcrec1, dcrec2) = self.prepare_command_record(
+            environ=[{'SHELL': 'zsh'}, {'SHELL': 'bash'}])
 
         records = self.search_command_record(
             include_environ_pattern=[('SHELL', 'zsh')], unique=False)
@@ -394,18 +382,8 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 2)
 
     def test_serach_command_by_glob_environ_in_command(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        # Database does not distinguish record by different environ,
-        # so other key must be different.
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        data1['environ'] = {'SHELL': 'zsh'}
-        data2['environ'] = {'SHELL': 'bash'}
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        (dcrec1, dcrec2) = self.prepare_command_record(
+            environ=[{'SHELL': 'zsh'}, {'SHELL': 'bash'}])
 
         records = self.search_command_record(
             include_environ_pattern=[('SHELL', '*sh')], unique=False)
@@ -422,24 +400,14 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 2)
 
     def test_serach_command_by_environ_in_session(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        # Database does not distinguish record by different environ,
-        # so other key must be different.
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        data1['session_id'] = 'DUMMY-SESSION-ID-1'
-        data2['session_id'] = 'DUMMY-SESSION-ID-2'
+        sessions = ['DUMMY-SESSION-ID-1', 'DUMMY-SESSION-ID-2']
         # FIXME: Make the test pass without setting data1['environ'] = {}.
         # The test with exclude_environ_pattern=[('SHELL', 'zsh')] fails
         # because EV table selects these non-relevant environment variables
         # in data1['environ'] and data2['environ'].
-        data1['environ'] = {}
-        data2['environ'] = {}
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        environs = [{}, {}]  # data1,2['environ'] = {}
+        (dcrec1, dcrec2) = self.prepare_command_record(session_id=sessions,
+                                                       environ=environs)
 
         init_data_1 = {'session_id': 'DUMMY-SESSION-ID-1',
                        'environ': {'SHELL': 'zsh'}}
@@ -467,18 +435,8 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 2)
 
     def test_serach_command_by_glob_environ_in_session(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        # Database does not distinguish record by different environ,
-        # so other key must be different.
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        data1['session_id'] = 'DUMMY-SESSION-ID-1'
-        data2['session_id'] = 'DUMMY-SESSION-ID-2'
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        sessions = ['DUMMY-SESSION-ID-1', 'DUMMY-SESSION-ID-2']
+        (dcrec1, dcrec2) = self.prepare_command_record(session_id=sessions)
 
         init_data_1 = {'session_id': 'DUMMY-SESSION-ID-1',
                        'environ': {'SHELL': 'zsh'}}
