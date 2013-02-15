@@ -123,8 +123,31 @@ class Configuration(object):
     """
 
     def __init__(self):
+        self.record = RecordConfig()
+        """
+        (see: :class:`rash.config.RecordConfig`)
+        """
 
-        self.record_environ = {
+        self.search = SearchConfig()
+        """
+        (see: :class:`rash.config.SearchConfig`)
+        """
+
+        self.isearch = ISearchConfig()
+        """
+        (see: :class:`rash.config.ISearchConfig`)
+        """
+
+
+class RecordConfig(object):
+
+    """
+    Recording configuration.
+    """
+
+    def __init__(self):
+
+        self.environ = {
             'init': [
                 'SHELL', 'TERM', 'HOST', 'TTY', 'USER', 'DISPLAY',
                 # SOMEDAY: Reevaluate if "RASH_SPENV_TERMINAL" is the
@@ -151,7 +174,16 @@ class Configuration(object):
 
         """
 
-        self.search_alias = {}
+
+class SearchConfig(object):
+
+    """
+    Search configuration.
+    """
+
+    def __init__(self):
+
+        self.alias = {}
         r"""
         Search query alias.
 
@@ -174,7 +206,7 @@ class Configuration(object):
 
         """
 
-        self.search_kwds_adapter = lambda x: x
+        self.kwds_adapter = lambda x: x
         """
         A function to transform keyword arguments.
 
@@ -198,12 +230,21 @@ class Configuration(object):
 
         """
 
-        self.isearch_query = ''
+
+class ISearchConfig(object):
+
+    """
+    Interactive search configuration.
+    """
+
+    def __init__(self):
+
+        self.query = ''
         """
         Set default value (str) for "isearch --query".
         """
 
-        self.isearch_base_query = []
+        self.base_query = []
         """
         Set default value (list of str) for "isearch --base-query".
         """
