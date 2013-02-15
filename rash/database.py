@@ -463,7 +463,8 @@ class DataBase(object):
             sc.join(cls._sc_success_count(),
                     on='command_id = success_command.id')
             sc.add_column('success_count')
-            sc.add_column('(success_count * 1.0 / COUNT(*))', 'success_ratio')
+            sc.add_column('(success_count * 1.0 / COUNT(*)) AS success_ratio',
+                          'success_ratio')
         if need('program_count'):
             sc.join(cls._sc_program_count(),
                     on='PROGRAM_NAME(CL.command) = command_program.program')
