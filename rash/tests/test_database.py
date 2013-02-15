@@ -322,13 +322,15 @@ class TestInMemoryDataBase(BaseTestCase):
         counts = [r.command_count for r in records]
         self.assertEqual(counts, [15, 10, 5])
 
-    def test_search_command_sort_by_success_count(self):
-        exit_codes = [[0, 1, 2, 0], [0, 0, 0]]
+    def prepare_command_record_from_exit_codes(self, exit_codes):
         commands = ['COMMAND-{0}'.format(i)
                     for (i, codes) in enumerate(exit_codes) for _ in codes]
         self.prepare_command_record(command=commands,
                                     exit_code=itertools.chain(*exit_codes),
                                     start=range(len(commands)))
+
+    def test_search_command_sort_by_success_count(self):
+        self.prepare_command_record_from_exit_codes([[0, 1, 2, 0], [0, 0, 0]])
 
         records = self.search_command_record(sort_by='success_count')
         self.assertEqual(len(records), 2)
@@ -337,6 +339,20 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(attrs('command'), ['COMMAND-1', 'COMMAND-0'])
         self.assertEqual(attrs('success_count'), [3, 2])
         self.assertEqual(attrs('success_ratio'), [1.0, 0.5])
+
+    def test_search_command_sort_by_success_ratio(self):
+        self.prepare_command_record_from_exit_codes([[0, 1, 2, 0],
+                                                     [1, 2, 3],
+                                                     [0, 0, 0]])
+
+        records = self.search_command_record(sort_by='success_ratio')
+        self.assertEqual(len(records), 3)
+
+        attrs = lambda key: [getattr(r, key) for r in records]
+        self.assertEqual(attrs('command'),
+                         ['COMMAND-2', 'COMMAND-0', 'COMMAND-1'])
+        self.assertEqual(attrs('success_count'), [3, 2, 0])
+        self.assertEqual(attrs('success_ratio'), [1.0, 0.5, 0.0])
 
     def test_search_command_with_connection(self):
         num = 5
