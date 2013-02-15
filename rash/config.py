@@ -213,11 +213,11 @@ class SearchConfig(object):
         This function takes a dictionary from command line argument
         parser and can modify the dictionary to do whatever you want
         do with it.  It is much more lower-level and powerful than
-        :attr:`search_alias`.  This function must return the modified,
+        :attr:`alias`.  This function must return the modified,
         or possibly new dictionary.
 
         Example definition that does the same effect as the example in
-        :attr:`search_alias`:
+        :attr:`alias`:
 
         >>> def adapter(kwds):
         ...     if 'test' in kwds.get('pattern', []):
