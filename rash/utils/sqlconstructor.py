@@ -64,6 +64,48 @@ class SQLConstructor(object):
         self.conditions = []
 
     def join(self, source, op='LEFT JOIN', on=''):
+        """
+        Join `source`.
+
+        >>> sc = SQLConstructor('main', ['c1', 'c2'])
+        >>> sc.join('sub', 'JOIN', 'main.id = sub.id')
+        >>> (sql, params, keys) = sc.compile()
+        >>> sql
+        'SELECT c1, c2 FROM main JOIN sub ON main.id = sub.id'
+
+        It is possible to pass another `SQLConstructor` as a source.
+
+        >>> sc = SQLConstructor('main', ['c1', 'c2'])
+        >>> sc.add_or_matches('{0} = {1}', 'c1', [111])
+        >>> subsc = SQLConstructor('sub', ['d1', 'd2'])
+        >>> subsc.add_or_matches('{0} = {1}', 'd1', ['abc'])
+        >>> sc.join(subsc, 'JOIN', 'main.id = sub.id')
+        >>> sc.add_column('d1')
+        >>> (sql, params, keys) = sc.compile()
+        >>> print(sql)                     # doctest: +NORMALIZE_WHITESPACE
+        SELECT c1, c2, d1 FROM main
+        JOIN ( SELECT d1, d2 FROM sub WHERE (d1 = ?) )
+        ON main.id = sub.id
+        WHERE (c1 = ?)
+
+        `params` is set appropriately to include parameters for joined
+        source:
+
+        >>> params
+        ['abc', 111]
+
+        Note that `subsc.compile` is called when `sc.join(subsc, ...)`
+        is called.  Therefore, calling `subsc.add_<predicate>` does not
+        effect `sc`.
+
+        :type source: str or SQLConstructor
+        :arg  source: table
+        :type     op: str
+        :arg      op: operation (e.g., 'JOIN')
+        :type     on: str
+        :arg      on: on clause
+
+        """
         if isinstance(source, SQLConstructor):
             (sql, params, _) = source.compile()
             self.params = params + self.params
@@ -104,6 +146,16 @@ class SQLConstructor(object):
         ]))
 
     def compile(self):
+        """
+        Compile SQL and return 3-tuple ``(sql, params, keys)``.
+
+        Example usage::
+
+            (sql, params, keys) = sc.compile()
+            for row in cursor.execute(sql, params):
+                record = dict(zip(keys, row))
+
+        """
         if self.limit and self.limit >= 0:
             self.sql_limit = 'LIMIT ?'
             self.params.append(self.limit)
@@ -133,6 +185,22 @@ class SQLConstructor(object):
             return lambda x: itertools.chain(*x)
 
     def add_and_matches(self, matcher, lhs, params, numq=1, flatten=None):
+        """
+        Add AND conditions to match to `params`.
+
+        :type matcher: str or callable
+        :arg  matcher: if `str`, `matcher.format` is used.
+        :type     lhs: str
+        :arg      lhs: the first argument to `matcher`.
+        :type  params: list
+        :arg   params: each element should be able to feed into sqlite '?'.
+        :type    numq: int
+        :arg     numq: number of parameters for each condition.
+        :type flatten: None or callable
+        :arg  flatten: when `numq > 1`, it should return a list of
+                       length `numq * len(params)`.
+
+        """
         params = self._adapt_params(params)
         qs = ['?'] * numq
         flatten = flatten or self._default_flatten(numq)
@@ -141,6 +209,9 @@ class SQLConstructor(object):
         self.params.extend(flatten(params))
 
     def add_or_matches(self, matcher, lhs, params, numq=1, flatten=None):
+        """
+        Add OR conditions to match to `params`.  See `add_and_matches`.
+        """
         params = self._adapt_params(params)
         qs = ['?'] * numq
         flatten = flatten or self._default_flatten(numq)
@@ -151,6 +222,9 @@ class SQLConstructor(object):
     def add_matches(self, matcher, lhs,
                     match_params=[], include_params=[], exclude_params=[],
                     numq=1, flatten=None):
+        """
+        Quick way to call `add_or_matches` and `add_and_matches`.
+        """
         matcher = self._adapt_matcher(matcher)
         notmatcher = lambda *args: 'NOT ' + matcher(*args)
         self.add_and_matches(matcher, lhs, match_params, numq, flatten)
@@ -158,6 +232,9 @@ class SQLConstructor(object):
         self.add_and_matches(notmatcher, lhs, exclude_params, numq, flatten)
 
     def uniquify_by(self, column, chooser=None, aggregate='MAX'):
+        """
+        Group by `column` and run `aggregate` function on `chooser` column.
+        """
         self.group_by.append(column)
         if chooser:
             i = self.columns.index(chooser)
