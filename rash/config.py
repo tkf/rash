@@ -153,7 +153,7 @@ class Configuration(object):
         It must be a dict-like object that maps a str to a list of str
         when "expanding" search query.
 
-        Example::
+        Example:
 
         >>> config = Configuration()
         >>> config.search_alias['test'] = \
