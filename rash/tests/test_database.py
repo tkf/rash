@@ -173,6 +173,17 @@ class TestInMemoryDataBase(BaseTestCase):
 
     def prepare_command_record(self, command=['git status', 'hg status'],
                                **kwds):
+        """
+        Import command records specified by `kwds`.
+
+        The keyword argument is same as the one used in command record.
+        But its value is a list instead of actual value.  The values in
+        the list is zipped and mixed in the dummy command record data
+        and imported to the test DB.
+
+        :rtype: list of CommandRecord
+
+        """
         def update(data, **kwds):
             for (k, v) in kwds.items():
                 if v is not None:
