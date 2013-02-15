@@ -1,3 +1,8 @@
+"""
+RASH configuration
+==================
+"""
+
 # Copyright (C) 2013-  Takafumi Arakaki
 
 # This program is free software: you can redistribute it and/or modify

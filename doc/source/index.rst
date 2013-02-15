@@ -1,8 +1,5 @@
 .. automodule:: rash
-
-RASH configuration
-==================
-.. autoclass:: rash.config.Configuration
+.. automodule:: rash.config
 
 Indices and tables
 ==================
