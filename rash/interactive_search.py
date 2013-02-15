@@ -66,6 +66,8 @@ class RashFinder(FinderMultiQueryString):
     # it doesn't support multi-threading access.
     lazy_finding = False
 
+    and_search = False
+
     def find(self, query, collection=None):
         try:
             # shlex < 2.7.3 does not work with unicode:
@@ -85,8 +87,9 @@ class RashFinder(FinderMultiQueryString):
 
         # There will be no filtering in the super class.
         # I am using it for highlighting matches.
-        subquery = self.split_str.join(strip_glob(q, self.split_str)
-                                       for q in kwds['match_pattern'])
+        queries = kwds['match_pattern'] + kwds['include_pattern']
+        split_str = self.split_str
+        subquery = split_str.join(strip_glob(q, split_str) for q in queries)
         return super(RashFinder, self).find(subquery, collection)
 
 
