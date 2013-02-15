@@ -171,15 +171,22 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assert_same_command_record(records[0], to_command_record(data))
         self.assertEqual(len(records), 1)
 
+    def prepare_command_record(self, command=['git status', 'hg status'],
+                               cwd=[]):
+        def update(data, **kwds):
+            for (k, v) in kwds.items():
+                if v is not None:
+                    data[k] = v
+        records = []
+        for (command, cwd) in itertools.izip_longest(command, cwd):
+            data = self.get_dummy_command_record_data()
+            update(data, command=command, cwd=cwd)
+            self.db.import_dict(data)
+            records.append(to_command_record(data))
+        return records
+
     def test_search_command_by_pattern(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        (dcrec1, dcrec2) = self.prepare_command_record()
 
         records = self.search_command_record(include_pattern=['git*'],
                                              unique=False)
@@ -193,14 +200,7 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 0)
 
     def test_search_command_by_exclude_pattern(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        (dcrec1, dcrec2) = self.prepare_command_record()
 
         records = self.search_command_record(exclude_pattern=['hg*'],
                                              unique=False)
@@ -214,13 +214,7 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 2)
 
     def test_search_command_by_complex_pattern(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
+        (dcrec1, dcrec2) = self.prepare_command_record()
 
         records = self.search_command_record(
             include_pattern=['*status'], exclude_pattern=['hg*'],
@@ -234,10 +228,8 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 0)
 
     def test_search_command_by_pattern_ignore_case(self):
-        for (i, case) in enumerate([str.lower, str.upper, str.capitalize]):
-            data = self.get_dummy_command_record_data()
-            data.update(command=case('command'))
-            self.db.import_dict(data)
+        self.prepare_command_record(
+            [f('command') for f in [str.lower, str.upper, str.capitalize]])
 
         # Default search is case-sensitive
         records = self.search_command_record(include_pattern=['command'],
@@ -251,14 +243,7 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 3)
 
     def test_search_command_by_regexp(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        data1['command'] = 'git status'
-        data2['command'] = 'hg status'
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        (dcrec1, dcrec2) = self.prepare_command_record()
 
         records = self.search_command_record(match_regexp=['g.*', '.*st.*'],
                                              unique=False)
@@ -276,16 +261,10 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 1)
 
     def test_search_command_by_cwd(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        data1['cwd'] = self.abspath('DUMMY', 'A')
-        data2['cwd'] = self.abspath('DUMMY', 'B')
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        cwd_list = [self.abspath('DUMMY', 'A'), self.abspath('DUMMY', 'B')]
+        (dcrec1, dcrec2) = self.prepare_command_record(cwd=cwd_list)
 
-        records = self.search_command_record(cwd=[data1['cwd']], unique=False)
+        records = self.search_command_record(cwd=[cwd_list[0]], unique=False)
         crec = records[0]
         self.assert_same_command_record(crec, dcrec1)
         self.assert_not_same_command_record(crec, dcrec2)
@@ -296,14 +275,8 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 0)
 
     def test_search_command_by_cwd_glob(self):
-        data1 = self.get_dummy_command_record_data()
-        data2 = self.get_dummy_command_record_data()
-        data1['cwd'] = self.abspath('DUMMY', 'A')
-        data2['cwd'] = self.abspath('DUMMY', 'B')
-        self.db.import_dict(data1)
-        self.db.import_dict(data2)
-        dcrec1 = to_command_record(data1)
-        dcrec2 = to_command_record(data2)
+        cwd_list = [self.abspath('DUMMY', 'A'), self.abspath('DUMMY', 'B')]
+        (dcrec1, dcrec2) = self.prepare_command_record(cwd=cwd_list)
 
         records = self.search_command_record(
             cwd_glob=[self.abspath('DUMMY', '*')], unique=False)
@@ -340,10 +313,7 @@ class TestInMemoryDataBase(BaseTestCase):
     def test_search_command_with_connection(self):
         num = 5
         small_num = 3
-        for i in range(num):
-            data = self.get_dummy_command_record_data()
-            data.update(command='DUMMY-COMMAND-{0}'.format(i))
-            self.db.import_dict(data)
+        self.prepare_command_record(map('COMMAND-{0}'.format, range(num)))
 
         kwds = dict(unique=False)
         setdefaults(kwds, **self.get_default_search_kwds())
