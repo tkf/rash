@@ -114,11 +114,11 @@ class Configuration(object):
     If you define an object named `config` in ``~/.config/rash/config.py``,
     it is going to be loaded by RASH.
 
-    Example::
+    Example:
 
-        from rash.config import Configuration
-        config = Configuration()
-        config.isearch.query = '-u .'
+    >>> from rash.config import Configuration
+    >>> config = Configuration()
+    >>> config.isearch.query = '-u .'
 
     """
 
@@ -217,16 +217,18 @@ class SearchConfig(object):
         or possibly new dictionary.
 
         Example definition that does the same effect as the example in
-        :attr:`search_alias`::
+        :attr:`search_alias`:
 
-            def adapter(kwds):
-                if 'test' in kwds.get('pattern', []):
-                    kwds['pattern'] = [p for p in kwds['pattern']
-                                       if p != 'test']
-                    kwds['exclude_pattern'].append("*rash *")
-                    kwds['include_pattern'].append("*test*")
-                return kwds
-            config.search.kwds_adapter = adapter
+        >>> def adapter(kwds):
+        ...     if 'test' in kwds.get('pattern', []):
+        ...         kwds['pattern'] = [p for p in kwds['pattern']
+        ...                            if p != 'test']
+        ...         kwds['exclude_pattern'].append("*rash *")
+        ...         kwds['include_pattern'].append("*test*")
+        ...     return kwds
+        ...
+        >>> config = Configuration()
+        >>> config.search.kwds_adapter = adapter
 
         """
 
