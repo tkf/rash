@@ -125,17 +125,17 @@ class Configuration(object):
     def __init__(self):
         self.record = RecordConfig()
         """
-        (see: :class:`rash.config.RecordConfig`)
+        Recording configuration (see: :class:`RecordConfig`).
         """
 
         self.search = SearchConfig()
         """
-        (see: :class:`rash.config.SearchConfig`)
+        Search configuration (see: :class:`SearchConfig`).
         """
 
         self.isearch = ISearchConfig()
         """
-        (see: :class:`rash.config.ISearchConfig`)
+        Interactive search configuration (see: :class:`ISearchConfig`).
         """
 
 
@@ -212,7 +212,7 @@ class SearchConfig(object):
 
         This function takes a dictionary from command line argument
         parser and can modify the dictionary to do whatever you want
-        do with it.  It is much more lower-level and powerful than
+        to do with it.  It is much more lower-level and powerful than
         :attr:`alias`.  This function must return the modified,
         or possibly new dictionary.
 
@@ -236,17 +236,31 @@ class SearchConfig(object):
 class ISearchConfig(object):
 
     """
-    Interactive search configuration.
+    Configure how ``rash isearch`` is started.
+
+    See also :class:`SearchConfig`.  Once isearch UI is started,
+    :class:`SearchConfig` controls how search query is interpreted.
+    For example, aliases defined in :class:`SearchConfig` can be used
+    in isearch.
+
     """
 
     def __init__(self):
 
         self.query = ''
         """
-        Set default value (str) for "isearch --query".
+        Set default value (str) for ``--query`` option.
+
+        If you want to start isearch with the query ``-d .`` (only
+        list the command executed at this directory), use the
+        following configuration:
+
+        >>> config = Configuration()
+        >>> config.isearch.query = '-d . '
+
         """
 
         self.base_query = []
         """
-        Set default value (list of str) for "isearch --base-query".
+        Set default value (list of str) for ``--base-query`` option.
         """
