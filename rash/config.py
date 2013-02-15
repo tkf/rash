@@ -118,7 +118,7 @@ class Configuration(object):
 
         from rash.config import Configuration
         config = Configuration()
-        config.isearch_query = '-u .'
+        config.isearch.query = '-u .'
 
     """
 
@@ -170,7 +170,7 @@ class RecordConfig(object):
         Example usage:
 
         >>> config = Configuration()
-        >>> config.record_environ['command'] += ['VIRTUAL_ENV', 'PYTHONPATH']
+        >>> config.record.environ['command'] += ['VIRTUAL_ENV', 'PYTHONPATH']
 
         """
 
@@ -193,7 +193,7 @@ class SearchConfig(object):
         Example:
 
         >>> config = Configuration()
-        >>> config.search_alias['test'] = \
+        >>> config.search.alias['test'] = \
         ...     ["--exclude-pattern", "*rash *", "--include-pattern", "*test*"]
 
         then,::
@@ -226,7 +226,7 @@ class SearchConfig(object):
                     kwds['exclude_pattern'].append("*rash *")
                     kwds['include_pattern'].append("*test*")
                 return kwds
-            config.search_kwds_adapter = adapter
+            config.search.kwds_adapter = adapter
 
         """
 
