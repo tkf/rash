@@ -1,7 +1,22 @@
 """
 RASH configuration
 ==================
+
+.. autoclass:: Configuration
+   :members:
+.. autoclass:: RecordConfig
+   :members:
+.. autoclass:: SearchConfig
+   :members:
+.. autoclass:: ISearchConfig
+   :members:
+
 """
+
+# FIXME: Remove ConfigStore then use ``autodoc_default_flags = ['members']``
+# in ../doc/source/conf.py, so that I don't need to write `autoclass`
+# explicitly like above.  To do so, add `get_config` function and another
+# sub-configurable called PathConfig.
 
 # Copyright (C) 2013-  Takafumi Arakaki
 
@@ -83,7 +98,7 @@ class ConfigStore(object):
         Daemon log file (``~/.config/rash/daemon.log``).
         """
 
-        self.daemon_log_level = 'INFO'
+        self.daemon_log_level = 'INFO'  # FIXME: make this configurable
         """
         Daemon log level.
         """
