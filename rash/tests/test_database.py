@@ -21,7 +21,7 @@ import itertools
 from ..model import CommandRecord, SessionRecord
 from ..database import DataBase, normalize_directory
 from ..utils.py3compat import nested
-from .utils import BaseTestCase, monkeypatch, izip_dict
+from .utils import BaseTestCase, monkeypatch, zip_dict
 
 
 def setdefaults(d, **kwds):
@@ -190,7 +190,7 @@ class TestInMemoryDataBase(BaseTestCase):
                     data[k] = v
         records = []
         kwds.update(command=command)
-        for dct in izip_dict(kwds):
+        for dct in zip_dict(kwds):
             data = self.get_dummy_command_record_data()
             update(data, **dct)
             self.db.import_dict(data)
