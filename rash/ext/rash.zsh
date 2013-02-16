@@ -100,7 +100,7 @@ trap "_rash-before-exit" EXIT TERM
 
 ### zle isearch widget
 rash-zle-isearch(){
-    local result="$(rash isearch --query "$LBUFFER")"
+    local result="$(rash isearch --query "$LBUFFER" "$@")"
     if [ -n "$result" ]
     then
         BUFFER="$result"
