@@ -6,6 +6,7 @@ More
 .. toctree::
    :maxdepth: 1
 
+   commands
    config
    tips
 

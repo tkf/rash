@@ -9,6 +9,7 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
+    'sphinxcontrib.programoutput',
 ]
 
 templates_path = []  # ['_templates']

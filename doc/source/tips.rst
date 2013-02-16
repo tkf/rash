@@ -5,9 +5,9 @@
 Define Zsh ZLE widget
 =====================
 
-You can use the ZLE widget :program:`rash-zle-isearch` loaded by
-:program:`rash init` to define your own modified widget.  It takes
-arguments and passes them to :program:`rash isearch` directly.  Here
+You can use the ZLE widget :ref:`rash-zle-isearch` loaded by
+:ref:`rash init` to define your own modified widget.  It takes
+arguments and passes them to :ref:`rash isearch` directly.  Here
 is a recipe for "Do What I Mean" search:
 
 .. sourcecode:: sh
