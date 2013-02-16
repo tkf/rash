@@ -17,7 +17,7 @@ What is this?
 Shell history is useful.  But it can be more useful if it logs more
 data points.  For example, if you forget which `make` target to run
 for certain project, you'd want to search shell commands that are
-ran in particular directory.  Wouldn't it be nice if you can do this?::
+run in particular directory.  Wouldn't it be nice if you can do this?::
 
    rash search --cwd . "make*"
 
@@ -46,10 +46,13 @@ RASH is written in Python.  The easiest way to install is to use `pip`
 it in a system directory.::
 
    pip install rash
+   pip install percol  # if you want interactive search feature
 
-RASH tested against Python 2.6, 2.7 and 3.2.  However, as watchdog_
-does not work with Python 3, you can't get full power of RASH with
-Python 3.
+If you use virtualenv to install RASH, you may have trouble when
+switching environment.  In that case, it is safe to make an alias
+to full path of the rash executable.::
+
+  alias rash="PATH/TO/VIRTUALENV/bin/rash"
 
 If you want to use developmental version, just clone the git repository
 and add the following in your RC file.::
@@ -148,6 +151,10 @@ usable for bash users.::
 
 Dependency
 ==========
+
+RASH tested against Python 2.6, 2.7 and 3.2.  However, as some
+dependencies are not Python 3 compatible, some functionality is
+missing when used with Python 3.
 
 Python modules:
 
