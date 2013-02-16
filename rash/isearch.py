@@ -60,6 +60,9 @@ def isearch_add_arguments(parser):
         '--query', '-q', default=None,
         help='default query')
     parser.add_argument(
+        '--query-template', default=None,
+        help='Transform default query using Python string format.')
+    parser.add_argument(
         'base_query', nargs='*', default=None,
         help="""
         The part of query that is not shown in UI and is impossible

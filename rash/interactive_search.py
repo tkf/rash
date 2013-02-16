@@ -106,7 +106,7 @@ def load_rc(percol, path=None, encoding=None):
 
 
 def launch_isearch(cfstore, rcfile=None, input_encoding=None,
-                   base_query=None, query=None, **kwds):
+                   base_query=None, query=None, query_template=None, **kwds):
     from percol import Percol
     from percol import tty
     import percol.actions as actions
@@ -114,12 +114,15 @@ def launch_isearch(cfstore, rcfile=None, input_encoding=None,
     from .database import DataBase
 
     config = cfstore.get_config()
+    default = lambda val, defv: defv if val is None else val
 
     # Pass db instance to finder.  Not clean but works and no harm.
     RashFinder.db = DataBase(cfstore.db_path)
-    RashFinder.base_query = (config.isearch.base_query if base_query is None
-                             else base_query)
+    RashFinder.base_query = default(base_query, config.isearch.base_query)
     RashFinder.rashconfig = config
+
+    template = default(query_template, config.isearch.query_template)
+    default_query = default(query, config.isearch.query)
 
     ttyname = tty.get_ttyname()
     with open(ttyname, "r+w") as tty_f:
@@ -129,7 +132,7 @@ def launch_isearch(cfstore, rcfile=None, input_encoding=None,
                     # This will be used if the first call for RashFinder.find
                     # fails to fetch collections from DB.
                     candidates=[],
-                    query=config.isearch.query if query is None else query,
+                    query=template.format(default_query),
                     **kwds) as percol:
             load_rc(percol, rcfile, input_encoding)
             exit_code = percol.loop()
