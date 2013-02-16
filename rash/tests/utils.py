@@ -15,9 +15,10 @@
 
 
 import unittest
-import itertools
 import functools
 from contextlib import contextmanager
+
+from ..utils.py3compat import zip_longest
 
 
 class BaseTestCase(unittest.TestCase):
@@ -75,5 +76,5 @@ def izip_dict(dictionary, fillvalue=None):
 
     """
     (keys, lists) = zip(*dictionary.items())
-    for values in itertools.izip_longest(*lists, fillvalue=fillvalue):
+    for values in zip_longest(*lists, fillvalue=fillvalue):
         yield dict(zip(keys, values))

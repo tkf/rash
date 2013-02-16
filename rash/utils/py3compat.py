@@ -37,3 +37,8 @@ except ImportError:
                     yield (ctx,) + rest
         else:
             yield ()
+
+try:
+    from itertools import izip_longest as zip_longest
+except ImportError:
+    from itertools import zip_longest
