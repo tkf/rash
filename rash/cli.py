@@ -99,7 +99,7 @@ def version_add_arguments(parser):
     pass
 
 
-def locate_run(output, target):
+def locate_run(output, target, no_newline):
     """
     Print location of RASH related file.
     """
@@ -107,6 +107,8 @@ def locate_run(output, target):
     cfstore = ConfigStore()
     path = getattr(cfstore, "{0}_path".format(target))
     output.write(path)
+    if not no_newline:
+        output.write("\n")
 
 
 def locate_add_arguments(parser):
@@ -114,6 +116,9 @@ def locate_add_arguments(parser):
         'target',
         choices=['base', 'config', 'db', 'daemon_pid', 'daemon_log'],
         help='Name of file to show the path (e.g., config).')
+    parser.add_argument(
+        '--no-newline', '-n', action='store_true',
+        help='do not output the trailing newline.')
     parser.add_argument(
         '--output', default='-', type=argparse.FileType('w'),
         help="""
