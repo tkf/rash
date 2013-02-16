@@ -133,8 +133,10 @@ class Configuration(object):
     .. glossary::
 
        configuration file
-         In unix-like systems, it's :file:`~/.config/rash/config.py` by
-         default.
+         In unix-like systems, it's :file:`~/.config/rash/config.py` or
+         different place if you set :envvar:`XDG_CONFIG_HOME`.  In Mac
+         OS, it's :file:`~/Library/Application Support/RASH/config.py`.
+         Use ``rash locate config`` to locate the exact place.
 
     Example:
 
