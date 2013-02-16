@@ -19,7 +19,7 @@ What is this?
 Shell history is useful.  But it can be more useful if it logs more
 data points.  For example, if you forget which `make` target to run
 for certain project, you'd want to search shell commands that are
-ran in particular directory.  Wouldn't it be nice if you can do this?::
+run in particular directory.  Wouldn't it be nice if you can do this?::
 
    rash search --cwd . "make*"
 
@@ -48,10 +48,13 @@ RASH is written in Python.  The easiest way to install is to use `pip`
 it in a system directory.::
 
    pip install rash
+   pip install percol  # if you want interactive search feature
 
-RASH tested against Python 2.6, 2.7 and 3.2.  However, as watchdog_
-does not work with Python 3, you can't get full power of RASH with
-Python 3.
+If you use virtualenv to install RASH, you may have trouble when
+switching environment.  In that case, it is safe to make an alias
+to full path of the rash executable.::
+
+  alias rash="PATH/TO/VIRTUALENV/bin/rash"
 
 If you want to use developmental version, just clone the git repository
 and add the following in your RC file.::
@@ -100,11 +103,6 @@ All failed commands you ran at this directory.::
 
    rash search --cwd . --exclude-exit-code 0
 
-**NOT IMPLEMENTED**
-Top 5 programs you use most.::
-
-   rash search --limit 5 --sort-by-program-frequency
-
 Count number of commands you ran in one day::
 
    rash search --limit -1 --no-unique --time-after "1 day ago" | wc -l
@@ -129,8 +127,8 @@ You can see all information associated with a command with
    rash show 1677
 
 
-Interactive search -- ``rash isearch`` (experimental!)
-------------------------------------------------------
+Interactive search -- ``rash isearch``
+--------------------------------------
 
 Searching history using command line is not fast.
 You can use ``rash isearch`` command to interactively search
@@ -153,45 +151,12 @@ usable for bash users.::
 .. _percol: https://github.com/mooz/percol
 
 
-Tips
-----
-
-``rash-testlike`` and ``rash-zle-testlike`` commands defined as the
-following can find test-like commands you entered in the current
-directory.  In the later version I am planning to support this more
-cleanly in RASH configuration.  Add the following in your shell RC
-file until then.::
-
-   MY_RASH_TEST_LIKE=(
-       -fff  # show session/command IDs and command count
-       --exclude-pattern "*rash *"  # don't include rash commands
-       --exclude-pattern "*rash-*"
-       --include-pattern "*test*"
-       --include-pattern "tox*"
-       --include-pattern "make *test*"
-       --include-pattern "make *travis*"
-       --include-pattern "* make *test*"   # to match "ENV=VALUE make test"
-       --include-pattern "* make *travis*"
-       --include-exit-code 0  # exclude failed command
-   )
-
-   rash-testlike(){
-       rash search --cwd . "${MY_RASH_TEST_LIKE[@]}" "$@"
-   }
-
-   rash-zle-testlike(){
-       # Options after "--" are used when searching but cannot be
-       # changed in the interactive search UI.  The option passed
-       # by --query can be modified in the UI.
-       BUFFER=$(rash isearch --query "--cwd . " -- "${MY_RASH_TEST_LIKE[@]}")
-       CURSOR=$#BUFFER
-       zle -R -c
-   }
-   zle -N rash-zle-testlike
-
-
 Dependency
 ==========
+
+RASH tested against Python 2.6, 2.7 and 3.2.  However, as some
+dependencies are not Python 3 compatible, some functionality is
+missing when used with Python 3.
 
 Python modules:
 
@@ -220,6 +185,31 @@ MS Windows
   try to avoid stuff that is platform specific.  Only the
   daemon launcher will not work on Windows but there is several
   ways to avoid using it.  See ``rash init --help``.
+
+Shells
+------
+
+RASH currently supports zsh and bash.
+
+Using RASH in old version of zsh
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+RASH depends on ``precmd_functions`` / ``preexec_functions`` hooks in
+zsh.  In old version zsh doesn't have it.  However, you can use RASH
+by adding this in your ``.zshrc``.::
+
+    precmd(){
+        for f in $precmd_functions
+        do
+            "$f"
+        done
+    }
+    preexec(){
+        for f in $preexec_functions
+        do
+            "$f"
+        done
+    }
 
 
 Design principle
