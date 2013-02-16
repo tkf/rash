@@ -112,6 +112,7 @@ def locate_run(output, target):
 def locate_add_arguments(parser):
     parser.add_argument(
         'target',
+        choices=['base', 'config', 'db', 'daemon_pid', 'daemon_log'],
         help='Name of file to show the path (e.g., config).')
     parser.add_argument(
         '--output', default='-', type=argparse.FileType('w'),
