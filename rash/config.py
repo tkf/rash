@@ -144,15 +144,16 @@ class Configuration(object):
 
     Here is a list of configuration variables you can set:
 
-    ======================== ==============================================
+    =========================== ===========================================
     Configuration variables
-    ======================== ==============================================
-    |record.environ|         Environment variables to record.
-    |search.alias|           Search query alias.
-    |search.kwds_adapter|    Transform keyword arguments.
-    |isearch.query|          Default isearch query.
-    |isearch.base_query|     Default isearch base query.
-    ======================== ==============================================
+    =========================== ===========================================
+    |record.environ|            Environment variables to record.
+    |search.alias|              Search query alias.
+    |search.kwds_adapter|       Transform keyword arguments.
+    |isearch.query|             Default isearch query.
+    |isearch.query_template|    Transform default query.
+    |isearch.base_query|        Default isearch base query.
+    =========================== ===========================================
 
     .. |record.environ| replace::
        :attr:`config.record.environ <RecordConfig.environ>`
@@ -162,6 +163,8 @@ class Configuration(object):
        :attr:`config.search.kwds_adapter <SearchConfig.kwds_adapter>`
     .. |isearch.query| replace::
        :attr:`config.isearch.query <ISearchConfig.query>`
+    .. |isearch.query_template| replace::
+       :attr:`config.isearch.query_template <ISearchConfig.query_template>`
     .. |isearch.base_query| replace::
        :attr:`config.isearch.base_query <ISearchConfig.base_query>`
 
@@ -291,6 +294,25 @@ class ISearchConfig(object):
 
         >>> config = Configuration()
         >>> config.isearch.query = '-d . '
+
+        As ``rash-zle-isearch`` passes the current line content to
+        ``--query`` which override this setting, you need to use
+        :attr:`query_template` instead if you want to configure the
+        default query.
+
+        """
+
+        self.query_template = '{0}'
+        """
+        Transform default query using Python string format.
+
+        The string format should have only one field ``{0}``.
+        The query given by ``-query`` or the one specified by
+        :attr:`query` fills that filed.  Default value is
+        do-nothing template ``'{0}'``.
+
+        >>> config = Configuration()
+        >>> config.isearch.query_template = '-d . {0}'
 
         """
 
