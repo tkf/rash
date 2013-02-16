@@ -126,8 +126,15 @@ class Configuration(object):
     """
     RASH configuration interface.
 
-    If you define an object named `config` in ``~/.config/rash/config.py``,
-    it is going to be loaded by RASH.
+    If you define an object named :data:`config` in the
+    :term:`configuration file`, it is going to be loaded by RASH.
+    :data:`config` must be an instance of :class:`Configuration`.
+
+    .. glossary::
+
+       configuration file
+         In unix-like systems, it's :file:`~/.config/rash/config.py` by
+         default.
 
     Example:
 
@@ -135,23 +142,35 @@ class Configuration(object):
     >>> config = Configuration()
     >>> config.isearch.query = '-u .'
 
+    Here is a list of configuration variables you can set:
+
+    ======================== ==============================================
+    Configuration variables
+    ======================== ==============================================
+    |record.environ|         Environment variables to record.
+    |search.alias|           Search query alias.
+    |search.kwds_adapter|    Transform keyword arguments.
+    |isearch.query|          Default isearch query.
+    |isearch.base_query|     Default isearch base query.
+    ======================== ==============================================
+
+    .. |record.environ| replace::
+       :attr:`config.record.environ <RecordConfig.environ>`
+    .. |search.alias| replace::
+       :attr:`config.search.alias <SearchConfig.alias>`
+    .. |search.kwds_adapter| replace::
+       :attr:`config.search.kwds_adapter <SearchConfig.kwds_adapter>`
+    .. |isearch.query| replace::
+       :attr:`config.isearch.query <ISearchConfig.query>`
+    .. |isearch.base_query| replace::
+       :attr:`config.isearch.base_query <ISearchConfig.base_query>`
+
     """
 
     def __init__(self):
         self.record = RecordConfig()
-        """
-        Recording configuration (see: :class:`RecordConfig`).
-        """
-
         self.search = SearchConfig()
-        """
-        Search configuration (see: :class:`SearchConfig`).
-        """
-
         self.isearch = ISearchConfig()
-        """
-        Interactive search configuration (see: :class:`ISearchConfig`).
-        """
 
 
 class RecordConfig(object):
