@@ -99,8 +99,30 @@ def version_add_arguments(parser):
     pass
 
 
+def locate_run(output, target):
+    """
+    Print location of RASH related file.
+    """
+    from .config import ConfigStore
+    cfstore = ConfigStore()
+    path = getattr(cfstore, "{0}_path".format(target))
+    output.write(path)
+
+
+def locate_add_arguments(parser):
+    parser.add_argument(
+        'target',
+        help='Name of file to show the path (e.g., config).')
+    parser.add_argument(
+        '--output', default='-', type=argparse.FileType('w'),
+        help="""
+        Output file to write the results in. Default is stdout.
+        """)
+
+
 misc_commands = [
     ('version', version_add_arguments, version_run),
+    ('locate', locate_add_arguments, locate_run),
 ]
 
 
