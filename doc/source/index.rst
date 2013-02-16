@@ -7,6 +7,7 @@ More
    :maxdepth: 1
 
    config
+   tips
 
 * :ref:`genindex`
 * :ref:`modindex`
