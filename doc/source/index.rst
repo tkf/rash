@@ -1,8 +1,12 @@
 .. automodule:: rash
-.. automodule:: rash.config
 
-Indices and tables
-==================
+More
+====
+
+.. toctree::
+   :maxdepth: 1
+
+   config
 
 * :ref:`genindex`
 * :ref:`modindex`
