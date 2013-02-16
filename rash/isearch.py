@@ -69,6 +69,9 @@ def isearch_add_arguments(parser):
         to rewrite in this session.  Useful for putting long and
         complex query.
         """)
+    parser.add_argument(
+        '--caret', default=None, type=int,
+        help='caret position')
 
 
 commands = [
