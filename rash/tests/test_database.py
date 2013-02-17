@@ -531,9 +531,9 @@ class TestInMemoryDataBase(BaseTestCase):
     def test_serach_command_by_and_match_environ(self):
         ev_table = [
             ['EV0', 'EV1', 'EV2'],
-            ['abc', 'bcd', 'cde'],
-            ['bcd', 'cde', 'def'],
-            ['cde', 'def', 'efg'],
+            ['abc', 'bcd', 'cde'],  # \ <------------ #match = 1
+            ['bcd', 'cde', 'def'],  # | <-- #include = 3
+            ['cde', 'def', 'efg'],  # /
             ['def', 'efg', 'fgh'],
         ]
         environ = [dict(zip(ev_table[0], vs)) for vs in ev_table[1:]]
@@ -541,11 +541,16 @@ class TestInMemoryDataBase(BaseTestCase):
         drecs = self.prepare_command_record(
             command=command, environ=environ)
 
-        records = self.search_command_record(
-            match_environ_pattern=[('EV0', '*a*'),
-                                   ('EV1', '*b*'),
-                                   ('EV2', '*c*')],
-            unique=False)
+        params = [('EV0', '*c*'),
+                  ('EV1', '*c*'),
+                  ('EV2', '*c*')]
+
+        # "include" selects many records:
+        records = self.search_command_record(include_environ_pattern=params)
+        self.assertEqual(len(records), 3)
+
+        # Using the same parameter, "match" selects only one record:
+        records = self.search_command_record(match_environ_pattern=params)
         self.assertEqual(len(records), 1)
         self.assert_same_command_record(records[0], drecs[0])
 
