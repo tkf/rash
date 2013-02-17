@@ -597,6 +597,26 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assert_same_command_record(records[0], drecs[0])
         self.assert_same_command_record(records[1], drecs[1])
 
+    def test_serach_command_by_complex_environ_match(self):
+        ev_table = [
+            ['EV0', 'EV1', 'EV2'],
+            ['abc', 'bcd', 'cde'],  # |M0|  |E0 |  |
+            ['bcd', 'cde', 'def'],  # |M0|I0|E0 |E1|  <- match!
+            ['cde', 'def', 'efg'],  # |M0|I0|   |E1|
+            ['def', 'efg', 'fgh'],  # |  |I0|E0 |E1|
+        ]
+        environ = [dict(zip(ev_table[0], vs)) for vs in ev_table[1:]]
+        command = list(map('COMMAND-{0}'.format, range(len(environ))))
+        drecs = self.prepare_command_record(command=command, environ=environ)
+
+        records = self.search_command_record(
+            match_environ_pattern=[('EV0', '*c*')],                  # M0
+            include_environ_pattern=[('EV2', '*f*')],                # I0
+            exclude_environ_pattern=[('EV0', 'c*'), ('EV2', 'c*')],  # E0, E1
+        )
+        self.assertEqual(len(records), 1)
+        self.assert_same_command_record(records[0], drecs[1])
+
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))
 
