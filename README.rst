@@ -38,6 +38,14 @@ Here is a list of recorded information [#]_.
 .. [#] If you are curious, checkout ``rash record --help``.
 
 
+RASH also has interactive search interface.  You can see the search
+result as you type.  If you are using zsh, you can execute the result
+instantaneously.
+
+.. image:: https://raw.github.com/tkf/rash/data/rash-isearch.gif
+   :alt: RASH interactive search interface
+
+
 Install
 =======
 
