@@ -443,7 +443,20 @@ class TestInMemoryDataBase(BaseTestCase):
             exclude_environ_pattern=[('SHELL', 'sh*')], unique=False)
         self.assertEqual(len(records), 2)
 
+    def import_dummy_sessions(self, num=10):
+        """
+        Insert dummy non-empty sessions.
+
+        This is to make sure that command_history.id and session_id
+        are different.  Call this function before importing command
+        records.
+
+        """
+        for i in range(num):
+            self.db.import_init_dict({'session_id': 'DUMMY-ID-{0}'.format(i)})
+
     def test_serach_command_by_environ_in_session(self):
+        self.import_dummy_sessions()
         sessions = ['DUMMY-SESSION-ID-1', 'DUMMY-SESSION-ID-2']
         (dcrec1, dcrec2) = self.prepare_command_record(session_id=sessions)
 
@@ -473,6 +486,7 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 2)
 
     def test_serach_command_by_glob_environ_in_session(self):
+        self.import_dummy_sessions()
         sessions = ['DUMMY-SESSION-ID-1', 'DUMMY-SESSION-ID-2']
         (dcrec1, dcrec2) = self.prepare_command_record(session_id=sessions)
 
