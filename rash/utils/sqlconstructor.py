@@ -116,7 +116,8 @@ class SQLConstructor(object):
         :type     op: str
         :arg      op: operation (e.g., 'JOIN')
         :type     on: str
-        :arg      on: on clause
+        :arg      on: on clause.  `source` ("right" source) can be
+                      referred using `{r}` formatting field.
 
         """
         if isinstance(source, SQLConstructor):
@@ -125,8 +126,10 @@ class SQLConstructor(object):
             jsrc = '( {0} )'.format(sql)
             if source.table_alias:
                 jsrc += ' AS ' + source.table_alias
+                on = on.format(r=source.table_alias)
         else:
             jsrc = source
+            on = on.format(r=source)
         constraint = 'ON {0}'.format(on) if on else ''
         self.join_source = ' '.join([self.join_source, op, jsrc, constraint])
 
