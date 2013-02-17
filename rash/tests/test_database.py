@@ -513,6 +513,32 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 1)
         self.assert_same_command_record(records[0], drecs[0])
 
+    def test_serach_command_by_and_match_environ(self):
+        ev_table = [
+            ['EV0', 'EV1', 'EV2'],
+            ['abc', 'bcd', 'cde'],
+            ['bcd', 'cde', 'def'],
+            ['cde', 'def', 'efg'],
+            ['def', 'efg', 'fgh'],
+        ]
+        environ = [dict(zip(ev_table[0], vs)) for vs in ev_table[1:]]
+        drecs = self.prepare_command_record(
+            environ=environ, start=range(len(environ)))
+
+        records = self.search_command_record(
+            match_environ_pattern=[('EV0', '*a*'),
+                                   ('EV1', '*b*'),
+                                   ('EV2', '*c*')],
+            unique=False)
+        self.assertEqual(len(records), 1)
+        self.assert_same_command_record(records[0], drecs[0])
+
+        records = self.search_command_record(
+            match_environ_pattern=[('EV0', '*a*'),
+                                   ('EV2', '*f*')],
+            unique=False)
+        self.assertEqual(len(records), 0)
+
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))
 
