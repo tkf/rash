@@ -1,7 +1,7 @@
 .. automodule:: rash
 
-More
-====
+More resources
+==============
 
 .. toctree::
    :maxdepth: 1
