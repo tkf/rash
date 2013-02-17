@@ -503,8 +503,9 @@ class TestInMemoryDataBase(BaseTestCase):
         environ = [{'E1': string.ascii_lowercase[i: i + stride],
                     'E2': string.ascii_uppercase[i: i + stride]}
                    for i in range(num)]
+        command = list(map('COMMAND-{0}'.format, range(len(environ))))
         drecs = self.prepare_command_record(
-            environ=environ, start=range(len(environ)))
+            command=command, environ=environ)
 
         records = self.search_command_record(
             include_environ_pattern=[('E1', '*a*')],
@@ -522,8 +523,9 @@ class TestInMemoryDataBase(BaseTestCase):
             ['def', 'efg', 'fgh'],
         ]
         environ = [dict(zip(ev_table[0], vs)) for vs in ev_table[1:]]
+        command = list(map('COMMAND-{0}'.format, range(len(environ))))
         drecs = self.prepare_command_record(
-            environ=environ, start=range(len(environ)))
+            command=command, environ=environ)
 
         records = self.search_command_record(
             match_environ_pattern=[('EV0', '*a*'),
