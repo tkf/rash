@@ -29,7 +29,7 @@ copyright = u'2013, Takafumi Arakaki'
 # The short X.Y version.
 version = '0.1.2'
 # The full version, including alpha/beta/rc tags.
-release = '0.1.2.dev2'
+release = '0.1.2'
 
 exclude_patterns = []
 
