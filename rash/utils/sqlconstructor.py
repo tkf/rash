@@ -29,6 +29,17 @@ def concat_expr(operator, conditions):
     return ["({0})".format(expr)] if expr else []
 
 
+def adapt_matcher(matcher):
+    if isinstance(matcher, str):
+        return matcher.format
+    else:
+        return matcher
+
+
+def negate(matcher):
+    return lambda *args: 'NOT ' + matcher(*args)
+
+
 class SQLConstructor(object):
 
     """
@@ -171,13 +182,6 @@ class SQLConstructor(object):
             return [params]
 
     @staticmethod
-    def _adapt_matcher(matcher):
-        if isinstance(matcher, str):
-            return matcher.format
-        else:
-            return matcher
-
-    @staticmethod
     def _default_flatten(numq):
         if numq == 1:
             return lambda x: x
@@ -204,7 +208,7 @@ class SQLConstructor(object):
         params = self._adapt_params(params)
         qs = ['?'] * numq
         flatten = flatten or self._default_flatten(numq)
-        expr = repeat(self._adapt_matcher(matcher)(lhs, *qs), len(params))
+        expr = repeat(adapt_matcher(matcher)(lhs, *qs), len(params))
         self.conditions.extend(expr)
         self.params.extend(flatten(params))
 
@@ -215,7 +219,7 @@ class SQLConstructor(object):
         params = self._adapt_params(params)
         qs = ['?'] * numq
         flatten = flatten or self._default_flatten(numq)
-        expr = repeat(self._adapt_matcher(matcher)(lhs, *qs), len(params))
+        expr = repeat(adapt_matcher(matcher)(lhs, *qs), len(params))
         self.conditions.extend(concat_expr('OR', expr))
         self.params.extend(flatten(params))
 
@@ -225,8 +229,8 @@ class SQLConstructor(object):
         """
         Quick way to call `add_or_matches` and `add_and_matches`.
         """
-        matcher = self._adapt_matcher(matcher)
-        notmatcher = lambda *args: 'NOT ' + matcher(*args)
+        matcher = adapt_matcher(matcher)
+        notmatcher = negate(matcher)
         self.add_and_matches(matcher, lhs, match_params, numq, flatten)
         self.add_or_matches(matcher, lhs, include_params, numq, flatten)
         self.add_and_matches(notmatcher, lhs, exclude_params, numq, flatten)
