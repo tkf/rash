@@ -26,3 +26,27 @@ called ``@`` like this (see also |search.alias|)::
 
 .. |search.alias| replace::
    :attr:`config.search.alias <rash.config.SearchConfig.alias>`
+
+
+Using RASH in old version of zsh
+================================
+
+RASH depends on ``precmd_functions`` / ``preexec_functions`` hooks in
+zsh.  In old version zsh doesn't have it.  However, you can use RASH
+by adding this in your :file:`.zshrc`.
+
+.. sourcecode:: sh
+
+   precmd(){
+       for f in $precmd_functions
+       do
+           "$f"
+       done
+   }
+
+   preexec(){
+       for f in $preexec_functions
+       do
+           "$f"
+       done
+   }
