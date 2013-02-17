@@ -504,7 +504,7 @@ class DataBase(object):
             'session_environment_map', 'sh_id', matcher, lhs, match_params,
             table_alias=session_table_alias, **kwds)
         sc.join(sc_ce, op='LEFT JOIN', on='command_history.id = {r}.ch_id')
-        sc.join(sc_se, op='LEFT JOIN', on='command_history.id = {r}.sh_id')
+        sc.join(sc_se, op='LEFT JOIN', on='session_id = {r}.sh_id')
         sc.conditions.append(
             '({0}.ev_id IS NOT NULL OR {1}.ev_id IS NOT NULL)'
             .format(command_table_alias, session_table_alias))
