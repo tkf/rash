@@ -23,7 +23,7 @@ import warnings
 import itertools
 
 from .utils.iterutils import nonempty
-from .utils.sqlconstructor import SQLConstructor, adapt_matcher, negate
+from .utils.sqlconstructor import SQLConstructor
 from .model import CommandRecord, SessionRecord, VersionRecord, EnvironRecord
 
 schema_version = '0.1'
@@ -468,22 +468,22 @@ class DataBase(object):
                 match_regexp or include_regexp or exclude_regexp):
             return
         glob = "({0[0]} = {1} AND glob({2}, {0[1]}))".format
+        notglob = "({0[0]} = {1} AND NOT glob({2}, {0[1]}))".format
         regexp = "({0[0]} = {1} AND regexp({2}, {0[1]}))".format
+        notregexp = "({0[0]} = {1} AND NOT regexp({2}, {0[1]}))".format
         lhs = ['variable_name', 'variable_value']
         addes = lambda *a: cls._add_environ_search_2(*a, **kwds)
-        addes(sc, glob, lhs, match_pattern, include_pattern, exclude_pattern,
-              '_glob')
-        addes(sc, regexp, lhs, match_regexp, include_regexp, exclude_regexp,
-              '_regexp')
+        addes(sc, glob, notglob, lhs,
+              match_pattern, include_pattern, exclude_pattern, '_glob')
+        addes(sc, regexp, notregexp, lhs,
+              match_regexp, include_regexp, exclude_regexp, '_regexp')
         sc.add_group_by('command_history.id')
 
     @classmethod
     def _add_environ_search_2(
-            cls, sc, matcher, lhs,
+            cls, sc, matcher, notmatcher, lhs,
             match_params=[], include_params=[], exclude_params=[],
             suffix='', **kwds):
-        matcher = adapt_matcher(matcher)
-        notmatcher = negate(matcher)
         addes = lambda *a: cls._add_environ_search_1(*a, **kwds)
         addes(sc, matcher, lhs, match_params, '_match' + suffix)
         addes(sc, matcher, lhs, include_params, '_include' + suffix, False)

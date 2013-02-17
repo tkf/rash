@@ -444,13 +444,7 @@ class TestInMemoryDataBase(BaseTestCase):
 
     def test_serach_command_by_environ_in_session(self):
         sessions = ['DUMMY-SESSION-ID-1', 'DUMMY-SESSION-ID-2']
-        # FIXME: Make the test pass without setting data1['environ'] = {}.
-        # The test with exclude_environ_pattern=[('SHELL', 'zsh')] fails
-        # because EV table selects these non-relevant environment variables
-        # in data1['environ'] and data2['environ'].
-        environs = [{}, {}]  # data1,2['environ'] = {}
-        (dcrec1, dcrec2) = self.prepare_command_record(session_id=sessions,
-                                                       environ=environs)
+        (dcrec1, dcrec2) = self.prepare_command_record(session_id=sessions)
 
         init_data_1 = {'session_id': 'DUMMY-SESSION-ID-1',
                        'environ': {'SHELL': 'zsh'}}
