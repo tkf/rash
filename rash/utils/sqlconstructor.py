@@ -60,11 +60,13 @@ class SQLConstructor(object):
     """
 
     def __init__(self, join_source, columns, keys=None,
-                 group_by=None, order_by=None, reverse=False, limit=None,
+                 group_by=None, having=None,
+                 order_by=None, reverse=False, limit=None,
                  table_alias=None):
         self.join_source = join_source
         self.columns = columns[:]
         self.keys = columns[:] if keys is None else keys[:]
+        self.having = having or []
         self.group_by = group_by or []
         self.order_by = order_by
         self.reverse = reverse
@@ -139,6 +141,11 @@ class SQLConstructor(object):
             return 'GROUP BY {0}'.format(', '.join(self.group_by))
 
     @property
+    def sql_having(self):
+        if self.having:
+            return 'HAVING {0}'.format(' AND '.join(self.having))
+
+    @property
     def sql_order_by(self):
         if self.order_by:
             direction = 'ASC' if self.reverse else 'DESC'
@@ -152,6 +159,7 @@ class SQLConstructor(object):
             'SELECT', ', '.join(self.columns), 'FROM', self.join_source,
             self.sql_where,
             self.sql_group_by,
+            self.sql_having,
             self.sql_order_by,
             self.sql_limit,
         ]))
@@ -243,6 +251,9 @@ class SQLConstructor(object):
         if chooser:
             i = self.columns.index(chooser)
             self.columns[i] = '{0}({1})'.format(aggregate, self.columns[i])
+
+    def add_having(self, condition):
+        self.having.append(condition)
 
     def add_column(self, column, key=None):
         self.columns.append(column)
