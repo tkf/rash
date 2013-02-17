@@ -176,42 +176,36 @@ def search_add_arguments(parent_parser):
         '--match-environ-pattern',
         metavar='ENV', action='append', default=[], nargs=2,
         help="""
-        [NOT IMPLEMENTED]
         select command which associated with environment variable
         that matches to given glob pattern.""")
     parser.add_argument(
         '--include-environ-pattern', '-v',
         metavar='ENV', action='append', default=[], nargs=2,
         help="""
-        [NOT IMPLEMENTED]
         include command which associated with environment variable
         that matches to given glob pattern.""")
     parser.add_argument(
         '--exclude-environ-pattern', '-V',
         metavar='ENV', action='append', default=[], nargs=2,
         help="""
-        [NOT IMPLEMENTED]
         exclude command which associated with environment variable
         that matches to given glob pattern.""")
     parser.add_argument(
         '--match-environ-regexp',
         metavar='ENV', action='append', default=[], nargs=2,
         help="""
-        [NOT IMPLEMENTED]
         select command which associated with environment variable
         that matches to given glob pattern.""")
     parser.add_argument(
         '--include-environ-regexp', '-w',
         metavar='ENV', action='append', default=[], nargs=2,
         help="""
-        [NOT IMPLEMENTED]
         include command which associated with environment variable
         that matches to given glob pattern.""")
     parser.add_argument(
         '--exclude-environ-regexp', '-W',
         metavar='ENV', action='append', default=[], nargs=2,
         help="""
-        [NOT IMPLEMENTED]
         exclude command which associated with environment variable
         that matches to given glob pattern.""")
     # "global" filters

@@ -29,6 +29,17 @@ def concat_expr(operator, conditions):
     return ["({0})".format(expr)] if expr else []
 
 
+def adapt_matcher(matcher):
+    if isinstance(matcher, str):
+        return matcher.format
+    else:
+        return matcher
+
+
+def negate(matcher):
+    return lambda *args: 'NOT ' + matcher(*args)
+
+
 class SQLConstructor(object):
 
     """
@@ -49,17 +60,20 @@ class SQLConstructor(object):
     """
 
     def __init__(self, join_source, columns, keys=None,
-                 group_by=None, order_by=None, reverse=False, limit=None,
+                 group_by=None, having=None,
+                 order_by=None, reverse=False, limit=None,
                  table_alias=None):
         self.join_source = join_source
         self.columns = columns[:]
         self.keys = columns[:] if keys is None else keys[:]
+        self.having = having or []
         self.group_by = group_by or []
         self.order_by = order_by
         self.reverse = reverse
         self.limit = limit
         self.table_alias = table_alias
 
+        self.join_params = []
         self.params = []
         self.conditions = []
 
@@ -103,17 +117,20 @@ class SQLConstructor(object):
         :type     op: str
         :arg      op: operation (e.g., 'JOIN')
         :type     on: str
-        :arg      on: on clause
+        :arg      on: on clause.  `source` ("right" source) can be
+                      referred using `{r}` formatting field.
 
         """
         if isinstance(source, SQLConstructor):
             (sql, params, _) = source.compile()
-            self.params = params + self.params
+            self.join_params.extend(params)
             jsrc = '( {0} )'.format(sql)
             if source.table_alias:
                 jsrc += ' AS ' + source.table_alias
+                on = on.format(r=source.table_alias)
         else:
             jsrc = source
+            on = on.format(r=source)
         constraint = 'ON {0}'.format(on) if on else ''
         self.join_source = ' '.join([self.join_source, op, jsrc, constraint])
 
@@ -126,6 +143,11 @@ class SQLConstructor(object):
     def sql_group_by(self):
         if self.group_by:
             return 'GROUP BY {0}'.format(', '.join(self.group_by))
+
+    @property
+    def sql_having(self):
+        if self.having:
+            return 'HAVING {0}'.format(' AND '.join(self.having))
 
     @property
     def sql_order_by(self):
@@ -141,6 +163,7 @@ class SQLConstructor(object):
             'SELECT', ', '.join(self.columns), 'FROM', self.join_source,
             self.sql_where,
             self.sql_group_by,
+            self.sql_having,
             self.sql_order_by,
             self.sql_limit,
         ]))
@@ -156,10 +179,11 @@ class SQLConstructor(object):
                 record = dict(zip(keys, row))
 
         """
+        params = self.join_params + self.params
         if self.limit and self.limit >= 0:
             self.sql_limit = 'LIMIT ?'
-            self.params.append(self.limit)
-        return (self.sql, self.params, self.keys)
+            params += [self.limit]
+        return (self.sql, params, self.keys)
 
     @staticmethod
     def _adapt_params(params):
@@ -169,13 +193,6 @@ class SQLConstructor(object):
             return []
         else:
             return [params]
-
-    @staticmethod
-    def _adapt_matcher(matcher):
-        if isinstance(matcher, str):
-            return matcher.format
-        else:
-            return matcher
 
     @staticmethod
     def _default_flatten(numq):
@@ -204,7 +221,7 @@ class SQLConstructor(object):
         params = self._adapt_params(params)
         qs = ['?'] * numq
         flatten = flatten or self._default_flatten(numq)
-        expr = repeat(self._adapt_matcher(matcher)(lhs, *qs), len(params))
+        expr = repeat(adapt_matcher(matcher)(lhs, *qs), len(params))
         self.conditions.extend(expr)
         self.params.extend(flatten(params))
 
@@ -215,7 +232,7 @@ class SQLConstructor(object):
         params = self._adapt_params(params)
         qs = ['?'] * numq
         flatten = flatten or self._default_flatten(numq)
-        expr = repeat(self._adapt_matcher(matcher)(lhs, *qs), len(params))
+        expr = repeat(adapt_matcher(matcher)(lhs, *qs), len(params))
         self.conditions.extend(concat_expr('OR', expr))
         self.params.extend(flatten(params))
 
@@ -225,8 +242,8 @@ class SQLConstructor(object):
         """
         Quick way to call `add_or_matches` and `add_and_matches`.
         """
-        matcher = self._adapt_matcher(matcher)
-        notmatcher = lambda *args: 'NOT ' + matcher(*args)
+        matcher = adapt_matcher(matcher)
+        notmatcher = negate(matcher)
         self.add_and_matches(matcher, lhs, match_params, numq, flatten)
         self.add_or_matches(matcher, lhs, include_params, numq, flatten)
         self.add_and_matches(notmatcher, lhs, exclude_params, numq, flatten)
@@ -239,6 +256,12 @@ class SQLConstructor(object):
         if chooser:
             i = self.columns.index(chooser)
             self.columns[i] = '{0}({1})'.format(aggregate, self.columns[i])
+
+    def add_group_by(self, condition):
+        self.group_by.append(condition)
+
+    def add_having(self, condition):
+        self.having.append(condition)
 
     def add_column(self, column, key=None):
         self.columns.append(column)
