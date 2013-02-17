@@ -617,6 +617,44 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 1)
         self.assert_same_command_record(records[0], drecs[1])
 
+    def test_serach_command_by_environ_same_name_in_session(self):
+        sessions = list(map('SESSION-{0}'.format, range(2)))
+        environ = [{'PATH': 'a:b:c'},  # session 0
+                   {'PATH': 'a:b:X'},  # session 1
+                   {'PATH': 'a:X:c'},  # session 0
+                   {'PATH': 'X:b:c'}]  # session 1
+        session_id = sessions * 2
+        command = list(map('COMMAND-{0}'.format, range(len(environ))))
+        drecs = self.prepare_command_record(
+            command=command, environ=environ, session_id=session_id)
+
+        init_data_1 = {'session_id': sessions[0],
+                       'environ': {'PATH': 'X:Y:Z'}}
+        init_data_2 = {'session_id': sessions[1],
+                       'environ': {'PATH': 'U:V:W'}}
+        self.db.import_init_dict(init_data_1)
+        self.db.import_init_dict(init_data_2)
+
+        records = self.search_command_record(
+            match_environ_pattern=[('PATH', '*X*')],
+        )
+        self.assertEqual(len(records), 4)
+
+        records = self.search_command_record(
+            match_environ_pattern=[('PATH', 'X*')],
+        )
+        self.assertEqual(len(records), 3)
+        self.assert_same_command_record(records[0], drecs[0])
+        self.assert_same_command_record(records[1], drecs[2])
+        self.assert_same_command_record(records[2], drecs[3])
+
+        records = self.search_command_record(
+            match_environ_pattern=[('PATH', 'X*'), ('PATH', 'a*')],
+        )
+        self.assertEqual(len(records), 2)
+        self.assert_same_command_record(records[0], drecs[0])
+        self.assert_same_command_record(records[1], drecs[2])
+
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))
 
