@@ -23,7 +23,7 @@ import warnings
 import itertools
 
 from .utils.iterutils import nonempty
-from .utils.sqlconstructor import SQLConstructor
+from .utils.sqlconstructor import SQLConstructor, adapt_matcher, negate
 from .model import CommandRecord, SessionRecord, VersionRecord, EnvironRecord
 
 schema_version = '0.1'
@@ -432,26 +432,12 @@ class DataBase(object):
                        [], include_exit_code, exclude_exit_code)
         sc.add_matches(eq, 'session_id', [],
                        include_session_history_id, exclude_session_history_id)
-
-        if match_environ_pattern or include_environ_pattern or \
-           exclude_environ_pattern or match_environ_regexp or \
-           include_environ_regexp:
-            evsc = cls._sc_matched_environment_variable(
-                match_environ_pattern, include_environ_pattern,
-                exclude_environ_pattern,
-                match_environ_regexp, include_environ_regexp,
-                exclude_environ_regexp,
-                table_alias='EV')
-            cesc = SQLConstructor('command_environment_map',
-                                  ['ch_id', 'ev_id'], table_alias='CEMap')
-            cesc.join(evsc, op='INNER JOIN', on='ev_id = EV.id')
-            sesc = SQLConstructor('session_environment_map',
-                                  ['sh_id', 'ev_id'], table_alias='SEMap')
-            sesc.join(evsc, op='INNER JOIN', on='ev_id = EV.id')
-            sc.join(cesc, on='command_history.id = CEMap.ch_id')
-            sc.join(sesc, on='session_id = SEMap.sh_id')
-            sc.conditions.append(
-                '(CEMap.ev_id IS NOT NULL OR SEMap.ev_id IS NOT NULL)')
+        cls._add_environ_searches(
+            sc,
+            match_environ_pattern, include_environ_pattern,
+            exclude_environ_pattern,
+            match_environ_regexp, include_environ_regexp,
+            exclude_environ_regexp)
 
         if unique:
             sc.uniquify_by('CL.command', 'start_time')
@@ -471,6 +457,89 @@ class DataBase(object):
             sc.add_column('program_count')
 
         return sc.compile()
+
+    @classmethod
+    def _add_environ_searches(
+            cls, sc,
+            match_pattern=[], include_pattern=[], exclude_pattern=[],
+            match_regexp=[], include_regexp=[], exclude_regexp=[],
+            **kwds):
+        if not (match_pattern or include_pattern or exclude_pattern or
+                match_regexp or include_regexp or exclude_regexp):
+            return
+        glob = "({0[0]} = {1} AND glob({2}, {0[1]}))".format
+        regexp = "({0[0]} = {1} AND regexp({2}, {0[1]}))".format
+        lhs = ['variable_name', 'variable_value']
+        addes = lambda *a: cls._add_environ_search_2(*a, **kwds)
+        addes(sc, glob, lhs, match_pattern, include_pattern, exclude_pattern,
+              '_glob')
+        addes(sc, regexp, lhs, match_regexp, include_regexp, exclude_regexp,
+              '_regexp')
+        sc.add_group_by('command_history.id')
+
+    @classmethod
+    def _add_environ_search_2(
+            cls, sc, matcher, lhs,
+            match_params=[], include_params=[], exclude_params=[],
+            suffix='', **kwds):
+        matcher = adapt_matcher(matcher)
+        notmatcher = negate(matcher)
+        addes = lambda *a: cls._add_environ_search_1(*a, **kwds)
+        addes(sc, matcher, lhs, match_params, '_match' + suffix)
+        addes(sc, matcher, lhs, include_params, '_include' + suffix, False)
+        addes(sc, notmatcher, lhs, exclude_params, '_exclude' + suffix)
+
+    @classmethod
+    def _add_environ_search_1(
+            cls, sc, matcher, lhs, match_params,
+            suffix='', and_match=True, **kwds):
+        if not match_params:
+            return
+        command_table_alias = 'CEnv{0}'.format(suffix)
+        session_table_alias = 'SEnv{0}'.format(suffix)
+        sc_ce = cls._sc_history_environ(
+            'command_environment_map', 'ch_id', matcher, lhs, match_params,
+            table_alias=command_table_alias, **kwds)
+        sc_se = cls._sc_history_environ(
+            'session_environment_map', 'sh_id', matcher, lhs, match_params,
+            table_alias=session_table_alias, **kwds)
+        sc.join(sc_ce, op='LEFT JOIN', on='command_history.id = {r}.ch_id')
+        sc.join(sc_se, op='LEFT JOIN', on='command_history.id = {r}.sh_id')
+        sc.conditions.append(
+            '({0}.ev_id IS NOT NULL OR {1}.ev_id IS NOT NULL)'
+            .format(command_table_alias, session_table_alias))
+        if and_match:
+            sc.add_having(
+                'COUNT(DISTINCT {0}.ev_id) + '
+                'COUNT(DISTINCT {1}.ev_id) >= {2}'
+                .format(command_table_alias,
+                        session_table_alias,
+                        len(match_params)))
+
+    @staticmethod
+    def _sc_history_environ(
+            map_table, map_id,
+            matcher, lhs, match_params,
+            table_alias=None, numq=2, **kwds):
+        sc_ev = SQLConstructor(
+            map_table, [map_id, 'ev_id'], table_alias=table_alias)
+        sc_ev.join('environment_variable AS EV',
+                   op='JOIN', on='ev_id = EV.id')
+        sc_ev.add_or_matches(matcher, lhs, match_params, numq=numq, **kwds)
+        return sc_ev
+
+    @staticmethod
+    def _join_environ(ch_sc, sc_env):
+        sc_ce_alias = 'CEMap_' + sc_env.table_alias
+        sc_se_alias = 'SEMap_' + sc_env.table_alias
+        sc_ce = SQLConstructor('command_environment_map',
+                               ['ch_id', 'ev_id'], table_alias=sc_ce_alias)
+        sc_ce.join(sc_env, op='INNER JOIN', on='ev_id = EV.id')
+        sc_se = SQLConstructor('session_environment_map',
+                               ['sh_id', 'ev_id'], table_alias=sc_se_alias)
+        sc_se.join(sc_env, op='INNER JOIN', on='ev_id = EV.id')
+        ch_sc.join(sc_ce, on='command_history.id = CEMap.ch_id')
+        ch_sc.join(sc_se, on='session_id = SEMap.sh_id')
 
     @staticmethod
     def _sc_success_count(table_alias='success_command'):
