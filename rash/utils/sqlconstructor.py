@@ -255,6 +255,9 @@ class SQLConstructor(object):
             i = self.columns.index(chooser)
             self.columns[i] = '{0}({1})'.format(aggregate, self.columns[i])
 
+    def add_group_by(self, condition):
+        self.group_by.append(condition)
+
     def add_having(self, condition):
         self.having.append(condition)
 
