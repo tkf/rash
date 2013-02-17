@@ -655,6 +655,65 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assert_same_command_record(records[0], drecs[0])
         self.assert_same_command_record(records[1], drecs[2])
 
+    def test_serach_command_by_environ_regexp_match(self):
+        ev_table = [
+            ['EV0', 'EV1', 'EV2'],
+            ['abc', 'bcd', 'cde'],
+            ['bcd', 'cde', 'def'],
+            ['cde', 'def', 'efg'],
+            ['def', 'efg', 'fgh'],
+        ]
+        environ = [dict(zip(ev_table[0], vs)) for vs in ev_table[1:]]
+        command = list(map('COMMAND-{0}'.format, range(len(environ))))
+        drecs = self.prepare_command_record(
+            command=command, environ=environ)
+
+        records = self.search_command_record(
+            match_environ_regexp=[('EV0', 'c..|..c'), ('EV1', '.?e.*')],
+        )
+        self.assertEqual(len(records), 1)
+        self.assert_same_command_record(records[0], drecs[2])
+
+    def test_serach_command_by_environ_regexp_include(self):
+        ev_table = [
+            ['EV0', 'EV1', 'EV2'],
+            ['abc', 'bcd', 'cde'],
+            ['bcd', 'cde', 'def'],
+            ['cde', 'def', 'efg'],
+            ['def', 'efg', 'fgh'],
+        ]
+        environ = [dict(zip(ev_table[0], vs)) for vs in ev_table[1:]]
+        command = list(map('COMMAND-{0}'.format, range(len(environ))))
+        drecs = self.prepare_command_record(
+            command=command, environ=environ)
+
+        records = self.search_command_record(
+            include_environ_regexp=[('EV0', 'c..|..c'), ('EV1', '.?e.*')],
+            sort_by='command', reverse=True)
+        self.assertEqual(len(records), 3)
+        self.assert_same_command_record(records[0], drecs[0])
+        self.assert_same_command_record(records[1], drecs[2])
+        self.assert_same_command_record(records[2], drecs[3])
+
+    def test_serach_command_by_environ_regexp_exclude(self):
+        ev_table = [
+            ['EV0', 'EV1', 'EV2'],
+            ['abc', 'bcd', 'cde'],
+            ['bcd', 'cde', 'def'],
+            ['cde', 'def', 'efg'],
+            ['def', 'efg', 'fgh'],
+        ]
+        environ = [dict(zip(ev_table[0], vs)) for vs in ev_table[1:]]
+        command = list(map('COMMAND-{0}'.format, range(len(environ))))
+        drecs = self.prepare_command_record(
+            command=command, environ=environ)
+
+        records = self.search_command_record(
+            exclude_environ_regexp=[('EV0', 'c..|..c'), ('EV1', '.?e.*')],
+        )
+        self.assertEqual(len(records), 1)
+        self.assert_same_command_record(records[0], drecs[1])
+
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))
 
