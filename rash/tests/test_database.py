@@ -541,6 +541,43 @@ class TestInMemoryDataBase(BaseTestCase):
             unique=False)
         self.assertEqual(len(records), 0)
 
+    def test_serach_command_by_and_match_session_environ(self):
+        sessions = list(map('SESSION-{0}'.format, range(2)))
+        table = [
+            (['EV0', 'EV1', 'EV2'], 'Session ID'),
+            (['abc', 'bcd', 'cde'], sessions[0]),
+            (['bcd', 'cde', 'def'], sessions[0]),
+            (['cde', 'def', 'efg'], sessions[1]),
+            (['def', 'efg', 'fgh'], sessions[1]),
+        ]
+        environ = [dict(zip(table[0][0], vs)) for (vs, _) in table[1:]]
+        session_id = [sid for (_, sid) in table[1:]]
+        command = list(map('COMMAND-{0}'.format, range(len(environ))))
+        drecs = self.prepare_command_record(
+            command=command, environ=environ, session_id=session_id)
+
+        init_data_1 = {'session_id': sessions[0],
+                       'environ': {'SHELL': 'zsh'}}
+        init_data_2 = {'session_id': sessions[1],
+                       'environ': {'SHELL': 'bash'}}
+        self.db.import_init_dict(init_data_1)
+        self.db.import_init_dict(init_data_2)
+
+        records = self.search_command_record(
+            match_environ_pattern=[('EV1', '*e*'),
+                                   ('SHELL', 'zsh')],
+            unique=False)
+        self.assertEqual(len(records), 1)
+        self.assert_same_command_record(records[0], drecs[1])
+
+        records = self.search_command_record(
+            match_environ_pattern=[('EV1', '*d*'),
+                                   ('SHELL', 'zsh')],
+            unique=False)
+        self.assertEqual(len(records), 2)
+        self.assert_same_command_record(records[0], drecs[0])
+        self.assert_same_command_record(records[1], drecs[1])
+
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))
 
