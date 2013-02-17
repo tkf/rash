@@ -73,6 +73,7 @@ class SQLConstructor(object):
         self.limit = limit
         self.table_alias = table_alias
 
+        self.join_params = []
         self.params = []
         self.conditions = []
 
@@ -122,7 +123,7 @@ class SQLConstructor(object):
         """
         if isinstance(source, SQLConstructor):
             (sql, params, _) = source.compile()
-            self.params = params + self.params
+            self.join_params.extend(params)
             jsrc = '( {0} )'.format(sql)
             if source.table_alias:
                 jsrc += ' AS ' + source.table_alias
@@ -178,10 +179,11 @@ class SQLConstructor(object):
                 record = dict(zip(keys, row))
 
         """
+        params = self.join_params + self.params
         if self.limit and self.limit >= 0:
             self.sql_limit = 'LIMIT ?'
-            self.params.append(self.limit)
-        return (self.sql, self.params, self.keys)
+            params += [self.limit]
+        return (self.sql, params, self.keys)
 
     @staticmethod
     def _adapt_params(params):

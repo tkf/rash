@@ -17,6 +17,7 @@
 import os
 import datetime
 import itertools
+import string
 
 from ..model import CommandRecord, SessionRecord
 from ..database import DataBase, normalize_directory
@@ -495,6 +496,22 @@ class TestInMemoryDataBase(BaseTestCase):
         records = self.search_command_record(
             exclude_environ_pattern=[('SHELL', 'sh*')], unique=False)
         self.assertEqual(len(records), 2)
+
+    def test_serach_command_by_glob_and_regexp_environ(self):
+        stride = 3
+        num = 10
+        environ = [{'E1': string.ascii_lowercase[i: i + stride],
+                    'E2': string.ascii_uppercase[i: i + stride]}
+                   for i in range(num)]
+        drecs = self.prepare_command_record(
+            environ=environ, start=range(len(environ)))
+
+        records = self.search_command_record(
+            include_environ_pattern=[('E1', '*a*')],
+            include_environ_regexp=[('E2', 'A..')],
+            unique=False)
+        self.assertEqual(len(records), 1)
+        self.assert_same_command_record(records[0], drecs[0])
 
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))
