@@ -7,6 +7,12 @@
 
 .. sidebar:: Links:
 
+   * `Documentation <https://rash.readthedocs.org>`_ (at Read the Docs)
+
+     * `Commands <https://rash.readthedocs.org/en/latest/commands.html>`_
+     * `Configuration <https://rash.readthedocs.org/en/latest/config.html>`_
+     * `Tips <https://rash.readthedocs.org/en/latest/tips.html>`_
+
    * `Repository <https://github.com/tkf/rash>`_ (at GitHub)
    * `Issue tracker <https://github.com/tkf/rash/issues>`_ (at GitHub)
    * `PyPI <http://pypi.python.org/pypi/rash>`_
@@ -38,6 +44,14 @@ Here is a list of recorded information [#]_.
    terminal.
 
 .. [#] If you are curious, checkout ``rash record --help``.
+
+
+RASH also has interactive search interface.  You can see the search
+result as you type.  If you are using zsh, you can execute the result
+instantaneously.
+
+.. image:: https://raw.github.com/tkf/rash/data/rash-isearch.gif
+   :alt: RASH interactive search interface
 
 
 Install
@@ -190,26 +204,6 @@ Shells
 ------
 
 RASH currently supports zsh and bash.
-
-Using RASH in old version of zsh
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-RASH depends on ``precmd_functions`` / ``preexec_functions`` hooks in
-zsh.  In old version zsh doesn't have it.  However, you can use RASH
-by adding this in your ``.zshrc``.::
-
-    precmd(){
-        for f in $precmd_functions
-        do
-            "$f"
-        done
-    }
-    preexec(){
-        for f in $preexec_functions
-        do
-            "$f"
-        done
-    }
 
 
 Design principle
