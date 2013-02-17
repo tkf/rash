@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import os
 from os.path import dirname
 import sys
+
 sys.path.insert(0, dirname(dirname(dirname(__file__))))
+
+# To make command "rash" runnable
+os.environ['PATH'] = dirname(__file__) + ':' + os.environ['PATH']
+
 
 # -- General configuration ------------------------------------------------
 extensions = [
