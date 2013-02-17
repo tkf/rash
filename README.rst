@@ -5,6 +5,12 @@
 
 .. sidebar:: Links:
 
+   * `Documentation <https://rash.readthedocs.org>`_ (at Read the Docs)
+
+     * `Commands <https://rash.readthedocs.org/en/latest/commands.html>`_
+     * `Configuration <https://rash.readthedocs.org/en/latest/config.html>`_
+     * `Tips <https://rash.readthedocs.org/en/latest/tips.html>`_
+
    * `Repository <https://github.com/tkf/rash>`_ (at GitHub)
    * `Issue tracker <https://github.com/tkf/rash/issues>`_ (at GitHub)
    * `PyPI <http://pypi.python.org/pypi/rash>`_
