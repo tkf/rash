@@ -258,21 +258,17 @@ def search_add_arguments(parent_parser):
     parser.add_argument(
         '--after-context', '-A', type=int, metavar='NUM',
         help="""
-        [NOT IMPLEMENTED]
         Print NUM commands executed after matching commands.
         """)
     parser.add_argument(
         '--before-context', '-B', type=int, metavar='NUM',
         help="""
-        [NOT IMPLEMENTED]
         Print NUM commands executed before matching commands.
         """)
     parser.add_argument(
         '--context', '-C', type=int, metavar='NUM',
         help="""
-        [NOT IMPLEMENTED]
         Print NUM commands executed before and after matching commands.
-        """)
     parser.add_argument(
         '--context-type', choices=['session', 'time'],
         help="""

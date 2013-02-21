@@ -23,7 +23,7 @@ import warnings
 import itertools
 
 from .utils.py3compat import zip_longest
-from .utils.iterutils import nonempty
+from .utils.iterutils import nonempty, include_before, include_after
 from .utils.sqlconstructor import SQLConstructor
 from .model import CommandRecord, SessionRecord, VersionRecord, EnvironRecord
 
@@ -375,15 +375,42 @@ class DataBase(object):
         params = list(itertools.chain(*zip(desired_row, desired_row)))
         return self._select_rows(CommandRecord, keys, sql, params)
 
-    def search_command_record(self, **kwds):
+    def search_command_record(
+            self,
+            after_context, before_context, context,
+            **kwds):
         """
         Search command history.
 
         :rtype: [CommandRecord]
 
         """
+        if after_context or before_context or context:
+            kwds['condition_as_column'] = True
+            limit = kwds['limit']
+            kwds['limit'] = -1
+            after_context = after_context or context
+            before_context = before_context or context
+
         (sql, params, keys) = self._compile_sql_search_command_record(**kwds)
-        return self._select_rows(CommandRecord, keys, sql, params)
+        records = self._select_rows(CommandRecord, keys, sql, params)
+
+        # FIXME: add tests for context search
+        # SOMEDAY: optimize context search;  do not create CommandRecord
+        #          object for all (including non-matching) records.
+        predicate = lambda r: r.condition
+        if before_context:
+            records = include_before(predicate, before_context, records)
+        if after_context:
+            records = include_after(predicate, after_context, records)
+        if after_context or before_context:
+            records = itertools.islice(records, limit)
+        # NOTE: as SQLite does not support row_number function, let's
+        #       do the filtering at Python side when context modifier
+        #       is given.  This is *very* inefficient but at least it
+        #       works..
+
+        return records
 
     @classmethod
     def _compile_sql_search_command_record(
@@ -400,7 +427,7 @@ class DataBase(object):
             exclude_environ_regexp,
             reverse, sort_by, sort_by_cwd_distance,
             ignore_case,
-            additional_columns=[],
+            additional_columns=[], condition_as_column=False,
             **_):  # SOMEDAY: don't ignore unused kwds to search_command_record
         keys = ['command_history_id', 'command', 'session_history_id',
                 'cwd', 'terminal',
@@ -480,6 +507,9 @@ class DataBase(object):
             sc.join(cls._sc_program_count(),
                     on='PROGRAM_NAME(CL.command) = command_program.program')
             sc.add_column('program_count')
+
+        if condition_as_column:
+            sc.move_where_clause_to_column()
 
         return sc.compile()
 
