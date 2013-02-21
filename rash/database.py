@@ -385,6 +385,7 @@ class DataBase(object):
         (sql, params, keys) = self._compile_sql_search_command_record(**kwds)
         return self._select_rows(CommandRecord, keys, sql, params)
 
+    @classmethod
     def _compile_sql_search_command_record(
             cls, limit, unique,
             match_pattern, include_pattern, exclude_pattern,
