@@ -553,19 +553,6 @@ class DataBase(object):
         return sc_ev
 
     @staticmethod
-    def _join_environ(ch_sc, sc_env):
-        sc_ce_alias = 'CEMap_' + sc_env.table_alias
-        sc_se_alias = 'SEMap_' + sc_env.table_alias
-        sc_ce = SQLConstructor('command_environment_map',
-                               ['ch_id', 'ev_id'], table_alias=sc_ce_alias)
-        sc_ce.join(sc_env, op='INNER JOIN', on='ev_id = EV.id')
-        sc_se = SQLConstructor('session_environment_map',
-                               ['sh_id', 'ev_id'], table_alias=sc_se_alias)
-        sc_se.join(sc_env, op='INNER JOIN', on='ev_id = EV.id')
-        ch_sc.join(sc_ce, on='command_history.id = CEMap.ch_id')
-        ch_sc.join(sc_se, on='session_id = SEMap.sh_id')
-
-    @staticmethod
     def _sc_success_count(table_alias='success_command'):
         count = ('COUNT(CASE WHEN exit_code = 0 THEN 1 ELSE NULL END)'
                  ' AS success_count')
