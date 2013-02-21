@@ -530,6 +530,11 @@ class DataBase(object):
         sc.join(sc_ce, op='LEFT JOIN', on='command_history.id = {r}.ch_id')
         sc.join(sc_se, op='LEFT JOIN', on='session_id = {r}.sh_id')
         if and_match:
+            # When doing AND match, there should be at least matches
+            # as many as ``match_params``.
+            # SOMEDAY: add more tests for _add_environ_search_1.
+            #          Can one matcher match many rows?  In that case,
+            #          this wouldn't work, no?
             sc.add_having(
                 'COUNT(DISTINCT {0}.ev_id) + '
                 'COUNT(DISTINCT {1}.ev_id) >= {2}'
@@ -537,6 +542,10 @@ class DataBase(object):
                         session_table_alias,
                         len(match_params)))
         else:
+            # Alternative way is to use
+            #     len(match_params) if and_match else 1
+            # instead of ``len(match_params)`` above.
+            # But this way is probably faster.
             sc.add_having(
                 '({0}.ev_id IS NOT NULL OR {1}.ev_id IS NOT NULL)'
                 .format(command_table_alias, session_table_alias))
