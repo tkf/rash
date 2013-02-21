@@ -106,7 +106,6 @@ took longer than 30 minutes.::
 
    rash search --cwd-under . --include-exit-code 0 --duration-longer-than 30m
 
-**NOT IMPLEMENTED**
 What did I do after `cd`-ing to some directory?::
 
    rash search --after-context 5 "cd SOME-DIRECTORY"
