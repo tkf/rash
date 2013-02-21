@@ -247,7 +247,7 @@ def search_add_arguments(parent_parser):
     # SOMEDAY: order of --sort-by and --sort-by-cwd-distance should be
     #          taken into account
     parser.add_argument(
-        '--sort-by-cwd-distance', metavar='DIR',
+        '--sort-by-cwd-distance', '-y', metavar='DIR',
         help="""
         Sort by distance of recorded cwd fron DIR.
         Commands run at DIR are listed first, then commands
