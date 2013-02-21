@@ -23,7 +23,7 @@ import warnings
 import itertools
 
 from .utils.py3compat import zip_longest
-from .utils.iterutils import nonempty
+from .utils.iterutils import nonempty, include_before, include_after
 from .utils.sqlconstructor import SQLConstructor
 from .model import CommandRecord, SessionRecord, VersionRecord, EnvironRecord
 
@@ -375,15 +375,47 @@ class DataBase(object):
         params = list(itertools.chain(*zip(desired_row, desired_row)))
         return self._select_rows(CommandRecord, keys, sql, params)
 
-    def search_command_record(self, **kwds):
+    def search_command_record(
+            self,
+            after_context, before_context, context, context_type,
+            **kwds):
         """
         Search command history.
 
         :rtype: [CommandRecord]
 
         """
+        if after_context or before_context or context:
+            kwds['condition_as_column'] = True
+            limit = kwds['limit']
+            kwds['limit'] = -1
+            kwds['unique'] = False
+            kwds['sort_by'] = {
+                'session': ['session_start_time', 'start_time'],
+                'time': ['start_time'],
+            }[context_type]
+            after_context = after_context or context
+            before_context = before_context or context
+
         (sql, params, keys) = self._compile_sql_search_command_record(**kwds)
-        return self._select_rows(CommandRecord, keys, sql, params)
+        records = self._select_rows(CommandRecord, keys, sql, params)
+
+        # FIXME: add tests for context search
+        # SOMEDAY: optimize context search;  do not create CommandRecord
+        #          object for all (including non-matching) records.
+        predicate = lambda r: r.condition
+        if before_context:
+            records = include_before(predicate, before_context, records)
+        if after_context:
+            records = include_after(predicate, after_context, records)
+        if after_context or before_context:
+            records = itertools.islice(records, limit)
+        # NOTE: as SQLite does not support row_number function, let's
+        #       do the filtering at Python side when context modifier
+        #       is given.  This is *very* inefficient but at least it
+        #       works..
+
+        return records
 
     @classmethod
     def _compile_sql_search_command_record(
@@ -400,7 +432,7 @@ class DataBase(object):
             exclude_environ_regexp,
             reverse, sort_by, sort_by_cwd_distance,
             ignore_case,
-            additional_columns=[],
+            additional_columns=[], condition_as_column=False,
             **_):  # SOMEDAY: don't ignore unused kwds to search_command_record
         keys = ['command_history_id', 'command', 'session_history_id',
                 'cwd', 'terminal',
@@ -425,11 +457,11 @@ class DataBase(object):
         regexp = "regexp({1}, {0})"
         eq = '{0} = {1}'
 
-        if not unique and sort_by == 'command_count':
+        if not unique and 'command_count' in sort_by:
             # When not using "GROUP BY", `COUNT(*)` yields just one
             # row.  As unique is True by default, `unique=False`
             # should mean to ignore ``sort_by='command_count'``.
-            sort_by = None
+            sort_by = [k for k in sort_by if k != 'command_count']
 
         sc = SQLConstructor(source, columns, keys, limit=limit)
         if sort_by_cwd_distance:
@@ -438,7 +470,8 @@ class DataBase(object):
                           params=[normalize_directory(os.path.abspath(
                               sort_by_cwd_distance))])
             sc.order_by('cwd_distance', 'DESC' if reverse else 'ASC')
-        sc.order_by(sort_by, 'ASC' if reverse else 'DESC')
+        for k in sort_by:
+            sc.order_by(k, 'ASC' if reverse else 'DESC')
         sc.add_matches(glob, 'CL.command',
                        match_pattern, include_pattern, exclude_pattern)
         sc.add_matches(regexp, 'CL.command',
@@ -467,7 +500,8 @@ class DataBase(object):
         if unique:
             sc.uniquify_by('CL.command', 'start_time')
 
-        need = lambda *x: (sort_by in x or set(x) & set(additional_columns))
+        additional_column_set = set(sort_by) | set(additional_columns)
+        need = lambda *x: set(x) & additional_column_set
         if need('command_count'):
             sc.add_column('COUNT(*) as command_count', 'command_count')
         if need('success_count', 'success_ratio'):
@@ -480,6 +514,19 @@ class DataBase(object):
             sc.join(cls._sc_program_count(),
                     on='PROGRAM_NAME(CL.command) = command_program.program')
             sc.add_column('program_count')
+        if need('session_start_time', 'session_stop_time'):
+            sc_sh = SQLConstructor(
+                'session_history',
+                ['id',
+                 'start_time AS session_start_time',
+                 'stop_time AS session_stop_time'],
+                table_alias='session_history')
+            sc.join(sc_sh, on='session_id = session_history.id')
+            sc.add_column('session_start_time', 'session_start')
+            sc.add_column('session_stop_time', 'session_stop')
+
+        if condition_as_column:
+            sc.move_where_clause_to_column()
 
         return sc.compile()
 

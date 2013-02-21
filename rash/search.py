@@ -232,7 +232,7 @@ def search_add_arguments(parent_parser):
         By default, most recent commands are shown.
         """)
     parser.add_argument(
-        '--sort-by', default='count',
+        '--sort-by', default=[], action='append',
         choices=sorted(SORT_KEY_SYNONYMS),
         help="""
         Sort keys
@@ -244,6 +244,8 @@ def search_add_arguments(parent_parser):
         `code`: exit code of the command;
         Note that --sort-by=count cannot be used with --no-unique.
         """)
+    # SOMEDAY: order of --sort-by and --sort-by-cwd-distance should be
+    #          taken into account
     parser.add_argument(
         '--sort-by-cwd-distance', metavar='DIR',
         help="""
@@ -258,25 +260,26 @@ def search_add_arguments(parent_parser):
     parser.add_argument(
         '--after-context', '-A', type=int, metavar='NUM',
         help="""
-        [NOT IMPLEMENTED]
         Print NUM commands executed after matching commands.
+        See also --context option.
         """)
     parser.add_argument(
         '--before-context', '-B', type=int, metavar='NUM',
         help="""
-        [NOT IMPLEMENTED]
         Print NUM commands executed before matching commands.
+        See also --context option.
         """)
     parser.add_argument(
         '--context', '-C', type=int, metavar='NUM',
         help="""
-        [NOT IMPLEMENTED]
         Print NUM commands executed before and after matching commands.
+        When this option is given --no-unique is implied and --sort-by
+        is ignored.
         """)
+    # SOMEDAY: remove restrictions from --context.
     parser.add_argument(
-        '--context-type', choices=['session', 'time'],
+        '--context-type', default='time', choices=['time', 'session'],
         help="""
-        [NOT IMPLEMENTED]
         `session`: commands executed in the same shell session;
         `time`: commands executed around the same time;
         """)

@@ -87,5 +87,5 @@ def preprocess_kwds(kwds):
     less_strict_pattern = list(map("*{0}*".format, kwds.pop('pattern', [])))
     kwds['match_pattern'] = kwds['match_pattern'] + less_strict_pattern
 
-    kwds['sort_by'] = SORT_KEY_SYNONYMS[kwds['sort_by']]
+    kwds['sort_by'] = [SORT_KEY_SYNONYMS[k] for k in kwds['sort_by']]
     return kwds
