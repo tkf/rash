@@ -377,7 +377,7 @@ class DataBase(object):
 
     def search_command_record(
             self,
-            after_context, before_context, context,
+            after_context, before_context, context, context_type,
             **kwds):
         """
         Search command history.
@@ -389,6 +389,11 @@ class DataBase(object):
             kwds['condition_as_column'] = True
             limit = kwds['limit']
             kwds['limit'] = -1
+            kwds['unique'] = False
+            kwds['sort_by'] = {
+                'session': ['session_start_time', 'start_time'],
+                'time': ['start_time'],
+            }[context_type]
             after_context = after_context or context
             before_context = before_context or context
 
@@ -509,6 +514,16 @@ class DataBase(object):
             sc.join(cls._sc_program_count(),
                     on='PROGRAM_NAME(CL.command) = command_program.program')
             sc.add_column('program_count')
+        if need('session_start_time', 'session_stop_time'):
+            sc_sh = SQLConstructor(
+                'session_history',
+                ['id',
+                 'start_time AS session_start_time',
+                 'stop_time AS session_stop_time'],
+                table_alias='session_history')
+            sc.join(sc_sh, on='session_id = session_history.id')
+            sc.add_column('session_start_time', 'session_start')
+            sc.add_column('session_stop_time', 'session_stop')
 
         if condition_as_column:
             sc.move_where_clause_to_column()

@@ -261,20 +261,25 @@ def search_add_arguments(parent_parser):
         '--after-context', '-A', type=int, metavar='NUM',
         help="""
         Print NUM commands executed after matching commands.
+        See also --context option.
         """)
     parser.add_argument(
         '--before-context', '-B', type=int, metavar='NUM',
         help="""
         Print NUM commands executed before matching commands.
+        See also --context option.
         """)
     parser.add_argument(
         '--context', '-C', type=int, metavar='NUM',
         help="""
         Print NUM commands executed before and after matching commands.
+        When this option is given --no-unique is implied and --sort-by
+        is ignored.
+        """)
+    # SOMEDAY: remove restrictions from --context.
     parser.add_argument(
-        '--context-type', choices=['session', 'time'],
+        '--context-type', default='time', choices=['time', 'session'],
         help="""
-        [NOT IMPLEMENTED]
         `session`: commands executed in the same shell session;
         `time`: commands executed around the same time;
         """)
