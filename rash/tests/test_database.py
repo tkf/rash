@@ -355,6 +355,28 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(attrs('success_count'), [3, 2, 0])
         self.assertEqual(attrs('success_ratio'), [1.0, 0.5, 0.0])
 
+    def test_search_command_by_cwd_distance(self):
+        command_list = [
+            'A',
+            'AB',
+            'ABC',
+            'ABCD',
+            'ABX',
+        ]
+        # for simplicity, cwd for ABC is /A/B/C/
+        cwd_list = [self.abspath(*x) for x in command_list]
+        self.prepare_command_record(command=command_list, cwd=cwd_list,
+                                    start=reversed(range(len(command_list))))
+
+        records = self.search_command_record(
+            sort_by_cwd_distance=self.abspath('A', 'B', 'C'),
+            # do disambiguate order, sort by start time also.
+            sort_by='start_time')
+        record_commands = [r.command for r in records]
+        record_cwd_distances = [r.cwd_distance for r in records]
+        self.assertEqual(record_commands, ['ABC', 'AB', 'ABCD', 'ABX', 'A'])
+        self.assertEqual(record_cwd_distances, [0, 1, 1, 1, 2])
+
     def test_search_command_with_connection(self):
         num = 5
         small_num = 3
