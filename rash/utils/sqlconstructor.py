@@ -73,6 +73,7 @@ class SQLConstructor(object):
         self.limit = limit
         self.table_alias = table_alias
 
+        self.column_params = []
         self.join_params = []
         self.params = []
         self.conditions = []
@@ -182,7 +183,7 @@ class SQLConstructor(object):
                 record = dict(zip(keys, row))
 
         """
-        params = self.join_params + self.params
+        params = self.column_params + self.join_params + self.params
         if self.limit and self.limit >= 0:
             self.sql_limit = 'LIMIT ?'
             params += [self.limit]
@@ -266,9 +267,10 @@ class SQLConstructor(object):
     def add_having(self, condition):
         self.having.append(condition)
 
-    def add_column(self, column, key=None):
+    def add_column(self, column, key=None, params=[]):
         self.columns.append(column)
         self.keys.append(key or column)
+        self.column_params.extend(params)
 
     def order_by(self, expr, order='ASC'):
         if expr is None:
