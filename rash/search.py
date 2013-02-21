@@ -243,6 +243,10 @@ def search_add_arguments(parent_parser):
         `stop`: the time command is finished;
         `code`: exit code of the command;
         Note that --sort-by=count cannot be used with --no-unique.
+        If you don't give anything, it defaults to `count`.
+        However, if you give this option at least once, the default
+        is ignored (i.e., the result is *not* sorted by `count`
+        unless you give it explicitly.).
         """)
     # SOMEDAY: order of --sort-by and --sort-by-cwd-distance should be
     #          taken into account
