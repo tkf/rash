@@ -411,9 +411,8 @@ class DataBase(object):
             # should mean to ignore ``sort_by='command_count'``.
             sort_by = None
 
-        sc = SQLConstructor(source, columns, keys,
-                            order_by=sort_by or 'start_time',
-                            reverse=reverse, limit=limit)
+        sc = SQLConstructor(source, columns, keys, limit=limit)
+        sc.order_by(sort_by, 'ASC' if reverse else 'DESC')
         sc.add_matches(glob, 'CL.command',
                        match_pattern, include_pattern, exclude_pattern)
         sc.add_matches(regexp, 'CL.command',

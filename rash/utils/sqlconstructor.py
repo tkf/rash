@@ -61,7 +61,7 @@ class SQLConstructor(object):
 
     def __init__(self, join_source, columns, keys=None,
                  group_by=None, having=None,
-                 order_by=None, reverse=False, limit=None,
+                 limit=None,
                  table_alias=None):
         self.__init_vars()
 
@@ -70,7 +70,6 @@ class SQLConstructor(object):
         self.keys = columns[:] if keys is None else keys[:]
         self.having = having or []
         self.group_by = group_by or []
-        self.order_by(order_by, 'ASC' if reverse else 'DESC')
         self.limit = limit
         self.table_alias = table_alias
 
