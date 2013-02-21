@@ -61,21 +61,25 @@ class SQLConstructor(object):
 
     def __init__(self, join_source, columns, keys=None,
                  group_by=None, having=None,
-                 order_by=None, reverse=False, limit=None,
+                 limit=None,
                  table_alias=None):
+        self.__init_vars()
+
         self.join_source = join_source
         self.columns = columns[:]
         self.keys = columns[:] if keys is None else keys[:]
         self.having = having or []
         self.group_by = group_by or []
-        self.order_by = order_by
-        self.reverse = reverse
         self.limit = limit
         self.table_alias = table_alias
 
+        self.column_params = []
         self.join_params = []
         self.params = []
         self.conditions = []
+
+    def __init_vars(self):
+        self._ordering = []
 
     def join(self, source, op='LEFT JOIN', on=''):
         """
@@ -151,9 +155,9 @@ class SQLConstructor(object):
 
     @property
     def sql_order_by(self):
-        if self.order_by:
-            direction = 'ASC' if self.reverse else 'DESC'
-            return 'ORDER BY {0} {1}'.format(self.order_by, direction)
+        if self._ordering:
+            terms = map(' '.join, self._ordering)
+            return 'ORDER BY {0}'.format(', '.join(terms))
 
     sql_limit = ''
 
@@ -179,7 +183,7 @@ class SQLConstructor(object):
                 record = dict(zip(keys, row))
 
         """
-        params = self.join_params + self.params
+        params = self.column_params + self.join_params + self.params
         if self.limit and self.limit >= 0:
             self.sql_limit = 'LIMIT ?'
             params += [self.limit]
@@ -263,6 +267,12 @@ class SQLConstructor(object):
     def add_having(self, condition):
         self.having.append(condition)
 
-    def add_column(self, column, key=None):
+    def add_column(self, column, key=None, params=[]):
         self.columns.append(column)
         self.keys.append(key or column)
+        self.column_params.extend(params)
+
+    def order_by(self, expr, order='ASC'):
+        if expr is None:
+            return
+        self._ordering.append((expr, order))

@@ -244,6 +244,14 @@ def search_add_arguments(parent_parser):
         `code`: exit code of the command;
         Note that --sort-by=count cannot be used with --no-unique.
         """)
+    parser.add_argument(
+        '--sort-by-cwd-distance', metavar='DIR',
+        help="""
+        Sort by distance of recorded cwd fron DIR.
+        Commands run at DIR are listed first, then commands
+        run at one level down or one level up directories,
+        and then two level down/up, and so on.
+        """)
 
     # Modifier
     parser = parent_parser.add_argument_group('Modifier')

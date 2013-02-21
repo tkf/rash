@@ -22,6 +22,7 @@ import datetime
 import warnings
 import itertools
 
+from .utils.py3compat import zip_longest
 from .utils.iterutils import nonempty
 from .utils.sqlconstructor import SQLConstructor
 from .model import CommandRecord, SessionRecord, VersionRecord, EnvironRecord
@@ -84,6 +85,23 @@ def sql_program_name_func(command):
     return args[0]
 
 
+def sql_pathdist_func(path1, path2, sep=os.path.sep):
+    """
+    Return a distance between `path1` and `path2`.
+
+    >>> sql_pathdist_func('a/b/', 'a/b/', sep='/')
+    0
+    >>> sql_pathdist_func('a/', 'a/b/', sep='/')
+    1
+    >>> sql_pathdist_func('a', 'a/', sep='/')
+    0
+
+    """
+    seq1 = path1.rstrip(sep).split(sep)
+    seq2 = path2.rstrip(sep).split(sep)
+    return sum(1 for (p1, p2) in zip_longest(seq1, seq2) if p1 != p2)
+
+
 class DataBase(object):
 
     schemapath = os.path.join(
@@ -132,6 +150,7 @@ class DataBase(object):
                     db.create_function("REGEXP", 2, sql_regexp_func)
                     db.create_function("PROGRAM_NAME", 1,
                                        sql_program_name_func)
+                    db.create_function("PATHDIST", 2, sql_pathdist_func)
                     yield self._db
                     if self._need_commit:
                         db.commit()
@@ -378,7 +397,7 @@ class DataBase(object):
             exclude_environ_pattern,
             match_environ_regexp, include_environ_regexp,
             exclude_environ_regexp,
-            reverse, sort_by,
+            reverse, sort_by, sort_by_cwd_distance,
             ignore_case,
             additional_columns=[],
             **_):  # SOMEDAY: don't ignore unused kwds to search_command_record
@@ -411,9 +430,14 @@ class DataBase(object):
             # should mean to ignore ``sort_by='command_count'``.
             sort_by = None
 
-        sc = SQLConstructor(source, columns, keys,
-                            order_by=sort_by or 'start_time',
-                            reverse=reverse, limit=limit)
+        sc = SQLConstructor(source, columns, keys, limit=limit)
+        if sort_by_cwd_distance:
+            sc.add_column('PATHDIST(DL.directory, ?) AS cwd_distance',
+                          'cwd_distance',
+                          params=[normalize_directory(os.path.abspath(
+                              sort_by_cwd_distance))])
+            sc.order_by('cwd_distance', 'DESC' if reverse else 'ASC')
+        sc.order_by(sort_by, 'ASC' if reverse else 'DESC')
         sc.add_matches(glob, 'CL.command',
                        match_pattern, include_pattern, exclude_pattern)
         sc.add_matches(regexp, 'CL.command',
