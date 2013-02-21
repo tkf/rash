@@ -529,9 +529,6 @@ class DataBase(object):
             table_alias=session_table_alias, **kwds)
         sc.join(sc_ce, op='LEFT JOIN', on='command_history.id = {r}.ch_id')
         sc.join(sc_se, op='LEFT JOIN', on='session_id = {r}.sh_id')
-        sc.conditions.append(
-            '({0}.ev_id IS NOT NULL OR {1}.ev_id IS NOT NULL)'
-            .format(command_table_alias, session_table_alias))
         if and_match:
             sc.add_having(
                 'COUNT(DISTINCT {0}.ev_id) + '
@@ -539,6 +536,10 @@ class DataBase(object):
                 .format(command_table_alias,
                         session_table_alias,
                         len(match_params)))
+        else:
+            sc.add_having(
+                '({0}.ev_id IS NOT NULL OR {1}.ev_id IS NOT NULL)'
+                .format(command_table_alias, session_table_alias))
 
     @staticmethod
     def _sc_history_environ(
