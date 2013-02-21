@@ -452,11 +452,11 @@ class DataBase(object):
         regexp = "regexp({1}, {0})"
         eq = '{0} = {1}'
 
-        if not unique and sort_by == 'command_count':
+        if not unique and 'command_count' in sort_by:
             # When not using "GROUP BY", `COUNT(*)` yields just one
             # row.  As unique is True by default, `unique=False`
             # should mean to ignore ``sort_by='command_count'``.
-            sort_by = None
+            sort_by = [k for k in sort_by if k != 'command_count']
 
         sc = SQLConstructor(source, columns, keys, limit=limit)
         if sort_by_cwd_distance:
@@ -465,7 +465,8 @@ class DataBase(object):
                           params=[normalize_directory(os.path.abspath(
                               sort_by_cwd_distance))])
             sc.order_by('cwd_distance', 'DESC' if reverse else 'ASC')
-        sc.order_by(sort_by, 'ASC' if reverse else 'DESC')
+        for k in sort_by:
+            sc.order_by(k, 'ASC' if reverse else 'DESC')
         sc.add_matches(glob, 'CL.command',
                        match_pattern, include_pattern, exclude_pattern)
         sc.add_matches(regexp, 'CL.command',
@@ -494,7 +495,8 @@ class DataBase(object):
         if unique:
             sc.uniquify_by('CL.command', 'start_time')
 
-        need = lambda *x: (sort_by in x or set(x) & set(additional_columns))
+        additional_column_set = set(sort_by) | set(additional_columns)
+        need = lambda *x: set(x) & additional_column_set
         if need('command_count'):
             sc.add_column('COUNT(*) as command_count', 'command_count')
         if need('success_count', 'success_ratio'):

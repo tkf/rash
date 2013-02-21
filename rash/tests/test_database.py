@@ -314,7 +314,7 @@ class TestInMemoryDataBase(BaseTestCase):
                     start=i)
                 self.db.import_dict(data)
 
-        records = self.search_command_record(sort_by='command_count')
+        records = self.search_command_record(sort_by=['command_count'])
         self.assertEqual(len(records), 3)
 
         commands = [r.command for r in records]
@@ -333,7 +333,7 @@ class TestInMemoryDataBase(BaseTestCase):
     def test_search_command_sort_by_success_count(self):
         self.prepare_command_record_from_exit_codes([[0, 1, 2, 0], [0, 0, 0]])
 
-        records = self.search_command_record(sort_by='success_count')
+        records = self.search_command_record(sort_by=['success_count'])
         self.assertEqual(len(records), 2)
 
         attrs = lambda key: [getattr(r, key) for r in records]
@@ -346,7 +346,7 @@ class TestInMemoryDataBase(BaseTestCase):
                                                      [1, 2, 3],
                                                      [0, 0, 0]])
 
-        records = self.search_command_record(sort_by='success_ratio')
+        records = self.search_command_record(sort_by=['success_ratio'])
         self.assertEqual(len(records), 3)
 
         attrs = lambda key: [getattr(r, key) for r in records]
@@ -371,7 +371,7 @@ class TestInMemoryDataBase(BaseTestCase):
         records = self.search_command_record(
             sort_by_cwd_distance=self.abspath('A', 'B', 'C'),
             # do disambiguate order, sort by start time also.
-            sort_by='start_time')
+            sort_by=['start_time'])
         record_commands = [r.command for r in records]
         record_cwd_distances = [r.cwd_distance for r in records]
         self.assertEqual(record_commands, ['ABC', 'AB', 'ABCD', 'ABX', 'A'])
@@ -711,7 +711,7 @@ class TestInMemoryDataBase(BaseTestCase):
 
         records = self.search_command_record(
             include_environ_regexp=[('EV0', 'c..|..c'), ('EV1', '.?e.*')],
-            sort_by='command', reverse=True)
+            sort_by=['command'], reverse=True)
         self.assertEqual(len(records), 3)
         self.assert_same_command_record(records[0], drecs[0])
         self.assert_same_command_record(records[1], drecs[2])

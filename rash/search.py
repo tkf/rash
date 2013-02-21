@@ -232,7 +232,7 @@ def search_add_arguments(parent_parser):
         By default, most recent commands are shown.
         """)
     parser.add_argument(
-        '--sort-by', default='count',
+        '--sort-by', default=[], action='append',
         choices=sorted(SORT_KEY_SYNONYMS),
         help="""
         Sort keys
@@ -244,6 +244,8 @@ def search_add_arguments(parent_parser):
         `code`: exit code of the command;
         Note that --sort-by=count cannot be used with --no-unique.
         """)
+    # SOMEDAY: order of --sort-by and --sort-by-cwd-distance should be
+    #          taken into account
     parser.add_argument(
         '--sort-by-cwd-distance', metavar='DIR',
         help="""
