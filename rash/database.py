@@ -85,21 +85,20 @@ def sql_program_name_func(command):
     return args[0]
 
 
-def sql_pathdist_func(path1, path2):
+def sql_pathdist_func(path1, path2, sep=os.path.sep):
     """
     Return a distance between `path1` and `path2`.
 
-    >>> join = os.path.join
-    >>> sql_pathdist_func(join('a', 'b'), join('a', 'b'))
+    >>> sql_pathdist_func('a/b/', 'a/b/', sep='/')
     0
-    >>> sql_pathdist_func(join('a'), join('a', 'b'))
+    >>> sql_pathdist_func('a/', 'a/b/', sep='/')
     1
-    >>> sql_pathdist_func(join('a'), join('a', ''))
+    >>> sql_pathdist_func('a', 'a/', sep='/')
     0
 
     """
-    seq1 = path1.rstrip(os.path.sep).split(os.path.sep)
-    seq2 = path2.rstrip(os.path.sep).split(os.path.sep)
+    seq1 = path1.rstrip(sep).split(sep)
+    seq2 = path2.rstrip(sep).split(sep)
     return sum(1 for (p1, p2) in zip_longest(seq1, seq2) if p1 != p2)
 
 
