@@ -34,3 +34,39 @@ def nonempty(iterative):
 
 def repeat(item, num):
     return itertools.islice(itertools.repeat(item), num)
+
+
+def include_before(predicate, num, iterative):
+    """
+    Return elements in `iterative` including `num`-before elements.
+
+    >>> list(include_before(lambda x: x == 'd', 2, 'abcded'))
+    ['b', 'c', 'd', 'e', 'd']
+
+    """
+    queue = []
+    for elem in iterative:
+        queue.append(elem)
+        if len(queue) > num + 1:
+            queue.pop(0)
+        if predicate(elem):
+            for q in queue:
+                yield q
+            queue = []
+
+
+def include_after(predicate, num, iterative):
+    """
+    Return elements in `iterative` including `num`-after elements.
+
+    >>> list(include_after(lambda x: x == 'b', 2, 'abcbcde'))
+    ['b', 'c', 'b', 'c', 'd']
+
+    """
+    counter = 0
+    for elem in iterative:
+        if predicate(elem):
+            counter = num + 1
+        if counter > 0:
+            yield elem
+            counter -= 1
