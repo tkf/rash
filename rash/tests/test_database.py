@@ -736,6 +736,38 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 1)
         self.assert_same_command_record(records[0], drecs[1])
 
+    def test_serach_command_with_time_context(self):
+        command = [
+            'c-0',
+            'c-1-match',
+            'c-2',
+            'c-3',
+            'c-4',
+            'c-5-match',
+            'c-6',
+        ]
+        self.prepare_command_record(command=command, start=range(len(command)))
+
+        # --context 1
+        records = self.search_command_record(include_pattern=['*match'],
+                                             context=1)
+        result_command = list(reversed([r.command for r in records]))
+        self.assertEqual(result_command, command[:3] + command[4:])
+
+        # --after-context 1
+        records = self.search_command_record(include_pattern=['*match'],
+                                             after_context=1)
+        result_command = [r.command for r in records]
+        self.assertEqual(result_command, ['c-5-match', 'c-4',
+                                          'c-1-match', 'c-0'])
+
+        # --before-context 1
+        records = self.search_command_record(include_pattern=['*match'],
+                                             before_context=1)
+        result_command = [r.command for r in records]
+        self.assertEqual(result_command, ['c-6', 'c-5-match',
+                                          'c-2', 'c-1-match'])
+
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))
 
