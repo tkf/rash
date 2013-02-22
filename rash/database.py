@@ -402,7 +402,6 @@ class DataBase(object):
         (sql, params, keys) = self._compile_sql_search_command_record(**kwds)
         records = self._select_rows(CommandRecord, keys, sql, params)
 
-        # FIXME: add tests for context search
         # SOMEDAY: optimize context search;  do not create CommandRecord
         #          object for all (including non-matching) records.
         predicate = lambda r: r.condition
