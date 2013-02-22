@@ -520,7 +520,7 @@ class TestInMemoryDataBase(BaseTestCase):
         self.db.import_init_dict(init_data_2)
 
         records = self.search_command_record(
-            include_glob_environ=[('SHELL', '*sh')], unique=False)
+            include_environ_pattern=[('SHELL', '*sh')], unique=False)
         self.assert_same_command_record(records[0], dcrec1)
         self.assert_same_command_record(records[1], dcrec2)
         self.assertEqual(len(records), 2)

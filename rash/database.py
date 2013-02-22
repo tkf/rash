@@ -433,7 +433,7 @@ class DataBase(object):
             reverse, sort_by, sort_by_cwd_distance,
             ignore_case,
             additional_columns=[], condition_as_column=False,
-            **_):  # SOMEDAY: don't ignore unused kwds to search_command_record
+            ):
         keys = ['command_history_id', 'command', 'session_history_id',
                 'cwd', 'terminal',
                 'start', 'stop', 'exit_code']
