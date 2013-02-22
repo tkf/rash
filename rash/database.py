@@ -409,7 +409,7 @@ class DataBase(object):
             records = include_before(predicate, before_context, records)
         elif after_context:
             records = include_after(predicate, after_context, records)
-        if after_context or before_context or context:
+        if after_context or before_context or context and limit >= 0:
             records = itertools.islice(records, limit)
         # NOTE: as SQLite does not support row_number function, let's
         #       do the filtering at Python side when context modifier
