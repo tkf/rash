@@ -36,6 +36,36 @@ def repeat(item, num):
     return itertools.islice(itertools.repeat(item), num)
 
 
+def _backward_shifted_predicate(predicate, num, iterative, include_zero=True):
+    queue = []
+    for elem in iterative:
+        if predicate(elem):
+            for q in queue:
+                yield True
+            yield include_zero
+            queue = []
+        else:
+            queue.append(elem)
+            if len(queue) > num:
+                queue.pop(0)
+                yield False
+    for _ in queue:
+        yield False
+
+
+def _forward_shifted_predicate(predicate, num, iterative, include_zero=True):
+    counter = 0
+    for elem in iterative:
+        if predicate(elem):
+            counter = num
+            yield include_zero
+        elif counter > 0:
+            yield True
+            counter -= 1
+        else:
+            yield False
+
+
 def include_before(predicate, num, iterative):
     """
     Return elements in `iterative` including `num`-before elements.
@@ -44,15 +74,9 @@ def include_before(predicate, num, iterative):
     ['b', 'c', 'd', 'e', 'd']
 
     """
-    queue = []
-    for elem in iterative:
-        queue.append(elem)
-        if len(queue) > num + 1:
-            queue.pop(0)
-        if predicate(elem):
-            for q in queue:
-                yield q
-            queue = []
+    (it0, it1) = itertools.tee(iterative)
+    ps = _backward_shifted_predicate(predicate, num, it1)
+    return (e for (e, p) in zip(it0, ps) if p)
 
 
 def include_after(predicate, num, iterative):
@@ -63,10 +87,20 @@ def include_after(predicate, num, iterative):
     ['b', 'c', 'b', 'c', 'd']
 
     """
-    counter = 0
-    for elem in iterative:
-        if predicate(elem):
-            counter = num + 1
-        if counter > 0:
-            yield elem
-            counter -= 1
+    (it0, it1) = itertools.tee(iterative)
+    ps = _forward_shifted_predicate(predicate, num, it1)
+    return (e for (e, p) in zip(it0, ps) if p)
+
+
+def include_context(predicate, num, iterative):
+    """
+    Return elements in `iterative` including `num` before and after elements.
+
+    >>> ''.join(include_context(lambda x: x == '!', 2, 'bb!aa__bb!aa'))
+    'bb!aabb!aa'
+
+    """
+    (it0, it1, it2) = itertools.tee(iterative, 3)
+    psf = _forward_shifted_predicate(predicate, num, it1)
+    psb = _backward_shifted_predicate(predicate, num, it2)
+    return (e for (e, pf, pb) in zip(it0, psf, psb) if pf or pb)
