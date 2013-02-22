@@ -16,6 +16,8 @@
 
 import itertools
 
+from .py3compat import zip
+
 
 def nonempty(iterative):
     """
