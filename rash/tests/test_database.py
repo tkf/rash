@@ -768,6 +768,45 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(result_command, ['c-6', 'c-5-match',
                                           'c-2', 'c-1-match'])
 
+    def test_serach_command_with_session_context(self):
+        command = [
+            'c-0',
+            'c-1-match',
+            'c-2',
+            'c-3',
+            'c-4',
+            'c-5-match',
+            'c-6',
+        ]
+        session_id = ['S-0'] * 4 + ['S-1'] * 3
+        self.prepare_command_record(command=command, start=range(len(command)),
+                                    session_id=session_id)
+        self.db.import_init_dict({'session_id': 'S-0', 'start': 1})
+        self.db.import_init_dict({'session_id': 'S-1', 'start': 0})
+
+        # --context 1
+        records = self.search_command_record(include_pattern=['*match'],
+                                             context=1,
+                                             context_type='session')
+        result_command = list(reversed([r.command for r in records]))
+        self.assertEqual(result_command, command[4:] + command[:3])
+
+        # --after-context 1
+        records = self.search_command_record(include_pattern=['*match'],
+                                             after_context=1,
+                                             context_type='session')
+        result_command = [r.command for r in records]
+        self.assertEqual(result_command, ['c-1-match', 'c-0',
+                                          'c-5-match', 'c-4'])
+
+        # --before-context 1
+        records = self.search_command_record(include_pattern=['*match'],
+                                             before_context=1,
+                                             context_type='session')
+        result_command = [r.command for r in records]
+        self.assertEqual(result_command, ['c-2', 'c-1-match',
+                                          'c-6', 'c-5-match'])
+
     def search_session_record(self, **kwds):
         return list(self.db.search_session_record(**kwds))
 
