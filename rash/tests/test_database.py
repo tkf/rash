@@ -754,16 +754,16 @@ class TestInMemoryDataBase(BaseTestCase):
         result_command = list(reversed([r.command for r in records]))
         self.assertEqual(result_command, command[:3] + command[4:])
 
-        # --after-context 1
+        # --before-context 1
         records = self.search_command_record(include_pattern=['*match'],
-                                             after_context=1)
+                                             before_context=1)
         result_command = [r.command for r in records]
         self.assertEqual(result_command, ['c-5-match', 'c-4',
                                           'c-1-match', 'c-0'])
 
-        # --before-context 1
+        # --after-context 1
         records = self.search_command_record(include_pattern=['*match'],
-                                             before_context=1)
+                                             after_context=1)
         result_command = [r.command for r in records]
         self.assertEqual(result_command, ['c-6', 'c-5-match',
                                           'c-2', 'c-1-match'])
@@ -791,17 +791,17 @@ class TestInMemoryDataBase(BaseTestCase):
         result_command = list(reversed([r.command for r in records]))
         self.assertEqual(result_command, command[4:] + command[:3])
 
-        # --after-context 1
+        # --before-context 1
         records = self.search_command_record(include_pattern=['*match'],
-                                             after_context=1,
+                                             before_context=1,
                                              context_type='session')
         result_command = [r.command for r in records]
         self.assertEqual(result_command, ['c-1-match', 'c-0',
                                           'c-5-match', 'c-4'])
 
-        # --before-context 1
+        # --after-context 1
         records = self.search_command_record(include_pattern=['*match'],
-                                             before_context=1,
+                                             after_context=1,
                                              context_type='session')
         result_command = [r.command for r in records]
         self.assertEqual(result_command, ['c-2', 'c-1-match',

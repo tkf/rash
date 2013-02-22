@@ -395,6 +395,9 @@ class DataBase(object):
                 'session': ['session_start_time', 'start_time'],
                 'time': ['start_time'],
             }[context_type]
+            if not kwds['reverse']:
+                # Default (reverse=False) means latest history comes first.
+                after_context, before_context = before_context, after_context
 
         (sql, params, keys) = self._compile_sql_search_command_record(**kwds)
         records = self._select_rows(CommandRecord, keys, sql, params)
