@@ -23,7 +23,8 @@ import warnings
 import itertools
 
 from .utils.py3compat import zip_longest
-from .utils.iterutils import nonempty, include_before, include_after
+from .utils.iterutils import nonempty, include_before, include_after, \
+    include_context
 from .utils.sqlconstructor import SQLConstructor
 from .model import CommandRecord, SessionRecord, VersionRecord, EnvironRecord
 
@@ -394,8 +395,6 @@ class DataBase(object):
                 'session': ['session_start_time', 'start_time'],
                 'time': ['start_time'],
             }[context_type]
-            after_context = after_context or context
-            before_context = before_context or context
 
         (sql, params, keys) = self._compile_sql_search_command_record(**kwds)
         records = self._select_rows(CommandRecord, keys, sql, params)
@@ -404,11 +403,13 @@ class DataBase(object):
         # SOMEDAY: optimize context search;  do not create CommandRecord
         #          object for all (including non-matching) records.
         predicate = lambda r: r.condition
-        if before_context:
+        if context:
+            records = include_context(predicate, context, records)
+        elif before_context:
             records = include_before(predicate, before_context, records)
-        if after_context:
+        elif after_context:
             records = include_after(predicate, after_context, records)
-        if after_context or before_context:
+        if after_context or before_context or context:
             records = itertools.islice(records, limit)
         # NOTE: as SQLite does not support row_number function, let's
         #       do the filtering at Python side when context modifier
