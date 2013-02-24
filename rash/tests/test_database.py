@@ -422,14 +422,16 @@ class TestInMemoryDataBase(BaseTestCase):
             [['c-0',    '/A/B/C'],
              ['c-0',    '/A/B'],
              ['c-0',    '/A'],
-             ['c-1',    '/A']])
+             ['c-1',    '/A'],
+             ['c-2',    '/A/B'],
+             ['c-2',    '/A/B/C/D/E']])
 
         records = self.search_command_record(
             sort_by_cwd_distance='/A/B/C',
             # do disambiguate order, sort by start time also.
             sort_by=['start_time'])
-        self.assertEqual(attrs(records, 'command'), ['c-0', 'c-1'])
-        self.assertEqual(attrs(records, 'cwd_distance'), [0, 2])
+        self.assertEqual(attrs(records, 'command'), ['c-0', 'c-2', 'c-1'])
+        self.assertEqual(attrs(records, 'cwd_distance'), [0, 1, 2])
 
     def test_search_command_with_connection(self):
         num = 5
