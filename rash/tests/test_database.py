@@ -387,7 +387,7 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(attrs('success_count'), [3, 2, 0])
         self.assertEqual(attrs('success_ratio'), [1.0, 0.5, 0.0])
 
-    def test_search_command_by_cwd_distance(self):
+    def test_search_command_sort_by_cwd_distance(self):
         command_list = [
             'A',
             'AB',
@@ -409,7 +409,7 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(record_commands, ['ABC', 'AB', 'ABCD', 'ABX', 'A'])
         self.assertEqual(record_cwd_distances, [0, 1, 1, 1, 2])
 
-    def test_search_command_by_ambiguous_cwd_distance(self):
+    def test_search_command_sort_by_ambiguous_cwd_distance(self):
         """
         Minimum `cwd_distance` must be chosen.
 
