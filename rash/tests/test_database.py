@@ -80,6 +80,8 @@ class TestInMemoryDataBase(BaseTestCase):
     dbclass = InMemoryDataBase
 
     def abspath(self, *ps):
+        # SOMEDAY: Remove TestInMemoryDataBase.abspath.
+        #          All paths in test should be written in posix way.
         return os.path.join(os.path.sep, *ps)
 
     @staticmethod
