@@ -468,10 +468,12 @@ class DataBase(object):
 
         sc = SQLConstructor(source, columns, keys, limit=limit)
         if sort_by_cwd_distance:
-            sc.add_column('PATHDIST(DL.directory, ?) AS cwd_distance',
-                          'cwd_distance',
-                          params=[normalize_directory(os.path.abspath(
-                              sort_by_cwd_distance))])
+            col_cwd_dist = 'PATHDIST(DL.directory, ?)'
+            if unique:
+                col_cwd_dist = 'MIN({0})'.format(col_cwd_dist)
+            col_cwd_dist += ' AS cwd_distance'
+            path0 = normalize_directory(os.path.abspath(sort_by_cwd_distance))
+            sc.add_column(col_cwd_dist, 'cwd_distance', params=[path0])
             sc.order_by('cwd_distance', 'DESC' if reverse else 'ASC')
         for k in sort_by:
             sc.order_by(k, 'ASC' if reverse else 'DESC')
