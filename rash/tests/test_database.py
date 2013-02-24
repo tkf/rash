@@ -82,6 +82,28 @@ class TestInMemoryDataBase(BaseTestCase):
     def abspath(self, *ps):
         return os.path.join(os.path.sep, *ps)
 
+    @staticmethod
+    def adapt_file_path(path, _sep=os.path.sep):
+        """
+        Convert slash-separated path to OS-specific one.
+        """
+        return _sep.join(path.split('/'))
+
+    @classmethod
+    def adapt_file_path_in_dict(cls, kwds):
+        """
+        Convert slash-separated paths in `kwds` to OS-specific one.
+        """
+        for key in ['cwd', 'cwd_glob', 'cwd_under',
+                    'sort_by_cwd_distance']:
+            val = kwds.get(key)
+            if not val:
+                continue
+            if isinstance(val, (list, tuple)):
+                kwds[key] = list(map(cls.adapt_file_path, val))
+            else:
+                kwds[key] = cls.adapt_file_path(val)
+
     def setUp(self):
         self.db = self.dbclass()
 
@@ -107,6 +129,10 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(records[1].rash_version, __init__.__version__)
         self.assertEqual(records[1].schema_version, database.schema_version)
 
+    def import_command_record(self, data):
+        self.adapt_file_path_in_dict(data)
+        self.db.import_dict(data)
+
     def get_default_search_kwds(self):
         import argparse
         from ..search import search_add_arguments
@@ -118,6 +144,7 @@ class TestInMemoryDataBase(BaseTestCase):
 
     def search_command_record(self, **kwds):
         setdefaults(kwds, **self.get_default_search_kwds())
+        self.adapt_file_path_in_dict(kwds)
         return list(self.db.search_command_record(**kwds))
 
     def assert_same_command_record(
