@@ -129,9 +129,9 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(records[1].rash_version, __init__.__version__)
         self.assertEqual(records[1].schema_version, database.schema_version)
 
-    def import_command_record(self, data):
+    def import_command_record(self, data, **kwds):
         self.adapt_file_path_in_dict(data)
-        self.db.import_dict(data)
+        self.db.import_dict(data, **kwds)
 
     def get_default_search_kwds(self):
         import argparse
@@ -177,14 +177,14 @@ class TestInMemoryDataBase(BaseTestCase):
         self.assertEqual(len(records), 0)
 
     def test_import_empty_command_record(self):
-        self.db.import_dict({})
+        self.import_command_record({})
         records = self.search_command_record()
         self.assert_same_command_record(records[0], to_command_record({}))
         self.assertEqual(len(records), 1)
 
     def test_import_command_record(self):
         data = self.get_dummy_command_record_data()
-        self.db.import_dict(data)
+        self.import_command_record(data)
         records = self.search_command_record()
         crec = records[0]
         self.assert_same_command_record(crec, to_command_record(data))
@@ -194,7 +194,7 @@ class TestInMemoryDataBase(BaseTestCase):
         data = self.get_dummy_command_record_data()
         num = 3
         for _ in range(num):
-            self.db.import_dict(data, check_duplicate=False)
+            self.import_command_record(data, check_duplicate=False)
         records = self.search_command_record(unique=False)
         for crec in records:
             self.assert_same_command_record(crec, to_command_record(data))
@@ -206,7 +206,7 @@ class TestInMemoryDataBase(BaseTestCase):
         for env in [{'SHELL': 'bash'}, {'SHELL': 'zsh'},
                     {'SHELL': 'tcsh'}, {'SHELL': 'sh'}]:
             data['environ'].update(env)
-            self.db.import_dict(data, check_duplicate=True)
+            self.import_command_record(data, check_duplicate=True)
         records = self.search_command_record(unique=False)
         self.assert_same_command_record(records[0], to_command_record(data))
         self.assertEqual(len(records), 1)
@@ -231,7 +231,7 @@ class TestInMemoryDataBase(BaseTestCase):
             update_nonnones(data, **dict(zip(keys, vals)))
             if 'start' not in keys:
                 data['start'] = i
-            self.db.import_dict(data)
+            self.import_command_record(data)
             records.append(to_command_record(data))
         return records
 
@@ -253,7 +253,7 @@ class TestInMemoryDataBase(BaseTestCase):
         for dct in zip_dict(kwds):
             data = self.get_dummy_command_record_data()
             update_nonnones(data, **dct)
-            self.db.import_dict(data)
+            self.import_command_record(data)
             records.append(to_command_record(data))
         return records
 
@@ -371,7 +371,7 @@ class TestInMemoryDataBase(BaseTestCase):
                     command=command,
                     # Use `start` to make the record unique
                     start=i)
-                self.db.import_dict(data)
+                self.import_command_record(data)
 
         records = self.search_command_record(sort_by=['command_count'])
         self.assertEqual(len(records), 3)
@@ -972,7 +972,7 @@ class TestInMemoryDataBase(BaseTestCase):
 
     def test_get_full_command_record_simple_keys(self):
         command_data = self.get_dummy_command_record_data()
-        self.db.import_dict(command_data)
+        self.import_command_record(command_data)
 
         records = self.search_command_record()
         self.assertEqual(len(records), 1)
@@ -992,7 +992,7 @@ class TestInMemoryDataBase(BaseTestCase):
         desired_environ.update(command_data['environ'])
         desired_environ.update(init_data['environ'])
 
-        self.db.import_dict(command_data)
+        self.import_command_record(command_data)
         self.db.import_init_dict(init_data)
 
         records = self.search_command_record()
@@ -1022,8 +1022,8 @@ class TestInMemoryDataBase(BaseTestCase):
         desired_environ.update(command_data_1['environ'])
         desired_environ.update(init_data_1['environ'])
 
-        self.db.import_dict(command_data_1)
-        self.db.import_dict(command_data_2)
+        self.import_command_record(command_data_1)
+        self.import_command_record(command_data_2)
         self.db.import_init_dict(init_data_1)
         self.db.import_init_dict(init_data_2)
 
@@ -1038,7 +1038,7 @@ class TestInMemoryDataBase(BaseTestCase):
     def test_get_full_command_record_pipestatus(self):
         command_data = self.get_dummy_command_record_data()
         command_data['pipestatus'] = [2, 3, 0]
-        self.db.import_dict(command_data)
+        self.import_command_record(command_data)
 
         records = self.search_command_record()
         self.assertEqual(len(records), 1)
