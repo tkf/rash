@@ -18,7 +18,7 @@ import os
 
 
 def daemon_run(no_error, restart, record_path, keep_json, check_duplicate,
-               log_level):
+               use_polling, log_level):
     """
     Run RASH index daemon.
 
@@ -79,7 +79,7 @@ def daemon_run(no_error, restart, record_path, keep_json, check_duplicate,
         setup_daemon_log_file(cfstore)
         indexer = Indexer(cfstore, check_duplicate, keep_json, record_path)
         indexer.index_all()
-        watch_record(indexer)
+        watch_record(indexer, use_polling)
     finally:
         os.remove(cfstore.daemon_pid_path)
 
@@ -147,6 +147,13 @@ def daemon_add_arguments(parser):
     parser.add_argument(
         '--check-duplicate', default=False, action='store_true',
         help='do not store already existing history in DB.')
+    parser.add_argument(
+        '--use-polling', default=False, action='store_true',
+        help="""
+        Use polling instead of system specific notification.
+        This is useful, for example, when your $HOME is on NFS where
+        inotify does not work.
+        """)
     parser.add_argument(
         '--log-level',
         choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG'],

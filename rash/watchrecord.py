@@ -18,7 +18,6 @@ import time
 import signal
 
 try:
-    from watchdog.observers import Observer
     from watchdog.events import (
         FileSystemEventHandler, FileCreatedEvent)
     assert FileSystemEventHandler  # fool pyflakes
@@ -46,13 +45,18 @@ def install_sigterm_handler():
     signal.signal(signal.SIGTERM, raise_keyboardinterrupt)
 
 
-def watch_record(indexer):
+def watch_record(indexer, use_polling=False):
     """
     Start watching `cfstore.record_path`.
 
     :type indexer: rash.indexer.Indexer
 
     """
+    if use_polling:
+        from watchdog.observers.polling import PollingObserver as Observer
+        Observer  # fool pyflakes
+    else:
+        from watchdog.observers import Observer
 
     event_handler = RecordHandler(indexer)
     observer = Observer()
