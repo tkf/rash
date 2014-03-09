@@ -62,15 +62,20 @@ def daemon_run(no_error, restart, record_path, keep_json, check_duplicate,
 
     # SOMEDAY: make PID checking/writing atomic if possible
     if os.path.exists(cfstore.daemon_pid_path):
-        if no_error:
-            return
         with open(cfstore.daemon_pid_path, 'rt') as f:
             pid = int(f.read().strip())
-        if restart:
-            stop_running_daemon(cfstore, pid)
+        try:
+            os.kill(pid, 0)     # check if `pid` is alive
+        except OSError:
+            # Process with `pid` is already dead.  So just go on and
+            # use this daemon.
+            pass
         else:
-            raise RuntimeError(
-                'There is already a running daemon (PID={0})!'.format(pid))
+            if restart:
+                stop_running_daemon(cfstore, pid)
+            elif not no_error:
+                raise RuntimeError(
+                    'There is already a running daemon (PID={0})!'.format(pid))
 
     with open(cfstore.daemon_pid_path, 'w') as f:
         f.write(str(os.getpid()))
