@@ -58,3 +58,26 @@ def setup_daemon_log_file(cfstore):
     handler.setLevel(level)
     logger.setLevel(level)
     logger.addHandler(handler)
+
+
+class LogForTheFuture(object):
+
+    """
+    Logger that works even handler is not ready.
+    """
+
+    def __init__(self):
+        self._messages = []
+
+    def __getattr__(self, name):
+        try:
+            return super(LogForTheFuture, self).__getattr__(name)
+        except AttributeError:
+            assert name in ('critical', 'fatal', 'error', 'warning',
+                            'warn', 'info', 'debug')
+            return lambda *args, **kwds: \
+                self._messages.append((name, args, kwds))
+
+    def dump(self):
+        for (name, args, kwds) in self._messages:
+            getattr(logger, name)(*args, **kwds)

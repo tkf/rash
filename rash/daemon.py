@@ -52,31 +52,47 @@ def daemon_run(no_error, restart, record_path, keep_json, check_duplicate,
     # is connected to the DB?
     from .config import ConfigStore
     from .indexer import Indexer
-    from .log import setup_daemon_log_file
+    from .log import setup_daemon_log_file, LogForTheFuture
     from .watchrecord import watch_record, install_sigterm_handler
 
     install_sigterm_handler()
     cfstore = ConfigStore()
     if log_level:
         cfstore.daemon_log_level = log_level
+    flogger = LogForTheFuture()
 
     # SOMEDAY: make PID checking/writing atomic if possible
+    flogger.debug('Checking old PID file %r.', cfstore.daemon_pid_path)
     if os.path.exists(cfstore.daemon_pid_path):
-        if no_error:
-            return
+        flogger.debug('Old PID file exists.  Reading from it.')
         with open(cfstore.daemon_pid_path, 'rt') as f:
             pid = int(f.read().strip())
-        if restart:
-            stop_running_daemon(cfstore, pid)
+        flogger.debug('Checking if old process with PID=%d is alive', pid)
+        try:
+            os.kill(pid, 0)     # check if `pid` is alive
+        except OSError:
+            flogger.info(
+                'Process with PID=%d is already dead.  '
+                'So just go on and use this daemon.', pid)
         else:
-            raise RuntimeError(
-                'There is already a running daemon (PID={0})!'.format(pid))
+            if restart:
+                flogger.info('Stopping old daemon with PID=%d.', pid)
+                stop_running_daemon(cfstore, pid)
+            elif not no_error:
+                raise RuntimeError(
+                    'There is already a running daemon (PID={0})!'.format(pid))
+            flogger.info('Stopping old daemon with PID=%d.', pid)
+    else:
+        flogger.debug('Daemon PID file %r does not exists.  '
+                      'So just go on and use this daemon.',
+                      cfstore.daemon_pid_path)
 
     with open(cfstore.daemon_pid_path, 'w') as f:
         f.write(str(os.getpid()))
 
     try:
         setup_daemon_log_file(cfstore)
+        flogger.dump()
         indexer = Indexer(cfstore, check_duplicate, keep_json, record_path)
         indexer.index_all()
         watch_record(indexer, use_polling)
