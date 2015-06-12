@@ -77,6 +77,8 @@ class FunctionalTestMixIn(object):
 
         self.environ = os.environ.copy()
         self.environ['HOME'] = self.home_dir
+        # FIXME: run the test w/o $TERM
+        self.environ['TERM'] = 'xterm-256color'
         # Make sure that $XDG_CONFIG_HOME does not confuse sub processes
         if 'XDG_CONFIG_HOME' in self.environ:
             del self.environ['XDG_CONFIG_HOME']
