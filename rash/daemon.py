@@ -78,10 +78,17 @@ def daemon_run(no_error, restart, record_path, keep_json, check_duplicate,
             if restart:
                 flogger.info('Stopping old daemon with PID=%d.', pid)
                 stop_running_daemon(cfstore, pid)
-            elif not no_error:
-                raise RuntimeError(
-                    'There is already a running daemon (PID={0})!'.format(pid))
-            flogger.info('Stopping old daemon with PID=%d.', pid)
+            else:
+                message = ('There is already a running daemon (PID={0})!'
+                           .format(pid))
+                if no_error:
+                    flogger.debug(message)
+                    # FIXME: Setup log handler and flogger.dump().
+                    # Note that using the default log file is not safe
+                    # since it has already been used.
+                    return
+                else:
+                    raise RuntimeError(message)
     else:
         flogger.debug('Daemon PID file %r does not exists.  '
                       'So just go on and use this daemon.',
