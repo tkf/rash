@@ -3,3 +3,4 @@
 .tox
 doc/build
 MANIFEST
+/dist
